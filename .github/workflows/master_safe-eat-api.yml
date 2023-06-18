@@ -21,6 +21,9 @@ jobs:
         with:
           java-version: '17'
 
+      - name: Gradle to executable
+        run: chmod +x ./gradlew
+
       - name: Build with Gradle
         run: ./gradlew clean build
 
