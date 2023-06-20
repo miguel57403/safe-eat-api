@@ -1,5 +1,6 @@
 package ipb.pt.safeeat.dto;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -16,7 +17,9 @@ public class UserDto {
     private String image;
     @NotEmpty(message = "Invalid name")
     private String name;
-    @NotEmpty(message = "Invalid email")
+    @NotEmpty(message = "Invalid username")
+    private String username;
+    @Email(message = "Invalid email")
     private String email;
     @NotEmpty(message = "Invalid cellphone")
     private String cellphone;

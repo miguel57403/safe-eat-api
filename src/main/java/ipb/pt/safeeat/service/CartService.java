@@ -1,6 +1,6 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.constants.CartConstants;
+import ipb.pt.safeeat.constant.CartConstants;
 import ipb.pt.safeeat.model.Cart;
 import ipb.pt.safeeat.repository.CartRepository;
 import org.springframework.beans.factory.annotation.Autowired;

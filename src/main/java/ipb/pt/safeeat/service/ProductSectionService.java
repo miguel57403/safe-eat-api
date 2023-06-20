@@ -1,7 +1,7 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.constants.ProductSectionConstants;
-import ipb.pt.safeeat.constants.RestaurantConstants;
+import ipb.pt.safeeat.constant.ProductSectionConstants;
+import ipb.pt.safeeat.constant.RestaurantConstants;
 import ipb.pt.safeeat.dto.ProductSectionDto;
 import ipb.pt.safeeat.model.Product;
 import ipb.pt.safeeat.model.ProductSection;

@@ -1,7 +1,7 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.constants.RestrictionConstants;
-import ipb.pt.safeeat.constants.UserConstants;
+import ipb.pt.safeeat.constant.RestrictionConstants;
+import ipb.pt.safeeat.constant.UserConstants;
 import ipb.pt.safeeat.dto.UserDto;
 import ipb.pt.safeeat.model.Cart;
 import ipb.pt.safeeat.model.Restriction;

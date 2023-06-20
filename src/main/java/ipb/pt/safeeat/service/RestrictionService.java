@@ -1,6 +1,6 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.constants.RestaurantConstants;
+import ipb.pt.safeeat.constant.RestaurantConstants;
 import ipb.pt.safeeat.dto.RestrictionDto;
 import ipb.pt.safeeat.model.Restriction;
 import ipb.pt.safeeat.repository.RestrictionRepository;

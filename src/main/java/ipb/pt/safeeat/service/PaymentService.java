@@ -1,6 +1,6 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.constants.PaymentConstants;
+import ipb.pt.safeeat.constant.PaymentConstants;
 import ipb.pt.safeeat.dto.PaymentDto;
 import ipb.pt.safeeat.model.Payment;
 import ipb.pt.safeeat.model.User;

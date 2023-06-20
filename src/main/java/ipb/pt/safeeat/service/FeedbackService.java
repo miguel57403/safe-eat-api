@@ -1,7 +1,7 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.constants.FeedbackConstants;
-import ipb.pt.safeeat.constants.OrderConstants;
+import ipb.pt.safeeat.constant.FeedbackConstants;
+import ipb.pt.safeeat.constant.OrderConstants;
 import ipb.pt.safeeat.dto.FeedbackDto;
 import ipb.pt.safeeat.model.Feedback;
 import ipb.pt.safeeat.model.Order;

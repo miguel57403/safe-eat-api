@@ -1,6 +1,6 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.constants.CategoryConstants;
+import ipb.pt.safeeat.constant.CategoryConstants;
 import ipb.pt.safeeat.dto.CategoryDto;
 import ipb.pt.safeeat.model.Category;
 import ipb.pt.safeeat.repository.CategoryRepository;

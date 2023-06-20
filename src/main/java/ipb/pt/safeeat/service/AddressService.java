@@ -1,6 +1,6 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.constants.AddressConstants;
+import ipb.pt.safeeat.constant.AddressConstants;
 import ipb.pt.safeeat.dto.AddressDto;
 import ipb.pt.safeeat.model.Address;
 import ipb.pt.safeeat.model.User;

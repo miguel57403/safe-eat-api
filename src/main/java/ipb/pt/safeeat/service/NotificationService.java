@@ -1,7 +1,7 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.constants.NotificationConstants;
-import ipb.pt.safeeat.constants.OrderConstants;
+import ipb.pt.safeeat.constant.NotificationConstants;
+import ipb.pt.safeeat.constant.OrderConstants;
 import ipb.pt.safeeat.dto.NotificationDto;
 import ipb.pt.safeeat.model.Notification;
 import ipb.pt.safeeat.model.Order;
