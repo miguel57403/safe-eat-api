@@ -7,6 +7,6 @@ import java.util.List;
 
 @Data
 @AllArgsConstructor
-public class Home {
+public class  Home {
     private List<Content> content;
 }

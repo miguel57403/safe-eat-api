@@ -4,6 +4,7 @@ import ipb.pt.safeeat.constants.RestrictionConstants;
 import ipb.pt.safeeat.constants.UserConstants;
 import ipb.pt.safeeat.dto.UserDto;
 import ipb.pt.safeeat.model.Cart;
+import ipb.pt.safeeat.model.Restriction;
 import ipb.pt.safeeat.model.User;
 import ipb.pt.safeeat.repository.CartRepository;
 import ipb.pt.safeeat.repository.RestrictionRepository;
@@ -41,15 +42,17 @@ public class UserService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid password");
         }
 
+        List<Restriction> restrictions = new ArrayList<>();
         if (!userDto.getRestrictionIds().isEmpty()) {
             for (String restrictionId : userDto.getRestrictionIds()) {
-                restrictionRepository.findById(restrictionId).orElseThrow(
-                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, RestrictionConstants.NOT_FOUND));
+                restrictions.add(restrictionRepository.findById(restrictionId).orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, RestrictionConstants.NOT_FOUND)));
             }
         }
 
         User user = new User();
         BeanUtils.copyProperties(userDto, user);
+        user.setRestrictions(restrictions);
 
         Cart cart = cartRepository.save(new Cart());
         user.setCart(cart);

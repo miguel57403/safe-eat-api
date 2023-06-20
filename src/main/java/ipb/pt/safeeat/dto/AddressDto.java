@@ -1,7 +1,6 @@
 package ipb.pt.safeeat.dto;
 
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -11,8 +10,6 @@ public class AddressDto {
     private String id;
     @NotEmpty(message = "Invalid name")
     private String name;
-    @NotNull(message = "Invalid isDefault")
-    private Boolean isDefault;
     @NotEmpty(message = "Invalid street")
     private String street;
     @NotEmpty(message = "Invalid number")

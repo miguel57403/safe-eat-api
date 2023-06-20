@@ -16,7 +16,7 @@ public class Product {
     private String id;
     private String name;
     private Double price;
-    private List<String> images;
+    private String image;
     private Boolean isRestricted;
     @DocumentReference
     private List<Category> categories;

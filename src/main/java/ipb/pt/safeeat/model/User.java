@@ -21,11 +21,13 @@ public class User {
     private String name;
     private String email;
     private String cellphone;
-    private List<String> restrictionIds;
 
     @JsonIgnore
     @DocumentReference
     private Cart cart;
+    @JsonIgnore
+    @DocumentReference
+    private List<Restriction> restrictions;
     @JsonIgnore
     @DocumentReference
     private List<Payment> payments;

@@ -12,7 +12,6 @@ public class Address {
     @Id
     private String id;
     private String name;
-    private Boolean isDefault;
     private String street;
     private String number;
     private String complement;
