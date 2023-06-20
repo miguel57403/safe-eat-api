@@ -17,8 +17,6 @@ public class UserDto {
     private String image;
     @NotEmpty(message = "Invalid name")
     private String name;
-    @NotEmpty(message = "Invalid username")
-    private String username;
     @Email(message = "Invalid email")
     private String email;
     @NotEmpty(message = "Invalid cellphone")

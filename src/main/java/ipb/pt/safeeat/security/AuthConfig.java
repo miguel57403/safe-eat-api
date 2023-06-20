@@ -1,4 +1,4 @@
-package ipb.pt.safeeat.config;
+package ipb.pt.safeeat.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,6 +22,8 @@ public class AuthConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/**").permitAll()
+//                        .requestMatchers("/login").permitAll()
+//                        .requestMatchers("/users").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

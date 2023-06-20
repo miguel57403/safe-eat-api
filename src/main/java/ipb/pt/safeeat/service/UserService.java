@@ -12,6 +12,7 @@ import ipb.pt.safeeat.repository.UserRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -27,6 +28,8 @@ public class UserService {
     private CartRepository cartRepository;
     @Autowired
     private RestrictionRepository restrictionRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public List<User> getAll() {
         return userRepository.findAll();
@@ -52,6 +55,8 @@ public class UserService {
 
         User user = new User();
         BeanUtils.copyProperties(userDto, user);
+
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRestrictions(restrictions);
 
         Cart cart = cartRepository.save(new Cart());
