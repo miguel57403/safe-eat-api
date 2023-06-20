@@ -2,10 +2,12 @@ package ipb.pt.safeeat.service;
 
 import ipb.pt.safeeat.constants.AdvertisementConstants;
 import ipb.pt.safeeat.constants.RestaurantConstants;
+import ipb.pt.safeeat.dto.AdvertisementDto;
 import ipb.pt.safeeat.model.Advertisement;
 import ipb.pt.safeeat.model.Restaurant;
 import ipb.pt.safeeat.repository.AdvertisementRepository;
 import ipb.pt.safeeat.repository.RestaurantRepository;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -31,14 +33,12 @@ public class AdvertisementService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, AdvertisementConstants.NOT_FOUND));
     }
 
-    public Advertisement create(Advertisement advertisement) {
-        if (advertisement.getRestaurant() == null)
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Restaurant is required");
-
-        Restaurant restaurant = restaurantRepository.findById(advertisement.getRestaurant().getId()).orElseThrow(
+    public Advertisement create(AdvertisementDto advertisementDto) {
+        Restaurant restaurant = restaurantRepository.findById(advertisementDto.getRestaurantId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, RestaurantConstants.NOT_FOUND));
 
-        advertisement.setRestaurant(restaurant);
+        Advertisement advertisement = new Advertisement();
+        BeanUtils.copyProperties(advertisementDto, advertisement);
         Advertisement created = advertisementRepository.save(advertisement);
 
         restaurant.getAdvertisements().add(created);
@@ -48,22 +48,24 @@ public class AdvertisementService {
     }
 
     @Transactional
-    public List<Advertisement> createMany(List<Advertisement> advertisements) {
+    public List<Advertisement> createMany(List<AdvertisementDto> advertisementDtos) {
         List<Advertisement> created = new ArrayList<>();
-        for (Advertisement advertisement : advertisements) {
-            created.add(create(advertisement));
+        for (AdvertisementDto advertisementDto : advertisementDtos) {
+            created.add(create(advertisementDto));
         }
 
         return created;
     }
 
-    public Advertisement update(Advertisement advertisement) {
-        Advertisement old = advertisementRepository.findById(advertisement.getId()).orElseThrow(
+    public Advertisement update(AdvertisementDto advertisementDto) {
+        Advertisement old = advertisementRepository.findById(advertisementDto.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, AdvertisementConstants.NOT_FOUND));
 
-        old.setTitle(advertisement.getTitle());
-        old.setImage(advertisement.getImage());
+        if (!advertisementDto.getRestaurantId().equals(old.getRestaurantId())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot change restaurant");
+        }
 
+        BeanUtils.copyProperties(advertisementDto, old);
         return advertisementRepository.save(old);
     }
 
@@ -71,4 +73,3 @@ public class AdvertisementService {
         advertisementRepository.deleteById(id);
     }
 }
-

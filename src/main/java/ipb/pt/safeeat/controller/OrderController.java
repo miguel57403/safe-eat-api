@@ -1,6 +1,6 @@
 package ipb.pt.safeeat.controller;
 
-import ipb.pt.safeeat.model.Order;
+import ipb.pt.safeeat.dto.OrderDto;
 import ipb.pt.safeeat.service.OrderService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,18 +30,18 @@ public class OrderController {
     }
 
     @PostMapping
-    public ResponseEntity<Object> create(@Valid @RequestBody Order order) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(orderService.create(order));
+    public ResponseEntity<Object> create(@Valid @RequestBody OrderDto orderDto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(orderService.create(orderDto));
     }
 
     @PostMapping("/many")
-    public ResponseEntity<Object> createMany(@Valid @RequestBody List<Order> orders) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(orderService.createMany(orders));
+    public ResponseEntity<Object> createMany(@Valid @RequestBody List<OrderDto> orderDtos) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(orderService.createMany(orderDtos));
     }
 
-    @PutMapping
-    public ResponseEntity<Object> update(@Valid @RequestBody Order order) {
-        return ResponseEntity.ok().body(orderService.update(order));
+    @PutMapping("/{id}")
+    public ResponseEntity<Object> updateStatus(@PathVariable String id, @RequestParam String status) {
+        return ResponseEntity.ok().body(orderService.updateStatus(id, status));
     }
 
     @DeleteMapping("/{id}")

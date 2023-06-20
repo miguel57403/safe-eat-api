@@ -1,6 +1,7 @@
 package ipb.pt.safeeat.service;
 
 import ipb.pt.safeeat.constants.CategoryConstants;
+import ipb.pt.safeeat.dto.CategoryDto;
 import ipb.pt.safeeat.model.Category;
 import ipb.pt.safeeat.repository.CategoryRepository;
 import org.springframework.beans.BeanUtils;
@@ -27,26 +28,28 @@ public class CategoryService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, CategoryConstants.NOT_FOUND));
     }
 
-    public Category create(Category category) {
+    public Category create(CategoryDto categoryDto) {
+        Category category = new Category();
+        BeanUtils.copyProperties(categoryDto, category);
         return categoryRepository.save(category);
     }
 
     @Transactional
-    public List<Category> createMany(List<Category> categories) {
+    public List<Category> createMany(List<CategoryDto> categoryDtos) {
         List<Category> created = new ArrayList<>();
-        for(Category category : categories) {
-            created.add(create(category));
+        for (CategoryDto categoryDto : categoryDtos) {
+            created.add(create(categoryDto));
         }
 
         return created;
     }
 
-    public Category update(Category category) {
-        Category old = categoryRepository.findById(category.getId()).orElseThrow(
-                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, CategoryConstants.NOT_FOUND));
+    public Category update(CategoryDto categoryDto) {
+        Category old = categoryRepository.findById(categoryDto.getId()).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, CategoryConstants.NOT_FOUND));
 
-        BeanUtils.copyProperties(category, old);
-        return categoryRepository.save(category);
+        BeanUtils.copyProperties(categoryDto, old);
+        return categoryRepository.save(old);
     }
 
     public void delete(String id) {

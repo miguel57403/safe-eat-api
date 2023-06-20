@@ -1,6 +1,6 @@
 package ipb.pt.safeeat.controller;
 
-import ipb.pt.safeeat.model.Category;
+import ipb.pt.safeeat.dto.CategoryDto;
 import ipb.pt.safeeat.service.CategoryService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,18 +30,18 @@ public class CategoryController {
     }
 
     @PostMapping
-    public ResponseEntity<Object> create(@Valid @RequestBody Category category) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(categoryService.create(category));
+    public ResponseEntity<Object> create(@Valid @RequestBody CategoryDto categoryDto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(categoryService.create(categoryDto));
     }
 
     @PostMapping("/many")
-    public ResponseEntity<Object> createMany(@Valid @RequestBody List<Category> categories) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(categoryService.createMany(categories));
+    public ResponseEntity<Object> createMany(@Valid @RequestBody List<CategoryDto> categoryDtos) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(categoryService.createMany(categoryDtos));
     }
 
     @PutMapping
-    public ResponseEntity<Object> update(@Valid @RequestBody Category category) {
-        return ResponseEntity.ok().body(categoryService.update(category));
+    public ResponseEntity<Object> update(@Valid @RequestBody CategoryDto categoryDto) {
+        return ResponseEntity.ok().body(categoryService.update(categoryDto));
     }
 
     @DeleteMapping("/{id}")

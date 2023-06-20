@@ -1,6 +1,6 @@
 package ipb.pt.safeeat.controller;
 
-import ipb.pt.safeeat.model.Item;
+import ipb.pt.safeeat.dto.ItemDto;
 import ipb.pt.safeeat.service.ItemService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,18 +30,18 @@ public class ItemController {
     }
 
     @PostMapping
-    public ResponseEntity<Object> create(@Valid @RequestBody Item item, @RequestParam String cartId) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(itemService.create(item, cartId));
+    public ResponseEntity<Object> create(@Valid @RequestBody ItemDto itemDto, @RequestParam String cartId) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(itemService.create(itemDto, cartId));
     }
 
     @PostMapping("/many")
-    public ResponseEntity<Object> createMany(@Valid @RequestBody List<Item> items, @RequestParam String cartId) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(itemService.createMany(items, cartId));
+    public ResponseEntity<Object> createMany(@Valid @RequestBody List<ItemDto> itemDtos, @RequestParam String cartId) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(itemService.createMany(itemDtos, cartId));
     }
 
     @PutMapping
-    public ResponseEntity<Object> update(@Valid @RequestBody Item item) {
-        return ResponseEntity.ok().body(itemService.update(item));
+    public ResponseEntity<Object> update(@Valid @RequestBody ItemDto itemDto) {
+        return ResponseEntity.ok().body(itemService.update(itemDto));
     }
 
     @DeleteMapping("/{id}")

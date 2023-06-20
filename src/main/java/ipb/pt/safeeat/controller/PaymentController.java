@@ -1,6 +1,6 @@
 package ipb.pt.safeeat.controller;
 
-import ipb.pt.safeeat.model.Payment;
+import ipb.pt.safeeat.dto.PaymentDto;
 import ipb.pt.safeeat.service.PaymentService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,18 +30,18 @@ public class PaymentController {
     }
 
     @PostMapping
-    public ResponseEntity<Object> create(@Valid @RequestBody Payment payment, @RequestParam String userId) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(paymentService.create(payment, userId));
+    public ResponseEntity<Object> create(@Valid @RequestBody PaymentDto paymentDto, @RequestParam String userId) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(paymentService.create(paymentDto, userId));
     }
 
     @PostMapping("/many")
-    public ResponseEntity<Object> createMany(@Valid @RequestBody List<Payment> payments, @RequestParam String userId) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(paymentService.createMany(payments, userId));
+    public ResponseEntity<Object> createMany(@Valid @RequestBody List<PaymentDto> paymentDtos, @RequestParam String userId) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(paymentService.createMany(paymentDtos, userId));
     }
 
     @PutMapping
-    public ResponseEntity<Object> update(@Valid @RequestBody Payment payment) {
-        return ResponseEntity.ok().body(paymentService.update(payment));
+    public ResponseEntity<Object> update(@Valid @RequestBody PaymentDto paymentDto) {
+        return ResponseEntity.ok().body(paymentService.update(paymentDto));
     }
 
     @DeleteMapping("/{id}")

@@ -1,6 +1,6 @@
 package ipb.pt.safeeat.controller;
 
-import ipb.pt.safeeat.model.Ingredient;
+import ipb.pt.safeeat.dto.IngredientDto;
 import ipb.pt.safeeat.service.IngredientService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,18 +30,18 @@ public class IngredientController {
     }
 
     @PostMapping
-    public ResponseEntity<Object> create(@Valid @RequestBody Ingredient ingredient, @RequestParam String restaurantId) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(ingredientService.create(ingredient, restaurantId));
+    public ResponseEntity<Object> create(@Valid @RequestBody IngredientDto ingredientDto, @RequestParam String restaurantId) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(ingredientService.create(ingredientDto, restaurantId));
     }
 
     @PostMapping("/many")
-    public ResponseEntity<Object> createMany(@Valid @RequestBody List<Ingredient> ingredients, @RequestParam String restaurantId) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(ingredientService.createMany(ingredients, restaurantId));
+    public ResponseEntity<Object> createMany(@Valid @RequestBody List<IngredientDto> ingredientDtos, @RequestParam String restaurantId) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(ingredientService.createMany(ingredientDtos, restaurantId));
     }
 
     @PutMapping
-    public ResponseEntity<Object> update(@Valid @RequestBody Ingredient ingredient) {
-        return ResponseEntity.ok().body(ingredientService.update(ingredient));
+    public ResponseEntity<Object> update(@Valid @RequestBody IngredientDto ingredientDto) {
+        return ResponseEntity.ok().body(ingredientService.update(ingredientDto));
     }
 
     @DeleteMapping("/{id}")

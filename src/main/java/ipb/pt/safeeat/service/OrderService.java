@@ -1,6 +1,7 @@
 package ipb.pt.safeeat.service;
 
 import ipb.pt.safeeat.constants.*;
+import ipb.pt.safeeat.dto.OrderDto;
 import ipb.pt.safeeat.model.*;
 import ipb.pt.safeeat.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,32 +40,36 @@ public class OrderService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, OrderConstants.NOT_FOUND));
     }
 
-    public Order create(Order order) {
-        Address address = addressRepository.findById(order.getAddress().getId()).orElseThrow(
+    public Order create(OrderDto orderDto) {
+        Address address = addressRepository.findById(orderDto.getAddressId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, AddressConstants.NOT_FOUND));
 
-        Payment payment = paymentRepository.findById(order.getPayment().getId()).orElseThrow(
+        Payment payment = paymentRepository.findById(orderDto.getPaymentId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, PaymentConstants.NOT_FOUND));
 
-        Delivery delivery = deliveryRepository.findById(order.getDelivery().getId()).orElseThrow(
+        Delivery delivery = deliveryRepository.findById(orderDto.getDeliveryId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, DeliveryConstants.NOT_FOUND));
 
-        Restaurant restaurant = restaurantRepository.findById(order.getRestaurant().getId()).orElseThrow(
+        Restaurant restaurant = restaurantRepository.findById(orderDto.getRestaurantId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, RestaurantConstants.NOT_FOUND));
 
-        User client = userRepository.findById(order.getClient().getId()).orElseThrow(
+        User client = userRepository.findById(orderDto.getClientId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, UserConstants.NOT_FOUND));
 
-        for(Item item : order.getItems()) {
-            itemRepository.findById(item.getId()).orElseThrow(
-                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ItemConstants.NOT_FOUND));
+        List<Item> items = new ArrayList<>();
+        for (String itemId : orderDto.getItemIds()) {
+            items.add(itemRepository.findById(itemId).orElseThrow(
+                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ItemConstants.NOT_FOUND)));
         }
+
+        Order order = new Order();
 
         order.setAddress(address);
         order.setPayment(payment);
         order.setDelivery(delivery);
         order.setRestaurant(restaurant);
         order.setClient(client);
+        order.setItems(items);
 
         double subtotal = order.getItems().stream().mapToDouble(Item::getSubtotal).sum();
         double total = subtotal + order.getDelivery().getPrice();
@@ -86,24 +91,21 @@ public class OrderService {
     }
 
     @Transactional
-    public List<Order> createMany(List<Order> orders) {
+    public List<Order> createMany(List<OrderDto> orderDtos) {
         List<Order> created = new ArrayList<>();
-        for(Order order : orders) {
-            created.add(create(order));
+        for (OrderDto orderDto : orderDtos) {
+            created.add(create(orderDto));
         }
 
         return created;
     }
 
-    public Order update(Order order) {
-        Order old = orderRepository.findById(order.getId()).orElseThrow(
+    public Order updateStatus(String id, String status) {
+        Order old = orderRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, OrderConstants.NOT_FOUND));
 
-        if (!order.getStatus().equals(old.getStatus())) {
-            old.setStatus(order.getStatus());
-        }
-
-        return orderRepository.save(order);
+        old.setStatus(status);
+        return orderRepository.save(old);
     }
 
     public void delete(String id) {

@@ -1,8 +1,18 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.constants.*;
-import ipb.pt.safeeat.model.*;
-import ipb.pt.safeeat.repository.*;
+import ipb.pt.safeeat.constants.CategoryConstants;
+import ipb.pt.safeeat.constants.IngredientConstants;
+import ipb.pt.safeeat.constants.ProductConstants;
+import ipb.pt.safeeat.constants.RestaurantConstants;
+import ipb.pt.safeeat.dto.ProductDto;
+import ipb.pt.safeeat.model.Category;
+import ipb.pt.safeeat.model.Ingredient;
+import ipb.pt.safeeat.model.Product;
+import ipb.pt.safeeat.model.Restaurant;
+import ipb.pt.safeeat.repository.CategoryRepository;
+import ipb.pt.safeeat.repository.IngredientRepository;
+import ipb.pt.safeeat.repository.ProductRepository;
+import ipb.pt.safeeat.repository.RestaurantRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -33,21 +43,24 @@ public class ProductService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ProductConstants.NOT_FOUND));
     }
 
-    public Product create(Product product, String restaurantId) {
+    public Product create(ProductDto productDto, String restaurantId) {
         Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, RestaurantConstants.NOT_FOUND));
 
         List<Ingredient> ingredients = new ArrayList<>();
-        for(Ingredient ingredient : product.getIngredients()) {
-            ingredients.add(ingredientRepository.findById(ingredient.getId()).orElseThrow(
-                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, IngredientConstants.NOT_FOUND)));
+        for (String ingredientId : productDto.getIngredientIds()) {
+            ingredients.add(ingredientRepository.findById(ingredientId).orElseThrow(
+                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, IngredientConstants.NOT_FOUND)));
         }
 
         List<Category> categories = new ArrayList<>();
-        for(Category category : product.getCategories()) {
-            categories.add(categoryRepository.findById(category.getId()).orElseThrow(
+        for (String categoryId : productDto.getCategoryIds()) {
+            categories.add(categoryRepository.findById(categoryId).orElseThrow(
                     () -> new ResponseStatusException(HttpStatus.NOT_FOUND, CategoryConstants.NOT_FOUND)));
         }
+
+        Product product = new Product();
+        BeanUtils.copyProperties(productDto, product);
 
         product.setIngredients(ingredients);
         product.setCategories(categories);
@@ -61,21 +74,21 @@ public class ProductService {
     }
 
     @Transactional
-    public List<Product> createMany(List<Product> products, String restaurantId) {
+    public List<Product> createMany(List<ProductDto> productDtos, String restaurantId) {
         List<Product> created = new ArrayList<>();
-        for(Product product : products) {
-            created.add(create(product, restaurantId));
+        for (ProductDto productDto : productDtos) {
+            created.add(create(productDto, restaurantId));
         }
 
         return created;
     }
 
-    public Product update(Product product) {
-        Product old = productRepository.findById(product.getId()).orElseThrow(
+    public Product update(ProductDto productDto) {
+        Product old = productRepository.findById(productDto.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ProductConstants.NOT_FOUND));
 
-        BeanUtils.copyProperties(product, old);
-        return productRepository.save(product);
+        BeanUtils.copyProperties(productDto, old);
+        return productRepository.save(old);
     }
 
     public void delete(String id) {

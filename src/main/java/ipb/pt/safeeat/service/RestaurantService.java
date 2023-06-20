@@ -1,6 +1,7 @@
 package ipb.pt.safeeat.service;
 
 import ipb.pt.safeeat.constants.*;
+import ipb.pt.safeeat.dto.RestaurantDto;
 import ipb.pt.safeeat.model.*;
 import ipb.pt.safeeat.repository.*;
 import org.springframework.beans.BeanUtils;
@@ -46,12 +47,12 @@ public class RestaurantService {
         return restaurants;
     }
 
-    public Restaurant create(Restaurant restaurant) {
-        if(restaurant.getOwner() == null || restaurant.getOwner().getId() == null)
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Owner is required");
-
-        User owner = userRepository.findById(restaurant.getOwner().getId()).orElseThrow(
+    public Restaurant create(RestaurantDto restaurantDto) {
+        User owner = userRepository.findById(restaurantDto.getOwnerId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, UserConstants.NOT_FOUND));
+
+        Restaurant restaurant = new Restaurant();
+        BeanUtils.copyProperties(restaurantDto, restaurant);
 
         Restaurant created = restaurantRepository.save(restaurant);
 
@@ -62,21 +63,21 @@ public class RestaurantService {
     }
 
     @Transactional
-    public List<Restaurant> createMany(List<Restaurant> restaurants) {
+    public List<Restaurant> createMany(List<RestaurantDto> restaurantDtos) {
         List<Restaurant> created = new ArrayList<>();
-        for(Restaurant restaurant : restaurants) {
-            created.add(create(restaurant));
+        for(RestaurantDto restaurantDto : restaurantDtos) {
+            created.add(create(restaurantDto));
         }
 
         return created;
     }
 
-    public Restaurant update(Restaurant restaurant) {
-        Restaurant old = restaurantRepository.findById(restaurant.getId()).orElseThrow(
+    public Restaurant update(RestaurantDto restaurantDto) {
+        Restaurant old = restaurantRepository.findById(restaurantDto.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, RestaurantConstants.NOT_FOUND));
 
-        BeanUtils.copyProperties(restaurant, old);
-        return restaurantRepository.save(restaurant);
+        BeanUtils.copyProperties(restaurantDto, old);
+        return restaurantRepository.save(old);
     }
 
     public void delete(String id) {

@@ -2,6 +2,7 @@ package ipb.pt.safeeat.service;
 
 import ipb.pt.safeeat.constants.ProductSectionConstants;
 import ipb.pt.safeeat.constants.RestaurantConstants;
+import ipb.pt.safeeat.dto.ProductSectionDto;
 import ipb.pt.safeeat.model.Product;
 import ipb.pt.safeeat.model.ProductSection;
 import ipb.pt.safeeat.model.Restaurant;
@@ -36,17 +37,18 @@ public class ProductSectionService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ProductSectionConstants.NOT_FOUND));
     }
 
-    public ProductSection create(ProductSection productSection, String restaurantId) {
+    public ProductSection create(ProductSectionDto productSectionDto, String restaurantId) {
         Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, RestaurantConstants.NOT_FOUND));
 
         List<Product> products = new ArrayList<>();
-        for(Product product : productSection.getProducts()) {
-            Product original = productRepository.findById(product.getId()).orElseThrow(
-                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ProductSectionConstants.NOT_FOUND));
-
-            products.add(original);
+        for (String productId : productSectionDto.getProductIds()) {
+            products.add(productRepository.findById(productId).orElseThrow(
+                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ProductSectionConstants.NOT_FOUND)));
         }
+
+        ProductSection productSection = new ProductSection();
+        BeanUtils.copyProperties(productSectionDto, productSection);
 
         productSection.setProducts(products);
         ProductSection created = productSectionRepository.save(productSection);
@@ -58,21 +60,21 @@ public class ProductSectionService {
     }
 
     @Transactional
-    public List<ProductSection> createMany(List<ProductSection> productSections, String restaurantId) {
+    public List<ProductSection> createMany(List<ProductSectionDto> productSectionDtos, String restaurantId) {
         List<ProductSection> created = new ArrayList<>();
-        for(ProductSection productSection : productSections) {
-            created.add(create(productSection, restaurantId));
+        for (ProductSectionDto productSectionDto : productSectionDtos) {
+            created.add(create(productSectionDto, restaurantId));
         }
 
         return created;
     }
 
-    public ProductSection update(ProductSection productSection) {
-        ProductSection old = productSectionRepository.findById(productSection.getId()).orElseThrow(
+    public ProductSection update(ProductSectionDto productSectionDto) {
+        ProductSection old = productSectionRepository.findById(productSectionDto.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ProductSectionConstants.NOT_FOUND));
 
-        BeanUtils.copyProperties(productSection, old);
-        return productSectionRepository.save(productSection);
+        BeanUtils.copyProperties(productSectionDto, old);
+        return productSectionRepository.save(old);
     }
 
     public void delete(String id) {

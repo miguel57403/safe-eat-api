@@ -1,6 +1,6 @@
 package ipb.pt.safeeat.controller;
 
-import ipb.pt.safeeat.model.Address;
+import ipb.pt.safeeat.dto.AddressDto;
 import ipb.pt.safeeat.service.AddressService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,18 +30,18 @@ public class AddressController {
     }
 
     @PostMapping
-    public ResponseEntity<Object> create(@Valid @RequestBody Address address, @RequestParam String userId) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(addressService.create(address, userId));
+    public ResponseEntity<Object> create(@Valid @RequestBody AddressDto addressDto, @RequestParam String userId) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(addressService.create(addressDto, userId));
     }
 
     @PostMapping("/many")
-    public ResponseEntity<Object> createMany(@Valid @RequestBody List<Address> addresses, @RequestParam String userId) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(addressService.createMany(addresses, userId));
+    public ResponseEntity<Object> createMany(@Valid @RequestBody List<AddressDto> addressDtos, @RequestParam String userId) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(addressService.createMany(addressDtos, userId));
     }
 
     @PutMapping
-    public ResponseEntity<Object> update(@Valid @RequestBody Address address) {
-        return ResponseEntity.ok().body(addressService.update(address));
+    public ResponseEntity<Object> update(@Valid @RequestBody AddressDto addressDto) {
+        return ResponseEntity.ok().body(addressService.update(addressDto));
     }
 
     @DeleteMapping("/{id}")

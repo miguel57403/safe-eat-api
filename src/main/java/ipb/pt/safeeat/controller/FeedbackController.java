@@ -1,6 +1,6 @@
 package ipb.pt.safeeat.controller;
 
-import ipb.pt.safeeat.model.Feedback;
+import ipb.pt.safeeat.dto.FeedbackDto;
 import ipb.pt.safeeat.service.FeedbackService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,13 +28,13 @@ public class FeedbackController {
     }
 
     @PostMapping
-    public ResponseEntity<Object> create(@Valid @RequestBody Feedback feedback, @RequestParam String orderId) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(feedbackService.create(feedback, orderId));
+    public ResponseEntity<Object> create(@Valid @RequestBody FeedbackDto feedbackDto, @RequestParam String orderId) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(feedbackService.create(feedbackDto, orderId));
     }
 
     @PutMapping
-    public ResponseEntity<Object> update(@Valid @RequestBody Feedback feedback) {
-        return ResponseEntity.ok().body(feedbackService.update(feedback));
+    public ResponseEntity<Object> update(@Valid @RequestBody FeedbackDto feedbackDto) {
+        return ResponseEntity.ok().body(feedbackService.update(feedbackDto));
     }
 
     @DeleteMapping("/{id}")

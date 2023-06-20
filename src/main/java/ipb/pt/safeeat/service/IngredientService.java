@@ -3,9 +3,9 @@ package ipb.pt.safeeat.service;
 import ipb.pt.safeeat.constants.IngredientConstants;
 import ipb.pt.safeeat.constants.RestaurantConstants;
 import ipb.pt.safeeat.constants.RestrictionConstants;
+import ipb.pt.safeeat.dto.IngredientDto;
 import ipb.pt.safeeat.model.Ingredient;
 import ipb.pt.safeeat.model.Restaurant;
-import ipb.pt.safeeat.model.Restriction;
 import ipb.pt.safeeat.repository.IngredientRepository;
 import ipb.pt.safeeat.repository.RestaurantRepository;
 import ipb.pt.safeeat.repository.RestrictionRepository;
@@ -37,21 +37,21 @@ public class IngredientService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, IngredientConstants.NOT_FOUND));
     }
 
-    public Ingredient create(Ingredient ingredient, String restaurantId) {
+    public Ingredient create(IngredientDto ingredientDto, String restaurantId) {
         Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, RestaurantConstants.NOT_FOUND));
 
-        if (ingredient.getRestrictions() != null && !ingredient.getRestrictions().isEmpty()) {
-            List<Restriction> restrictions = new ArrayList<>();
-            for (Restriction restriction : ingredient.getRestrictions()) {
-                restrictions.add(restrictionRepository.findById(restriction.getId()).orElseThrow(
-                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, RestrictionConstants.NOT_FOUND)));
+        if (ingredientDto.getRestrictionIds() != null && !ingredientDto.getRestrictionIds().isEmpty()) {
+            for (String restrictionId : ingredientDto.getRestrictionIds()) {
+                restrictionRepository.findById(restrictionId).orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, RestrictionConstants.NOT_FOUND));
             }
-
-            ingredient.setRestrictions(restrictions);
         }
 
+        Ingredient ingredient = new Ingredient();
+        BeanUtils.copyProperties(ingredientDto, ingredient);
         Ingredient created = ingredientRepository.save(ingredient);
+
         restaurant.getIngredients().add(created);
         restaurantRepository.save(restaurant);
 
@@ -59,21 +59,21 @@ public class IngredientService {
     }
 
     @Transactional
-    public List<Ingredient> createMany(List<Ingredient> ingredients, String restaurantId) {
+    public List<Ingredient> createMany(List<IngredientDto> ingredientDtos, String restaurantId) {
         List<Ingredient> created = new ArrayList<>();
-        for(Ingredient ingredient : ingredients) {
-            created.add(create(ingredient, restaurantId));
+        for (IngredientDto ingredientDto : ingredientDtos) {
+            created.add(create(ingredientDto, restaurantId));
         }
 
         return created;
     }
 
-    public Ingredient update(Ingredient ingredient) {
-        Ingredient old = ingredientRepository.findById(ingredient.getId()).orElseThrow(
+    public Ingredient update(IngredientDto ingredientDto) {
+        Ingredient old = ingredientRepository.findById(ingredientDto.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, IngredientConstants.NOT_FOUND));
 
-        BeanUtils.copyProperties(ingredient, old);
-        return ingredientRepository.save(ingredient);
+        BeanUtils.copyProperties(ingredientDto, old);
+        return ingredientRepository.save(old);
     }
 
     public void delete(String id) {

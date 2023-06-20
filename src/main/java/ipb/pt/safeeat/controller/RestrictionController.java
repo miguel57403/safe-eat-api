@@ -1,6 +1,6 @@
 package ipb.pt.safeeat.controller;
 
-import ipb.pt.safeeat.model.Restriction;
+import ipb.pt.safeeat.dto.RestrictionDto;
 import ipb.pt.safeeat.service.RestrictionService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,18 +30,18 @@ public class RestrictionController {
     }
 
     @PostMapping
-    public ResponseEntity<Object> create(@Valid @RequestBody Restriction restriction) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(restrictionService.create(restriction));
+    public ResponseEntity<Object> create(@Valid @RequestBody RestrictionDto restrictionDto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(restrictionService.create(restrictionDto));
     }
 
     @PostMapping("/many")
-    public ResponseEntity<Object> createMany(@Valid @RequestBody List<Restriction> restrictions) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(restrictionService.createMany(restrictions));
+    public ResponseEntity<Object> createMany(@Valid @RequestBody List<RestrictionDto> restrictionDtos) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(restrictionService.createMany(restrictionDtos));
     }
 
     @PutMapping
-    public ResponseEntity<Object> update(@Valid @RequestBody Restriction restriction) {
-        return ResponseEntity.ok().body(restrictionService.update(restriction));
+    public ResponseEntity<Object> update(@Valid @RequestBody RestrictionDto restrictionDto) {
+        return ResponseEntity.ok().body(restrictionService.update(restrictionDto));
     }
 
     @DeleteMapping("/{id}")

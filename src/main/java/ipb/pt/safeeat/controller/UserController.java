@@ -1,6 +1,6 @@
 package ipb.pt.safeeat.controller;
 
-import ipb.pt.safeeat.model.User;
+import ipb.pt.safeeat.dto.UserDto;
 import ipb.pt.safeeat.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,18 +30,18 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<Object> create(@Valid @RequestBody User user) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(userService.create(user));
+    public ResponseEntity<Object> create(@Valid @RequestBody UserDto userDto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(userService.create(userDto));
     }
 
     @PostMapping("/many")
-    public ResponseEntity<Object> createMany(@Valid @RequestBody List<User> users) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(userService.createMany(users));
+    public ResponseEntity<Object> createMany(@Valid @RequestBody List<UserDto> userDtos) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(userService.createMany(userDtos));
     }
 
     @PutMapping
-    public ResponseEntity<Object> update(@Valid @RequestBody User user) {
-        return ResponseEntity.ok().body(userService.update(user));
+    public ResponseEntity<Object> update(@Valid @RequestBody UserDto userDto) {
+        return ResponseEntity.ok().body(userService.update(userDto));
     }
 
     @DeleteMapping("/{id}")

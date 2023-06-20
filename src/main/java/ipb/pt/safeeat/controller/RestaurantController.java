@@ -1,6 +1,6 @@
 package ipb.pt.safeeat.controller;
 
-import ipb.pt.safeeat.model.Restaurant;
+import ipb.pt.safeeat.dto.RestaurantDto;
 import ipb.pt.safeeat.service.RestaurantService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,18 +35,18 @@ public class RestaurantController {
     }
 
     @PostMapping
-    public ResponseEntity<Object> create(@Valid @RequestBody Restaurant restaurant) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(restaurantService.create(restaurant));
+    public ResponseEntity<Object> create(@Valid @RequestBody RestaurantDto restaurantDto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(restaurantService.create(restaurantDto));
     }
 
     @PostMapping("/many")
-    public ResponseEntity<Object> createMany(@Valid @RequestBody List<Restaurant> restaurants) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(restaurantService.createMany(restaurants));
+    public ResponseEntity<Object> createMany(@Valid @RequestBody List<RestaurantDto> restaurantDtos) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(restaurantService.createMany(restaurantDtos));
     }
 
     @PutMapping
-    public ResponseEntity<Object> update(@Valid @RequestBody Restaurant restaurant) {
-        return ResponseEntity.ok().body(restaurantService.update(restaurant));
+    public ResponseEntity<Object> update(@Valid @RequestBody RestaurantDto restaurantDto) {
+        return ResponseEntity.ok().body(restaurantService.update(restaurantDto));
     }
 
     @DeleteMapping("/{id}")

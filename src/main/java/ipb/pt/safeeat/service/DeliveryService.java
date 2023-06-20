@@ -2,6 +2,7 @@ package ipb.pt.safeeat.service;
 
 import ipb.pt.safeeat.constants.DeliveryConstants;
 import ipb.pt.safeeat.constants.RestaurantConstants;
+import ipb.pt.safeeat.dto.DeliveryDto;
 import ipb.pt.safeeat.model.Delivery;
 import ipb.pt.safeeat.model.Restaurant;
 import ipb.pt.safeeat.repository.DeliveryRepository;
@@ -32,10 +33,12 @@ public class DeliveryService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, DeliveryConstants.NOT_FOUND));
     }
 
-    public Delivery create(Delivery delivery, String restaurantId) {
+    public Delivery create(DeliveryDto deliveryDto, String restaurantId) {
         Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, RestaurantConstants.NOT_FOUND));
 
+        Delivery delivery = new Delivery();
+        BeanUtils.copyProperties(deliveryDto, delivery);
         Delivery created = deliveryRepository.save(delivery);
 
         restaurant.getDeliveries().add(created);
@@ -45,21 +48,21 @@ public class DeliveryService {
     }
 
     @Transactional
-    public List<Delivery> createMany(List<Delivery> deliveries, String restaurantId) {
+    public List<Delivery> createMany(List<DeliveryDto> deliveryDtos, String restaurantId) {
         List<Delivery> created = new ArrayList<>();
-        for(Delivery delivery : deliveries) {
-            created.add(create(delivery, restaurantId));
+        for (DeliveryDto deliveryDto : deliveryDtos) {
+            created.add(create(deliveryDto, restaurantId));
         }
 
         return created;
     }
 
-    public Delivery update(Delivery delivery) {
-        Delivery old = deliveryRepository.findById(delivery.getId()).orElseThrow(
+    public Delivery update(DeliveryDto deliveryDto) {
+        Delivery old = deliveryRepository.findById(deliveryDto.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, DeliveryConstants.NOT_FOUND));
 
-        BeanUtils.copyProperties(delivery, old);
-        return deliveryRepository.save(delivery);
+        BeanUtils.copyProperties(deliveryDto, old);
+        return deliveryRepository.save(old);
     }
 
     public void delete(String id) {

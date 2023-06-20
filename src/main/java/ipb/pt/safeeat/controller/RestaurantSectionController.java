@@ -1,6 +1,6 @@
 package ipb.pt.safeeat.controller;
 
-import ipb.pt.safeeat.model.RestaurantSection;
+import ipb.pt.safeeat.dto.RestaurantSectionDto;
 import ipb.pt.safeeat.service.RestaurantSectionService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,18 +30,18 @@ public class RestaurantSectionController {
     }
 
     @PostMapping
-    public ResponseEntity<Object> create(@Valid @RequestBody RestaurantSection restaurantSection) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(restaurantSectionService.create(restaurantSection));
+    public ResponseEntity<Object> create(@Valid @RequestBody RestaurantSectionDto restaurantSectionDto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(restaurantSectionService.create(restaurantSectionDto));
     }
 
     @PostMapping("/many")
-    public ResponseEntity<Object> createMany(@Valid @RequestBody List<RestaurantSection> restaurantSections) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(restaurantSectionService.createMany(restaurantSections));
+    public ResponseEntity<Object> createMany(@Valid @RequestBody List<RestaurantSectionDto> restaurantSectionDtos) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(restaurantSectionService.createMany(restaurantSectionDtos));
     }
 
     @PutMapping
-    public ResponseEntity<Object> update(@Valid @RequestBody RestaurantSection restaurantSection) {
-        return ResponseEntity.ok().body(restaurantSectionService.update(restaurantSection));
+    public ResponseEntity<Object> update(@Valid @RequestBody RestaurantSectionDto restaurantSectionDto) {
+        return ResponseEntity.ok().body(restaurantSectionService.update(restaurantSectionDto));
     }
 
     @DeleteMapping("/{id}")

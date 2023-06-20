@@ -1,15 +1,12 @@
 package ipb.pt.safeeat.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -18,34 +15,30 @@ import java.util.List;
 public class User {
     @Id
     private String id;
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @JsonIgnore
     private String password;
-    @NotEmpty(message = "Invalid image")
     private String image;
-    @NotEmpty(message = "Invalid name")
     private String name;
-    @NotEmpty(message = "Invalid email")
     private String email;
-    @NotEmpty(message = "Invalid cellphone")
     private String cellphone;
+    private List<String> restrictionIds;
+
     @JsonIgnore
     @DocumentReference
     private Cart cart;
-    @DocumentReference
-    private List<Restriction> restrictions = new ArrayList<>();
     @JsonIgnore
     @DocumentReference
-    private List<Payment> payments = new ArrayList<>();
+    private List<Payment> payments;
     @JsonIgnore
     @DocumentReference
-    private List<Address> address = new ArrayList<>();
+    private List<Address> address;
     @JsonIgnore
     @DocumentReference
-    private List<Order> orders = new ArrayList<>();
+    private List<Order> orders;
     @JsonIgnore
     @DocumentReference
-    private List<Notification> notifications = new ArrayList<>();
+    private List<Notification> notifications;
     @JsonIgnore
     @DocumentReference
-    private List<Restaurant> restaurants = new ArrayList<>();
+    private List<Restaurant> restaurants;
 }

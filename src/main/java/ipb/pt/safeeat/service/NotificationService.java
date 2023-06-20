@@ -2,6 +2,7 @@ package ipb.pt.safeeat.service;
 
 import ipb.pt.safeeat.constants.NotificationConstants;
 import ipb.pt.safeeat.constants.OrderConstants;
+import ipb.pt.safeeat.dto.NotificationDto;
 import ipb.pt.safeeat.model.Notification;
 import ipb.pt.safeeat.model.Order;
 import ipb.pt.safeeat.repository.NotificationRepository;
@@ -25,12 +26,7 @@ public class NotificationService {
     private OrderRepository orderRepository;
 
     public List<Notification> getAll() {
-        try {
-            return notificationRepository.findAll();
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            return null;
-        }
+        return notificationRepository.findAll();
     }
 
     public Notification findById(String id) {
@@ -38,9 +34,12 @@ public class NotificationService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotificationConstants.NOT_FOUND));
     }
 
-    public Notification create(Notification notification) {
-        Order order = orderRepository.findById(notification.getOrder().getId()).orElseThrow(
+    public Notification create(NotificationDto notificationDto) {
+        Order order = orderRepository.findById(notificationDto.getOrderId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, OrderConstants.NOT_FOUND));
+
+        Notification notification = new Notification();
+        BeanUtils.copyProperties(notificationDto, notification);
 
         notification.setOrder(order);
         notification.setTime(LocalDateTime.now());
@@ -49,21 +48,21 @@ public class NotificationService {
     }
 
     @Transactional
-    public List<Notification> createMany(List<Notification> notifications) {
+    public List<Notification> createMany(List<NotificationDto> notificationDtos) {
         List<Notification> created = new ArrayList<>();
-        for(Notification notification : notifications) {
-            created.add(create(notification));
+        for (NotificationDto notificationDto : notificationDtos) {
+            created.add(create(notificationDto));
         }
 
         return created;
     }
 
-    public Notification update(Notification notification) {
-        Notification old = notificationRepository.findById(notification.getId()).orElseThrow(
+    public Notification update(NotificationDto notificationDto) {
+        Notification old = notificationRepository.findById(notificationDto.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotificationConstants.NOT_FOUND));
 
-        BeanUtils.copyProperties(notification, old);
-        return notificationRepository.save(notification);
+        BeanUtils.copyProperties(notificationDto, old);
+        return notificationRepository.save(old);
     }
 
     public Notification view(String id) {

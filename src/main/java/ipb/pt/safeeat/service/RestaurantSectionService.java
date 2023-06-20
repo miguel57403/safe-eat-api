@@ -2,6 +2,7 @@ package ipb.pt.safeeat.service;
 
 import ipb.pt.safeeat.constants.RestaurantConstants;
 import ipb.pt.safeeat.constants.RestaurantSectionConstants;
+import ipb.pt.safeeat.dto.RestaurantSectionDto;
 import ipb.pt.safeeat.model.Restaurant;
 import ipb.pt.safeeat.model.RestaurantSection;
 import ipb.pt.safeeat.repository.RestaurantRepository;
@@ -32,33 +33,36 @@ public class RestaurantSectionService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, RestaurantSectionConstants.NOT_FOUND));
     }
 
-    public RestaurantSection create(RestaurantSection restaurantSection) {
+    public RestaurantSection create(RestaurantSectionDto restaurantSectionDto) {
         List<Restaurant> restaurants = new ArrayList<>();
-        for(Restaurant restaurant : restaurantSection.getRestaurants()) {
-            restaurants.add(restaurantRepository.findById(restaurant.getId()).orElseThrow(
+        for (String restaurantId : restaurantSectionDto.getRestaurantIds()) {
+            restaurants.add(restaurantRepository.findById(restaurantId).orElseThrow(
                     () -> new ResponseStatusException(HttpStatus.NOT_FOUND, RestaurantConstants.NOT_FOUND)));
         }
+
+        RestaurantSection restaurantSection = new RestaurantSection();
+        BeanUtils.copyProperties(restaurantSectionDto, restaurantSection);
 
         restaurantSection.setRestaurants(restaurants);
         return restaurantSectionRepository.save(restaurantSection);
     }
 
     @Transactional
-    public List<RestaurantSection> createMany(List<RestaurantSection> restaurantSections) {
+    public List<RestaurantSection> createMany(List<RestaurantSectionDto> restaurantSectionDtos) {
         List<RestaurantSection> created = new ArrayList<>();
-        for(RestaurantSection restaurantSection : restaurantSections) {
-            created.add(create(restaurantSection));
+        for (RestaurantSectionDto restaurantSectionDto : restaurantSectionDtos) {
+            created.add(create(restaurantSectionDto));
         }
 
         return created;
     }
 
-    public RestaurantSection update(RestaurantSection restaurantSection) {
-        RestaurantSection old = restaurantSectionRepository.findById(restaurantSection.getId()).orElseThrow(
+    public RestaurantSection update(RestaurantSectionDto restaurantSectionDto) {
+        RestaurantSection old = restaurantSectionRepository.findById(restaurantSectionDto.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, RestaurantSectionConstants.NOT_FOUND));
 
-        BeanUtils.copyProperties(restaurantSection, old);
-        return restaurantSectionRepository.save(restaurantSection);
+        BeanUtils.copyProperties(restaurantSectionDto, old);
+        return restaurantSectionRepository.save(old);
     }
 
     public void delete(String id) {

@@ -2,8 +2,12 @@ package ipb.pt.safeeat.service;
 
 import ipb.pt.safeeat.constants.RestrictionConstants;
 import ipb.pt.safeeat.constants.UserConstants;
-import ipb.pt.safeeat.model.*;
-import ipb.pt.safeeat.repository.*;
+import ipb.pt.safeeat.dto.UserDto;
+import ipb.pt.safeeat.model.Cart;
+import ipb.pt.safeeat.model.User;
+import ipb.pt.safeeat.repository.CartRepository;
+import ipb.pt.safeeat.repository.RestrictionRepository;
+import ipb.pt.safeeat.repository.UserRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -32,20 +36,20 @@ public class UserService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, UserConstants.NOT_FOUND));
     }
 
-    public User create(User user) {
-        if (user.getPassword().isBlank()) {
+    public User create(UserDto userDto) {
+        if (userDto.getPassword().isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid password");
         }
 
-        if (user.getRestrictions() != null && !user.getRestrictions().isEmpty()) {
-            List<Restriction> restrictions = new ArrayList<>();
-            for (Restriction restriction : user.getRestrictions()) {
-                restrictions.add(restrictionRepository.findById(restriction.getId()).orElseThrow(
-                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, RestrictionConstants.NOT_FOUND)));
+        if (!userDto.getRestrictionIds().isEmpty()) {
+            for (String restrictionId : userDto.getRestrictionIds()) {
+                restrictionRepository.findById(restrictionId).orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, RestrictionConstants.NOT_FOUND));
             }
-
-            user.setRestrictions(restrictions);
         }
+
+        User user = new User();
+        BeanUtils.copyProperties(userDto, user);
 
         Cart cart = cartRepository.save(new Cart());
         user.setCart(cart);
@@ -54,21 +58,21 @@ public class UserService {
     }
 
     @Transactional
-    public List<User> createMany(List<User> users) {
+    public List<User> createMany(List<UserDto> userDtos) {
         List<User> created = new ArrayList<>();
-        for(User user : users) {
-            created.add(create(user));
+        for (UserDto userDto : userDtos) {
+            created.add(create(userDto));
         }
 
         return created;
     }
 
-    public User update(User user) {
-        User old = userRepository.findById(user.getId()).orElseThrow(
+    public User update(UserDto userDto) {
+        User old = userRepository.findById(userDto.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, UserConstants.NOT_FOUND));
 
-        BeanUtils.copyProperties(user, old);
-        return userRepository.save(user);
+        BeanUtils.copyProperties(userDto, old);
+        return userRepository.save(old);
     }
 
     public void delete(String id) {

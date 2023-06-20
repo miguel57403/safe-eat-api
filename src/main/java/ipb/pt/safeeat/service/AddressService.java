@@ -1,6 +1,7 @@
 package ipb.pt.safeeat.service;
 
 import ipb.pt.safeeat.constants.AddressConstants;
+import ipb.pt.safeeat.dto.AddressDto;
 import ipb.pt.safeeat.model.Address;
 import ipb.pt.safeeat.model.User;
 import ipb.pt.safeeat.repository.AddressRepository;
@@ -31,10 +32,12 @@ public class AddressService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, AddressConstants.NOT_FOUND));
     }
 
-    public Address create(Address address, String userId) {
+    public Address create(AddressDto addressDto, String userId) {
         User user = userRepository.findById(userId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, AddressConstants.NOT_FOUND));
 
+        Address address = new Address();
+        BeanUtils.copyProperties(addressDto, address);
         Address created = addressRepository.save(address);
 
         user.getAddress().add(created);
@@ -44,21 +47,21 @@ public class AddressService {
     }
 
     @Transactional
-    public List<Address> createMany(List<Address> addresses, String userId) {
+    public List<Address> createMany(List<AddressDto> addressDtos, String userId) {
         List<Address> created = new ArrayList<>();
-        for(Address address : addresses) {
-            created.add(create(address, userId));
+        for (AddressDto addressDto : addressDtos) {
+            created.add(create(addressDto, userId));
         }
 
         return created;
     }
 
-    public Address update(Address address) {
-        Address old = addressRepository.findById(address.getId()).orElseThrow(
+    public Address update(AddressDto addressDto) {
+        Address old = addressRepository.findById(addressDto.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, AddressConstants.NOT_FOUND));
 
-        BeanUtils.copyProperties(address, old);
-        return addressRepository.save(address);
+        BeanUtils.copyProperties(addressDto, old);
+        return addressRepository.save(old);
     }
 
     public void delete(String id) {

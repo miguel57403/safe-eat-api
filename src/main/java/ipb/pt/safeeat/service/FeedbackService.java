@@ -2,7 +2,9 @@ package ipb.pt.safeeat.service;
 
 import ipb.pt.safeeat.constants.FeedbackConstants;
 import ipb.pt.safeeat.constants.OrderConstants;
-import ipb.pt.safeeat.model.*;
+import ipb.pt.safeeat.dto.FeedbackDto;
+import ipb.pt.safeeat.model.Feedback;
+import ipb.pt.safeeat.model.Order;
 import ipb.pt.safeeat.repository.FeedbackRepository;
 import ipb.pt.safeeat.repository.OrderRepository;
 import org.springframework.beans.BeanUtils;
@@ -29,10 +31,12 @@ public class FeedbackService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, FeedbackConstants.NOT_FOUND));
     }
 
-    public Feedback create(Feedback feedback, String orderId) {
+    public Feedback create(FeedbackDto feedbackDto, String orderId) {
         Order order = orderRepository.findById(orderId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, OrderConstants.NOT_FOUND));
 
+        Feedback feedback = new Feedback();
+        BeanUtils.copyProperties(feedbackDto, feedback);
         Feedback created = feedbackRepository.save(feedback);
 
         order.setFeedback(created);
@@ -41,12 +45,12 @@ public class FeedbackService {
         return created;
     }
 
-    public Feedback update(Feedback feedback) {
-        Feedback old = feedbackRepository.findById(feedback.getId()).orElseThrow(
+    public Feedback update(FeedbackDto feedbackDto) {
+        Feedback old = feedbackRepository.findById(feedbackDto.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, FeedbackConstants.NOT_FOUND));
 
-        BeanUtils.copyProperties(feedback, old);
-        return feedbackRepository.save(feedback);
+        BeanUtils.copyProperties(feedbackDto, old);
+        return feedbackRepository.save(old);
     }
 
     public void delete(String id) {

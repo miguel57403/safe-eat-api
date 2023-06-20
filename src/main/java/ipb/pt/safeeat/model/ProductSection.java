@@ -1,6 +1,5 @@
 package ipb.pt.safeeat.model;
 
-import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
@@ -15,9 +14,7 @@ import java.util.List;
 public class ProductSection {
     @Id
     private String id;
-    @NotEmpty(message = "Invalid name")
     private String name;
     @DocumentReference
-    @NotEmpty(message = "Invalid products")
     private List<Product> products;
 }

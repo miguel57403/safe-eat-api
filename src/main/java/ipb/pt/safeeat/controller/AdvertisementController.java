@@ -1,6 +1,6 @@
 package ipb.pt.safeeat.controller;
 
-import ipb.pt.safeeat.model.Advertisement;
+import ipb.pt.safeeat.dto.AdvertisementDto;
 import ipb.pt.safeeat.service.AdvertisementService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,18 +30,18 @@ public class AdvertisementController {
     }
 
     @PostMapping
-    public ResponseEntity<Object> create(@Valid @RequestBody Advertisement advertisement) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(advertisementService.create(advertisement));
+    public ResponseEntity<Object> create(@Valid @RequestBody AdvertisementDto advertisementDto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(advertisementService.create(advertisementDto));
     }
 
     @PostMapping("/many")
-    public ResponseEntity<Object> createMany(@Valid @RequestBody List<Advertisement> advertisements) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(advertisementService.createMany(advertisements));
+    public ResponseEntity<Object> createMany(@Valid @RequestBody List<AdvertisementDto> advertisementDtos) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(advertisementService.createMany(advertisementDtos));
     }
 
     @PutMapping
-    public ResponseEntity<Object> update(@Valid @RequestBody Advertisement advertisement) {
-        return ResponseEntity.ok().body(advertisementService.update(advertisement));
+    public ResponseEntity<Object> update(@Valid @RequestBody AdvertisementDto advertisementDto) {
+        return ResponseEntity.ok().body(advertisementService.update(advertisementDto));
     }
 
     @DeleteMapping("/{id}")

@@ -3,6 +3,7 @@ package ipb.pt.safeeat.service;
 import ipb.pt.safeeat.constants.CartConstants;
 import ipb.pt.safeeat.constants.ItemConstants;
 import ipb.pt.safeeat.constants.ProductConstants;
+import ipb.pt.safeeat.dto.ItemDto;
 import ipb.pt.safeeat.model.Cart;
 import ipb.pt.safeeat.model.Item;
 import ipb.pt.safeeat.model.Product;
@@ -37,12 +38,15 @@ public class ItemService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ItemConstants.NOT_FOUND));
     }
 
-    public Item create(Item item, String cartId) {
+    public Item create(ItemDto itemDto, String cartId) {
         Cart cart = cartRepository.findById(cartId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, CartConstants.NOT_FOUND));
 
-        Product product = productRepository.findById(item.getProduct().getId()).orElseThrow(
+        Product product = productRepository.findById(itemDto.getProductId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ProductConstants.NOT_FOUND));
+
+        Item item = new Item();
+        BeanUtils.copyProperties(itemDto, item);
 
         double subtotal = product.getPrice() * item.getQuantity();
         item.setSubtotal(subtotal);
@@ -57,21 +61,21 @@ public class ItemService {
     }
 
     @Transactional
-    public List<Item> createMany(List<Item> items, String cartId) {
+    public List<Item> createMany(List<ItemDto> itemDtos, String cartId) {
         List<Item> created = new ArrayList<>();
-        for(Item item : items) {
-            created.add(create(item, cartId));
+        for (ItemDto itemDto : itemDtos) {
+            created.add(create(itemDto, cartId));
         }
 
         return created;
     }
 
-    public Item update(Item item) {
-        Item old = itemRepository.findById(item.getId()).orElseThrow(
+    public Item update(ItemDto itemDto) {
+        Item old = itemRepository.findById(itemDto.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ItemConstants.NOT_FOUND));
 
-        BeanUtils.copyProperties(item, old);
-        return itemRepository.save(item);
+        BeanUtils.copyProperties(itemDto, old);
+        return itemRepository.save(old);
     }
 
     public void delete(String id) {

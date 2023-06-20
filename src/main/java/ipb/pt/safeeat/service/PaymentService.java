@@ -1,6 +1,7 @@
 package ipb.pt.safeeat.service;
 
 import ipb.pt.safeeat.constants.PaymentConstants;
+import ipb.pt.safeeat.dto.PaymentDto;
 import ipb.pt.safeeat.model.Payment;
 import ipb.pt.safeeat.model.User;
 import ipb.pt.safeeat.repository.PaymentRepository;
@@ -32,10 +33,12 @@ public class PaymentService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, PaymentConstants.NOT_FOUND));
     }
 
-    public Payment create(Payment payment, String userId) {
+    public Payment create(PaymentDto paymentDto, String userId) {
         User user = userRepository.findById(userId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, PaymentConstants.NOT_FOUND));
 
+        Payment payment = new Payment();
+        BeanUtils.copyProperties(paymentDto, payment);
         Payment created = paymentRepository.save(payment);
 
         user.getPayments().add(created);
@@ -45,21 +48,21 @@ public class PaymentService {
     }
 
     @Transactional
-    public List<Payment> createMany(List<Payment> payments, String userId) {
+    public List<Payment> createMany(List<PaymentDto> paymentDtos, String userId) {
         List<Payment> created = new ArrayList<>();
-        for(Payment payment : payments) {
-            created.add(create(payment, userId));
+        for (PaymentDto paymentDto : paymentDtos) {
+            created.add(create(paymentDto, userId));
         }
 
         return created;
     }
 
-    public Payment update(Payment payment) {
-        Payment old = paymentRepository.findById(payment.getId()).orElseThrow(
+    public Payment update(PaymentDto paymentDto) {
+        Payment old = paymentRepository.findById(paymentDto.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, PaymentConstants.NOT_FOUND));
 
-        BeanUtils.copyProperties(payment, old);
-        return paymentRepository.save(payment);
+        BeanUtils.copyProperties(paymentDto, old);
+        return paymentRepository.save(old);
     }
 
     public void delete(String id) {

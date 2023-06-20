@@ -1,6 +1,6 @@
 package ipb.pt.safeeat.controller;
 
-import ipb.pt.safeeat.model.Notification;
+import ipb.pt.safeeat.dto.NotificationDto;
 import ipb.pt.safeeat.service.NotificationService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,18 +30,18 @@ public class NotificationController {
     }
 
     @PostMapping
-    public ResponseEntity<Object> create(@Valid @RequestBody Notification notification) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(notificationService.create(notification));
+    public ResponseEntity<Object> create(@Valid @RequestBody NotificationDto notificationDto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(notificationService.create(notificationDto));
     }
 
     @PostMapping("/many")
-    public ResponseEntity<Object> createMany(@Valid @RequestBody List<Notification> notifications) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(notificationService.createMany(notifications));
+    public ResponseEntity<Object> createMany(@Valid @RequestBody List<NotificationDto> notificationDtos) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(notificationService.createMany(notificationDtos));
     }
 
     @PutMapping
-    public ResponseEntity<Object> update(@Valid @RequestBody Notification notification) {
-        return ResponseEntity.ok().body(notificationService.update(notification));
+    public ResponseEntity<Object> update(@Valid @RequestBody NotificationDto notificationDto) {
+        return ResponseEntity.ok().body(notificationService.update(notificationDto));
     }
 
     @PatchMapping("/{id}")

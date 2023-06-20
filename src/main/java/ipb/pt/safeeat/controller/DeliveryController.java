@@ -1,6 +1,6 @@
 package ipb.pt.safeeat.controller;
 
-import ipb.pt.safeeat.model.Delivery;
+import ipb.pt.safeeat.dto.DeliveryDto;
 import ipb.pt.safeeat.service.DeliveryService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,18 +30,18 @@ public class DeliveryController {
     }
 
     @PostMapping
-    public ResponseEntity<Object> create(@Valid @RequestBody Delivery delivery, @RequestParam String restaurantId) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(deliveryService.create(delivery, restaurantId));
+    public ResponseEntity<Object> create(@Valid @RequestBody DeliveryDto deliveryDto, @RequestParam String restaurantId) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(deliveryService.create(deliveryDto, restaurantId));
     }
 
     @PostMapping("/many")
-    public ResponseEntity<Object> createMany(@Valid @RequestBody List<Delivery> deliveries, @RequestParam String restaurantId) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(deliveryService.createMany(deliveries, restaurantId));
+    public ResponseEntity<Object> createMany(@Valid @RequestBody List<DeliveryDto> deliveryDtos, @RequestParam String restaurantId) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(deliveryService.createMany(deliveryDtos, restaurantId));
     }
 
     @PutMapping
-    public ResponseEntity<Object> update(@Valid @RequestBody Delivery delivery) {
-        return ResponseEntity.ok().body(deliveryService.update(delivery));
+    public ResponseEntity<Object> update(@Valid @RequestBody DeliveryDto deliveryDto) {
+        return ResponseEntity.ok().body(deliveryService.update(deliveryDto));
     }
 
     @DeleteMapping("/{id}")

@@ -1,11 +1,8 @@
 package ipb.pt.safeeat.service;
 
 import ipb.pt.safeeat.constants.CartConstants;
-import ipb.pt.safeeat.constants.UserConstants;
 import ipb.pt.safeeat.model.Cart;
-import ipb.pt.safeeat.model.User;
 import ipb.pt.safeeat.repository.CartRepository;
-import ipb.pt.safeeat.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -17,8 +14,6 @@ import java.util.List;
 public class CartService {
     @Autowired
     private CartRepository cartRepository;
-    @Autowired
-    private UserRepository userRepository;
 
     public List<Cart> getAll() {
         return cartRepository.findAll();
@@ -29,20 +24,14 @@ public class CartService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, CartConstants.NOT_FOUND));
     }
 
-    public Cart create(String userId) {
-        User user = userRepository.findById(userId).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, UserConstants.NOT_FOUND));
+    public Boolean isBuying(String id) {
+        Cart cart = cartRepository.findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, CartConstants.NOT_FOUND));
 
-        Cart cart = new Cart();
-        Cart created = cartRepository.save(cart);
-
-        user.setCart(created);
-        userRepository.save(user);
-
-        return created;
+        return cart.getItems().size() != 0;
     }
 
-    public Cart reset(String cartId) {
+    public Cart empty(String cartId) {
         Cart cart = cartRepository.findById(cartId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, CartConstants.NOT_FOUND));
 
@@ -51,9 +40,5 @@ public class CartService {
         cart.setSubtotal(0.0);
 
         return cartRepository.save(cart);
-    }
-
-    public void delete(String id) {
-        cartRepository.deleteById(id);
     }
 }
