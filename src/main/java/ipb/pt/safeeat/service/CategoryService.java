@@ -62,10 +62,8 @@ public class CategoryService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.CATEGORY_NOT_FOUND));
 
         List<Product> products = productRepository.findAllByCategory(category);
-        for (Product product : products) {
-            product.setCategory(null);
-            productRepository.save(product);
-        }
+        if(products.size() > 0)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot delete category with products");
 
         categoryRepository.deleteById(id);
     }

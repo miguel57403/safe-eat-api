@@ -12,8 +12,8 @@ import org.springframework.data.mongodb.core.mapping.DocumentReference;
 public class Item {
     @Id
     private String id;
-    @DocumentReference
-    private Product product;
     private Integer quantity;
     private Double subtotal;
+    @DocumentReference
+    private Product product;
 }

@@ -39,7 +39,7 @@ public class ProductSectionService {
 
     public ProductSection create(ProductSectionDto productSectionDto, String restaurantId) {
         Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.RESTAURANT_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Restaurant not found"));
 
         List<Product> products = new ArrayList<>();
         for (String productId : productSectionDto.getProductIds()) {

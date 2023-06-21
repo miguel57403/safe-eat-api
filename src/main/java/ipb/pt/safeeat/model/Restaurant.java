@@ -7,6 +7,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -20,21 +21,21 @@ public class Restaurant {
     private String cover;
     private List<Delivery> deliveries;
 
-    @DocumentReference
     @JsonIgnore
-    private List<Product> products;
     @DocumentReference
+    private List<Product> products = new ArrayList<>();
     @JsonIgnore
-    private List<ProductSection> productSections;
     @DocumentReference
+    private List<ProductSection> productSections = new ArrayList<>();
     @JsonIgnore
-    private List<Advertisement> advertisements;
     @DocumentReference
+    private List<Advertisement> advertisements = new ArrayList<>();
     @JsonIgnore
-    private List<Ingredient> ingredients;
     @DocumentReference
+    private List<Ingredient> ingredients = new ArrayList<>();
     @JsonIgnore
-    private List<Order> orders;
+    @DocumentReference
+    private List<Order> orders = new ArrayList<>();
     @JsonIgnore
     @DocumentReference
     private User owner;

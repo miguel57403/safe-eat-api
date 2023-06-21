@@ -10,6 +10,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -31,22 +32,22 @@ public class User implements UserDetails {
     private Cart cart;
     @JsonIgnore
     @DocumentReference
-    private List<Restriction> restrictions;
+    private List<Restriction> restrictions = new ArrayList<>();
     @JsonIgnore
     @DocumentReference
-    private List<Payment> payments;
+    private List<Payment> payments = new ArrayList<>();
     @JsonIgnore
     @DocumentReference
-    private List<Address> address;
+    private List<Address> address = new ArrayList<>();
     @JsonIgnore
     @DocumentReference
-    private List<Order> orders;
+    private List<Order> orders = new ArrayList<>();
     @JsonIgnore
     @DocumentReference
-    private List<Notification> notifications;
+    private List<Notification> notifications = new ArrayList<>();
     @JsonIgnore
     @DocumentReference
-    private List<Restaurant> restaurants;
+    private List<Restaurant> restaurants = new ArrayList<>();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
