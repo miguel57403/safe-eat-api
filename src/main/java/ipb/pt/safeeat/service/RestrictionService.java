@@ -1,6 +1,6 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.constants.ExceptionConstants;
+import ipb.pt.safeeat.constants.NotFoundConstants;
 import ipb.pt.safeeat.dto.RestrictionDto;
 import ipb.pt.safeeat.model.Ingredient;
 import ipb.pt.safeeat.model.Restriction;
@@ -33,12 +33,12 @@ public class RestrictionService {
 
     public Restriction findById(String id) {
         return restrictionRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.RESTAURANT_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND));
     }
 
     public List<Restriction> findAllByUser(String id) {
         User user = userRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.USER_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.USER_NOT_FOUND));
 
         return user.getRestrictions();
     }
@@ -61,7 +61,7 @@ public class RestrictionService {
 
     public Restriction update(RestrictionDto restrictionDto) {
         Restriction old = restrictionRepository.findById(restrictionDto.getId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.RESTAURANT_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND));
 
         BeanUtils.copyProperties(restrictionDto, old);
         return restrictionRepository.save(old);
@@ -69,7 +69,7 @@ public class RestrictionService {
 
     public void delete(String id) {
         Restriction restriction = restrictionRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.RESTAURANT_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND));
 
         List<User> users = userRepository.findAll();
         for (User user : users) {

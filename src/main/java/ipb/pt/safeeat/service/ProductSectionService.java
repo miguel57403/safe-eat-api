@@ -1,6 +1,6 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.constants.ExceptionConstants;
+import ipb.pt.safeeat.constants.NotFoundConstants;
 import ipb.pt.safeeat.dto.ProductSectionDto;
 import ipb.pt.safeeat.model.Product;
 import ipb.pt.safeeat.model.ProductSection;
@@ -34,7 +34,7 @@ public class ProductSectionService {
 
     public ProductSection findById(String id) {
         return productSectionRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.PRODUCT_SECTION_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.PRODUCT_SECTION_NOT_FOUND));
     }
 
     public ProductSection create(ProductSectionDto productSectionDto, String restaurantId) {
@@ -44,7 +44,7 @@ public class ProductSectionService {
         List<Product> products = new ArrayList<>();
         for (String productId : productSectionDto.getProductIds()) {
             products.add(productRepository.findById(productId).orElseThrow(
-                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.PRODUCT_SECTION_NOT_FOUND)));
+                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.PRODUCT_SECTION_NOT_FOUND)));
         }
 
         ProductSection productSection = new ProductSection();
@@ -71,7 +71,7 @@ public class ProductSectionService {
 
     public ProductSection update(ProductSectionDto productSectionDto) {
         ProductSection old = productSectionRepository.findById(productSectionDto.getId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.PRODUCT_SECTION_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.PRODUCT_SECTION_NOT_FOUND));
 
         BeanUtils.copyProperties(productSectionDto, old);
         return productSectionRepository.save(old);
@@ -79,7 +79,7 @@ public class ProductSectionService {
 
     public void delete(String id, String restaurantId) {
         ProductSection productSection = productSectionRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.PRODUCT_SECTION_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.PRODUCT_SECTION_NOT_FOUND));
 
         Optional<Restaurant> restaurant = restaurantRepository.findById(restaurantId);
 

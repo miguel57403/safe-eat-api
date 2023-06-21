@@ -1,6 +1,6 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.constants.ExceptionConstants;
+import ipb.pt.safeeat.constants.NotFoundConstants;
 import ipb.pt.safeeat.dto.NotificationDto;
 import ipb.pt.safeeat.model.Notification;
 import ipb.pt.safeeat.model.Order;
@@ -36,22 +36,22 @@ public class NotificationService {
 
     public Notification findById(String id) {
         return notificationRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.NOTIFICATION_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.NOTIFICATION_NOT_FOUND));
     }
 
     public List<Notification> findAllByUser(String id) {
         User user = userRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.USER_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.USER_NOT_FOUND));
 
         return user.getNotifications();
     }
 
     public Notification create(NotificationDto notificationDto, String userId) {
         Order order = orderRepository.findById(notificationDto.getOrderId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.ORDER_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ORDER_NOT_FOUND));
 
         User user = userRepository.findById(userId).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.USER_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.USER_NOT_FOUND));
 
         Notification notification = new Notification();
         BeanUtils.copyProperties(notificationDto, notification);
@@ -79,7 +79,7 @@ public class NotificationService {
 
     public Notification update(NotificationDto notificationDto) {
         Notification old = notificationRepository.findById(notificationDto.getId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.NOTIFICATION_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.NOTIFICATION_NOT_FOUND));
 
         BeanUtils.copyProperties(notificationDto, old);
         return notificationRepository.save(old);
@@ -87,7 +87,7 @@ public class NotificationService {
 
     public Notification view(String id) {
         Notification notification = notificationRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.NOTIFICATION_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.NOTIFICATION_NOT_FOUND));
 
         notification.setIsViewed(true);
         return notificationRepository.save(notification);
@@ -95,7 +95,7 @@ public class NotificationService {
 
     public void delete(String id, String userId) {
         Notification notification = notificationRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.NOTIFICATION_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.NOTIFICATION_NOT_FOUND));
 
         Optional<User> user = userRepository.findById(userId);
 

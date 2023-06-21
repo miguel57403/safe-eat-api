@@ -1,6 +1,6 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.constants.ExceptionConstants;
+import ipb.pt.safeeat.constants.NotFoundConstants;
 import ipb.pt.safeeat.dto.AdvertisementDto;
 import ipb.pt.safeeat.model.Advertisement;
 import ipb.pt.safeeat.model.Restaurant;
@@ -30,12 +30,12 @@ public class AdvertisementService {
 
     public Advertisement findById(String id) {
         return advertisementRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.ADVERTISEMENT_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ADVERTISEMENT_NOT_FOUND));
     }
 
     public Advertisement create(AdvertisementDto advertisementDto) {
         Restaurant restaurant = restaurantRepository.findById(advertisementDto.getRestaurantId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.RESTAURANT_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND));
 
         Advertisement advertisement = new Advertisement();
         BeanUtils.copyProperties(advertisementDto, advertisement);
@@ -59,10 +59,10 @@ public class AdvertisementService {
 
     public Advertisement update(AdvertisementDto advertisementDto) {
         Advertisement old = advertisementRepository.findById(advertisementDto.getId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.ADVERTISEMENT_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ADVERTISEMENT_NOT_FOUND));
 
         if (!advertisementDto.getRestaurantId().equals(old.getRestaurantId())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot change restaurant");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, NotFoundConstants.RESTAURANT_NOT_FOUND);
         }
 
         BeanUtils.copyProperties(advertisementDto, old);
@@ -71,7 +71,7 @@ public class AdvertisementService {
 
     public void delete(String id, String restaurantId) {
         Advertisement advertisement = advertisementRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.ADVERTISEMENT_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ADVERTISEMENT_NOT_FOUND));
 
         Optional<Restaurant> restaurant = restaurantRepository.findById(restaurantId);
 

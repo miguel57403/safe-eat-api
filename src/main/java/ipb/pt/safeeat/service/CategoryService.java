@@ -1,6 +1,6 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.constants.ExceptionConstants;
+import ipb.pt.safeeat.constants.NotFoundConstants;
 import ipb.pt.safeeat.dto.CategoryDto;
 import ipb.pt.safeeat.model.Category;
 import ipb.pt.safeeat.model.Product;
@@ -30,7 +30,7 @@ public class CategoryService {
 
     public Category findById(String id) {
         return categoryRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.CATEGORY_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.CATEGORY_NOT_FOUND));
     }
 
     public Category create(CategoryDto categoryDto) {
@@ -51,7 +51,7 @@ public class CategoryService {
 
     public Category update(CategoryDto categoryDto) {
         Category old = categoryRepository.findById(categoryDto.getId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.CATEGORY_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.CATEGORY_NOT_FOUND));
 
         BeanUtils.copyProperties(categoryDto, old);
         return categoryRepository.save(old);
@@ -59,7 +59,7 @@ public class CategoryService {
 
     public void delete(String id) {
         Category category = categoryRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.CATEGORY_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.CATEGORY_NOT_FOUND));
 
         List<Product> products = productRepository.findAllByCategory(category);
         if(products.size() > 0)

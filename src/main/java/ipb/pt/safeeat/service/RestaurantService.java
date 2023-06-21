@@ -1,6 +1,6 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.constants.ExceptionConstants;
+import ipb.pt.safeeat.constants.NotFoundConstants;
 import ipb.pt.safeeat.dto.RestaurantDto;
 import ipb.pt.safeeat.model.Category;
 import ipb.pt.safeeat.model.Product;
@@ -47,12 +47,12 @@ public class RestaurantService {
 
     public Restaurant findById(String id) {
         return restaurantRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.RESTAURANT_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND));
     }
 
     public List<Restaurant> findByProductCategory(String categoryId) {
         Category category = categoryRepository.findById(categoryId).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.CATEGORY_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.CATEGORY_NOT_FOUND));
 
         List<Restaurant> restaurants = new ArrayList<>();
         for (Restaurant restaurant : restaurantRepository.findAll()) {
@@ -69,12 +69,12 @@ public class RestaurantService {
 
     public List<Restaurant> findByOwner(String ownerId) {
         User owner = userRepository.findById(ownerId).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.USER_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.USER_NOT_FOUND));
 
         List<Restaurant> restaurants = new ArrayList<>();
         for (Restaurant restaurant : owner.getRestaurants()) {
             restaurants.add(restaurantRepository.findById(restaurant.getId()).orElseThrow(
-                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.RESTAURANT_NOT_FOUND)));
+                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND)));
         }
 
         return restaurants;
@@ -93,7 +93,7 @@ public class RestaurantService {
 
     public Restaurant create(RestaurantDto restaurantDto) {
         User owner = userRepository.findById(restaurantDto.getOwnerId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.USER_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.USER_NOT_FOUND));
 
         Restaurant restaurant = new Restaurant();
         BeanUtils.copyProperties(restaurantDto, restaurant);
@@ -118,7 +118,7 @@ public class RestaurantService {
 
     public Restaurant update(RestaurantDto restaurantDto) {
         Restaurant old = restaurantRepository.findById(restaurantDto.getId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.RESTAURANT_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND));
 
         BeanUtils.copyProperties(restaurantDto, old);
         return restaurantRepository.save(old);
@@ -126,7 +126,7 @@ public class RestaurantService {
 
     public void delete(String id) {
         Restaurant restaurant = restaurantRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.RESTAURANT_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND));
 
         Optional<User> owner = userRepository.findById(restaurant.getOwner().getId());
 
