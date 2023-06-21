@@ -1,9 +1,6 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.constant.CategoryConstants;
-import ipb.pt.safeeat.constant.IngredientConstants;
-import ipb.pt.safeeat.constant.ProductConstants;
-import ipb.pt.safeeat.constant.RestaurantConstants;
+import ipb.pt.safeeat.constants.*;
 import ipb.pt.safeeat.dto.ProductDto;
 import ipb.pt.safeeat.model.Category;
 import ipb.pt.safeeat.model.Ingredient;
@@ -40,23 +37,23 @@ public class ProductService {
 
     public Product findById(String id) {
         return productRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ProductConstants.NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.PRODUCT_NOT_FOUND));
     }
 
     public Product create(ProductDto productDto, String restaurantId) {
         Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, RestaurantConstants.NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.RESTAURANT_NOT_FOUND));
 
         List<Ingredient> ingredients = new ArrayList<>();
         for (String ingredientId : productDto.getIngredientIds()) {
             ingredients.add(ingredientRepository.findById(ingredientId).orElseThrow(
-                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, IngredientConstants.NOT_FOUND)));
+                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.INGREDIENT_NOT_FOUND)));
         }
 
         List<Category> categories = new ArrayList<>();
         for (String categoryId : productDto.getCategoryIds()) {
             categories.add(categoryRepository.findById(categoryId).orElseThrow(
-                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, CategoryConstants.NOT_FOUND)));
+                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.CATEGORY_NOT_FOUND)));
         }
 
         Product product = new Product();
@@ -85,7 +82,7 @@ public class ProductService {
 
     public Product update(ProductDto productDto) {
         Product old = productRepository.findById(productDto.getId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ProductConstants.NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.PRODUCT_NOT_FOUND));
 
         BeanUtils.copyProperties(productDto, old);
         return productRepository.save(old);

@@ -1,7 +1,6 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.constant.AdvertisementConstants;
-import ipb.pt.safeeat.constant.RestaurantConstants;
+import ipb.pt.safeeat.constants.ExceptionConstants;
 import ipb.pt.safeeat.dto.AdvertisementDto;
 import ipb.pt.safeeat.model.Advertisement;
 import ipb.pt.safeeat.model.Restaurant;
@@ -30,12 +29,12 @@ public class AdvertisementService {
 
     public Advertisement findById(String id) {
         return advertisementRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, AdvertisementConstants.NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.ADVERTISEMENT_NOT_FOUND));
     }
 
     public Advertisement create(AdvertisementDto advertisementDto) {
         Restaurant restaurant = restaurantRepository.findById(advertisementDto.getRestaurantId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, RestaurantConstants.NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.RESTAURANT_NOT_FOUND));
 
         Advertisement advertisement = new Advertisement();
         BeanUtils.copyProperties(advertisementDto, advertisement);
@@ -59,7 +58,7 @@ public class AdvertisementService {
 
     public Advertisement update(AdvertisementDto advertisementDto) {
         Advertisement old = advertisementRepository.findById(advertisementDto.getId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, AdvertisementConstants.NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.ADVERTISEMENT_NOT_FOUND));
 
         if (!advertisementDto.getRestaurantId().equals(old.getRestaurantId())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot change restaurant");

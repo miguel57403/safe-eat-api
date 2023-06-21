@@ -1,6 +1,6 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.constant.AddressConstants;
+import ipb.pt.safeeat.constants.ExceptionConstants;
 import ipb.pt.safeeat.dto.AddressDto;
 import ipb.pt.safeeat.model.Address;
 import ipb.pt.safeeat.model.User;
@@ -29,12 +29,12 @@ public class AddressService {
 
     public Address findById(String id) {
         return addressRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, AddressConstants.NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.ADDRESS_NOT_FOUND));
     }
 
     public Address create(AddressDto addressDto, String userId) {
         User user = userRepository.findById(userId).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, AddressConstants.NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.ADDRESS_NOT_FOUND));
 
         Address address = new Address();
         BeanUtils.copyProperties(addressDto, address);
@@ -58,7 +58,7 @@ public class AddressService {
 
     public Address update(AddressDto addressDto) {
         Address old = addressRepository.findById(addressDto.getId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, AddressConstants.NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.ADDRESS_NOT_FOUND));
 
         BeanUtils.copyProperties(addressDto, old);
         return addressRepository.save(old);

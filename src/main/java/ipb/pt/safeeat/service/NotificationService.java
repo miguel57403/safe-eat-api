@@ -1,7 +1,6 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.constant.NotificationConstants;
-import ipb.pt.safeeat.constant.OrderConstants;
+import ipb.pt.safeeat.constants.ExceptionConstants;
 import ipb.pt.safeeat.dto.NotificationDto;
 import ipb.pt.safeeat.model.Notification;
 import ipb.pt.safeeat.model.Order;
@@ -31,12 +30,12 @@ public class NotificationService {
 
     public Notification findById(String id) {
         return notificationRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotificationConstants.NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.NOTIFICATION_NOT_FOUND));
     }
 
     public Notification create(NotificationDto notificationDto) {
         Order order = orderRepository.findById(notificationDto.getOrderId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, OrderConstants.NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.ORDER_NOT_FOUND));
 
         Notification notification = new Notification();
         BeanUtils.copyProperties(notificationDto, notification);
@@ -59,7 +58,7 @@ public class NotificationService {
 
     public Notification update(NotificationDto notificationDto) {
         Notification old = notificationRepository.findById(notificationDto.getId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotificationConstants.NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.NOTIFICATION_NOT_FOUND));
 
         BeanUtils.copyProperties(notificationDto, old);
         return notificationRepository.save(old);
@@ -67,7 +66,7 @@ public class NotificationService {
 
     public Notification view(String id) {
         Notification notification = notificationRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotificationConstants.NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.NOTIFICATION_NOT_FOUND));
 
         notification.setIsViewed(true);
         return notificationRepository.save(notification);

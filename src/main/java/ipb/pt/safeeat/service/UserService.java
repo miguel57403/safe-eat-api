@@ -1,7 +1,6 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.constant.RestrictionConstants;
-import ipb.pt.safeeat.constant.UserConstants;
+import ipb.pt.safeeat.constants.ExceptionConstants;
 import ipb.pt.safeeat.dto.UserDto;
 import ipb.pt.safeeat.model.Cart;
 import ipb.pt.safeeat.model.Restriction;
@@ -37,7 +36,7 @@ public class UserService {
 
     public User findById(String id) {
         return userRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, UserConstants.NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.USER_NOT_FOUND));
     }
 
     public User create(UserDto userDto) {
@@ -49,7 +48,7 @@ public class UserService {
         if (!userDto.getRestrictionIds().isEmpty()) {
             for (String restrictionId : userDto.getRestrictionIds()) {
                 restrictions.add(restrictionRepository.findById(restrictionId).orElseThrow(
-                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, RestrictionConstants.NOT_FOUND)));
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.RESTRICTION_NOT_FOUND)));
             }
         }
 
@@ -77,7 +76,7 @@ public class UserService {
 
     public User update(UserDto userDto) {
         User old = userRepository.findById(userDto.getId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, UserConstants.NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.USER_NOT_FOUND));
 
         BeanUtils.copyProperties(userDto, old);
         return userRepository.save(old);

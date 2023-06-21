@@ -1,6 +1,6 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.constant.PaymentConstants;
+import ipb.pt.safeeat.constants.ExceptionConstants;
 import ipb.pt.safeeat.dto.PaymentDto;
 import ipb.pt.safeeat.model.Payment;
 import ipb.pt.safeeat.model.User;
@@ -30,12 +30,12 @@ public class PaymentService {
 
     public Payment findById(String id) {
         return paymentRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, PaymentConstants.NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.PAYMENT_NOT_FOUND));
     }
 
     public Payment create(PaymentDto paymentDto, String userId) {
         User user = userRepository.findById(userId).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, PaymentConstants.NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.PAYMENT_NOT_FOUND));
 
         Payment payment = new Payment();
         BeanUtils.copyProperties(paymentDto, payment);
@@ -59,7 +59,7 @@ public class PaymentService {
 
     public Payment update(PaymentDto paymentDto) {
         Payment old = paymentRepository.findById(paymentDto.getId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, PaymentConstants.NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.PAYMENT_NOT_FOUND));
 
         BeanUtils.copyProperties(paymentDto, old);
         return paymentRepository.save(old);

@@ -1,6 +1,6 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.constant.CartConstants;
+import ipb.pt.safeeat.constants.ExceptionConstants;
 import ipb.pt.safeeat.model.Cart;
 import ipb.pt.safeeat.repository.CartRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,19 +21,19 @@ public class CartService {
 
     public Cart findById(String id) {
         return cartRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, CartConstants.NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.CART_NOT_FOUND));
     }
 
     public Boolean isBuying(String id) {
         Cart cart = cartRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, CartConstants.NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.CART_NOT_FOUND));
 
         return cart.getItems().size() != 0;
     }
 
     public Cart empty(String cartId) {
         Cart cart = cartRepository.findById(cartId).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, CartConstants.NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.CART_NOT_FOUND));
 
         cart.getItems().clear();
         cart.setQuantity(0);

@@ -1,8 +1,6 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.constant.IngredientConstants;
-import ipb.pt.safeeat.constant.RestaurantConstants;
-import ipb.pt.safeeat.constant.RestrictionConstants;
+import ipb.pt.safeeat.constants.ExceptionConstants;
 import ipb.pt.safeeat.dto.IngredientDto;
 import ipb.pt.safeeat.model.Ingredient;
 import ipb.pt.safeeat.model.Restaurant;
@@ -34,17 +32,17 @@ public class IngredientService {
 
     public Ingredient findById(String id) {
         return ingredientRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, IngredientConstants.NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.INGREDIENT_NOT_FOUND));
     }
 
     public Ingredient create(IngredientDto ingredientDto, String restaurantId) {
         Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, RestaurantConstants.NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.RESTAURANT_NOT_FOUND));
 
         if (ingredientDto.getRestrictionIds() != null && !ingredientDto.getRestrictionIds().isEmpty()) {
             for (String restrictionId : ingredientDto.getRestrictionIds()) {
                 restrictionRepository.findById(restrictionId).orElseThrow(
-                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, RestrictionConstants.NOT_FOUND));
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.RESTRICTION_NOT_FOUND));
             }
         }
 
@@ -70,7 +68,7 @@ public class IngredientService {
 
     public Ingredient update(IngredientDto ingredientDto) {
         Ingredient old = ingredientRepository.findById(ingredientDto.getId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, IngredientConstants.NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.INGREDIENT_NOT_FOUND));
 
         BeanUtils.copyProperties(ingredientDto, old);
         return ingredientRepository.save(old);

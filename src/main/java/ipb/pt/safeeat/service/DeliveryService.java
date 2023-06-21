@@ -1,7 +1,6 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.constant.DeliveryConstants;
-import ipb.pt.safeeat.constant.RestaurantConstants;
+import ipb.pt.safeeat.constants.ExceptionConstants;
 import ipb.pt.safeeat.dto.DeliveryDto;
 import ipb.pt.safeeat.model.Delivery;
 import ipb.pt.safeeat.model.Restaurant;
@@ -30,12 +29,12 @@ public class DeliveryService {
 
     public Delivery findById(String id) {
         return deliveryRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, DeliveryConstants.NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.DELIVERY_NOT_FOUND));
     }
 
     public Delivery create(DeliveryDto deliveryDto, String restaurantId) {
         Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, RestaurantConstants.NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.RESTAURANT_NOT_FOUND));
 
         Delivery delivery = new Delivery();
         BeanUtils.copyProperties(deliveryDto, delivery);
@@ -59,7 +58,7 @@ public class DeliveryService {
 
     public Delivery update(DeliveryDto deliveryDto) {
         Delivery old = deliveryRepository.findById(deliveryDto.getId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, DeliveryConstants.NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.DELIVERY_NOT_FOUND));
 
         BeanUtils.copyProperties(deliveryDto, old);
         return deliveryRepository.save(old);

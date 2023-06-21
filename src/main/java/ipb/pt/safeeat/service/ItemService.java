@@ -1,8 +1,6 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.constant.CartConstants;
-import ipb.pt.safeeat.constant.ItemConstants;
-import ipb.pt.safeeat.constant.ProductConstants;
+import ipb.pt.safeeat.constants.ExceptionConstants;
 import ipb.pt.safeeat.dto.ItemDto;
 import ipb.pt.safeeat.model.Cart;
 import ipb.pt.safeeat.model.Item;
@@ -35,15 +33,15 @@ public class ItemService {
 
     public Item findById(String id) {
         return itemRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ItemConstants.NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.ITEM_NOT_FOUND));
     }
 
     public Item create(ItemDto itemDto, String cartId) {
         Cart cart = cartRepository.findById(cartId).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, CartConstants.NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.CART_NOT_FOUND));
 
         Product product = productRepository.findById(itemDto.getProductId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ProductConstants.NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.PRODUCT_NOT_FOUND));
 
         Item item = new Item();
         BeanUtils.copyProperties(itemDto, item);
@@ -72,7 +70,7 @@ public class ItemService {
 
     public Item update(ItemDto itemDto) {
         Item old = itemRepository.findById(itemDto.getId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ItemConstants.NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.ITEM_NOT_FOUND));
 
         BeanUtils.copyProperties(itemDto, old);
         return itemRepository.save(old);

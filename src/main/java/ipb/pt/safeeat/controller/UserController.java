@@ -29,11 +29,6 @@ public class UserController {
         return ResponseEntity.ok(userService.findById(id));
     }
 
-    @PostMapping
-    public ResponseEntity<Object> create(@Valid @RequestBody UserDto userDto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(userService.create(userDto));
-    }
-
     @PostMapping("/many")
     public ResponseEntity<Object> createMany(@Valid @RequestBody List<UserDto> userDtos) {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.createMany(userDtos));

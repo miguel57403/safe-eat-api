@@ -1,7 +1,6 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.constant.ProductSectionConstants;
-import ipb.pt.safeeat.constant.RestaurantConstants;
+import ipb.pt.safeeat.constants.ExceptionConstants;
 import ipb.pt.safeeat.dto.ProductSectionDto;
 import ipb.pt.safeeat.model.Product;
 import ipb.pt.safeeat.model.ProductSection;
@@ -34,17 +33,17 @@ public class ProductSectionService {
 
     public ProductSection findById(String id) {
         return productSectionRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ProductSectionConstants.NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.PRODUCT_SECTION_NOT_FOUND));
     }
 
     public ProductSection create(ProductSectionDto productSectionDto, String restaurantId) {
         Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, RestaurantConstants.NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.RESTAURANT_NOT_FOUND));
 
         List<Product> products = new ArrayList<>();
         for (String productId : productSectionDto.getProductIds()) {
             products.add(productRepository.findById(productId).orElseThrow(
-                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ProductSectionConstants.NOT_FOUND)));
+                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.PRODUCT_SECTION_NOT_FOUND)));
         }
 
         ProductSection productSection = new ProductSection();
@@ -71,7 +70,7 @@ public class ProductSectionService {
 
     public ProductSection update(ProductSectionDto productSectionDto) {
         ProductSection old = productSectionRepository.findById(productSectionDto.getId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ProductSectionConstants.NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.PRODUCT_SECTION_NOT_FOUND));
 
         BeanUtils.copyProperties(productSectionDto, old);
         return productSectionRepository.save(old);

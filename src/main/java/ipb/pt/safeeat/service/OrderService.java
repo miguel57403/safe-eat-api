@@ -1,6 +1,6 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.constant.*;
+import ipb.pt.safeeat.constants.*;
 import ipb.pt.safeeat.dto.OrderDto;
 import ipb.pt.safeeat.model.*;
 import ipb.pt.safeeat.repository.*;
@@ -37,29 +37,29 @@ public class OrderService {
 
     public Order findById(String id) {
         return orderRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, OrderConstants.NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.ORDER_NOT_FOUND));
     }
 
     public Order create(OrderDto orderDto) {
         Address address = addressRepository.findById(orderDto.getAddressId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, AddressConstants.NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.ADDRESS_NOT_FOUND));
 
         Payment payment = paymentRepository.findById(orderDto.getPaymentId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, PaymentConstants.NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.PAYMENT_NOT_FOUND));
 
         Delivery delivery = deliveryRepository.findById(orderDto.getDeliveryId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, DeliveryConstants.NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.DELIVERY_NOT_FOUND));
 
         Restaurant restaurant = restaurantRepository.findById(orderDto.getRestaurantId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, RestaurantConstants.NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.RESTAURANT_NOT_FOUND));
 
         User client = userRepository.findById(orderDto.getClientId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, UserConstants.NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.USER_NOT_FOUND));
 
         List<Item> items = new ArrayList<>();
         for (String itemId : orderDto.getItemIds()) {
             items.add(itemRepository.findById(itemId).orElseThrow(
-                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ItemConstants.NOT_FOUND)));
+                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.ITEM_NOT_FOUND)));
         }
 
         Order order = new Order();
@@ -102,7 +102,7 @@ public class OrderService {
 
     public Order updateStatus(String id, String status) {
         Order old = orderRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, OrderConstants.NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.ORDER_NOT_FOUND));
 
         old.setStatus(status);
         return orderRepository.save(old);
