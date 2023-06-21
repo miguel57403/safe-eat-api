@@ -19,7 +19,7 @@ public class Product {
     private String image;
     private Boolean isRestricted;
     @DocumentReference
-    private List<Category> categories;
+    private Category category;
     @DocumentReference
     private List<Ingredient> ingredients;
 }

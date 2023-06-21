@@ -17,6 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ItemService {
@@ -76,7 +77,17 @@ public class ItemService {
         return itemRepository.save(old);
     }
 
-    public void delete(String id) {
+    public void delete(String id, String cartId) {
+        Item item = itemRepository.findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.ITEM_NOT_FOUND));
+
+        Optional<Cart> cart = cartRepository.findById(cartId);
+
+        if (cart.isPresent()) {
+            cart.get().getItems().remove(item);
+            cartRepository.save(cart.get());
+        }
+
         itemRepository.deleteById(id);
     }
 }

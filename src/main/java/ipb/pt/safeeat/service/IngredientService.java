@@ -3,8 +3,10 @@ package ipb.pt.safeeat.service;
 import ipb.pt.safeeat.constants.ExceptionConstants;
 import ipb.pt.safeeat.dto.IngredientDto;
 import ipb.pt.safeeat.model.Ingredient;
+import ipb.pt.safeeat.model.Product;
 import ipb.pt.safeeat.model.Restaurant;
 import ipb.pt.safeeat.repository.IngredientRepository;
+import ipb.pt.safeeat.repository.ProductRepository;
 import ipb.pt.safeeat.repository.RestaurantRepository;
 import ipb.pt.safeeat.repository.RestrictionRepository;
 import org.springframework.beans.BeanUtils;
@@ -16,6 +18,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class IngredientService {
@@ -25,6 +28,8 @@ public class IngredientService {
     private RestrictionRepository restrictionRepository;
     @Autowired
     private RestaurantRepository restaurantRepository;
+    @Autowired
+    private ProductRepository productRepository;
 
     public List<Ingredient> getAll() {
         return ingredientRepository.findAll();
@@ -74,7 +79,25 @@ public class IngredientService {
         return ingredientRepository.save(old);
     }
 
-    public void delete(String id) {
+    public void delete(String id, String restaurantId) {
+        Ingredient ingredient = ingredientRepository.findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.INGREDIENT_NOT_FOUND));
+
+        Optional<Restaurant> restaurant = restaurantRepository.findById(restaurantId);
+
+        if (restaurant.isPresent()) {
+            restaurant.get().getIngredients().remove(ingredient);
+            restaurantRepository.save(restaurant.get());
+
+            List<Product> products = restaurant.get().getProducts();
+            for (Product product : products) {
+                if (product.getIngredients().contains(ingredient)) {
+                    product.getIngredients().remove(ingredient);
+                    productRepository.save(product);
+                }
+            }
+        }
+
         ingredientRepository.deleteById(id);
     }
 }

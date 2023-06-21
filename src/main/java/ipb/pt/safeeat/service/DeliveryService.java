@@ -15,6 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class DeliveryService {
@@ -64,7 +65,17 @@ public class DeliveryService {
         return deliveryRepository.save(old);
     }
 
-    public void delete(String id) {
+    public void delete(String id, String restaurantId) {
+        Delivery delivery = deliveryRepository.findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.DELIVERY_NOT_FOUND));
+
+        Optional<Restaurant> restaurant = restaurantRepository.findById(restaurantId);
+
+        if (restaurant.isPresent()) {
+            restaurant.get().getDeliveries().remove(delivery);
+            restaurantRepository.save(restaurant.get());
+        }
+
         deliveryRepository.deleteById(id);
     }
 }

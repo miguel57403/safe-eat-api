@@ -15,6 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class AdvertisementService {
@@ -68,7 +69,17 @@ public class AdvertisementService {
         return advertisementRepository.save(old);
     }
 
-    public void delete(String id) {
+    public void delete(String id, String restaurantId) {
+        Advertisement advertisement = advertisementRepository.findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.ADVERTISEMENT_NOT_FOUND));
+
+        Optional<Restaurant> restaurant = restaurantRepository.findById(restaurantId);
+
+        if (restaurant.isPresent()) {
+            restaurant.get().getAdvertisements().remove(advertisement);
+            restaurantRepository.save(restaurant.get());
+        }
+
         advertisementRepository.deleteById(id);
     }
 }

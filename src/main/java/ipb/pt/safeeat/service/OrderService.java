@@ -1,6 +1,6 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.constants.*;
+import ipb.pt.safeeat.constants.ExceptionConstants;
 import ipb.pt.safeeat.dto.OrderDto;
 import ipb.pt.safeeat.model.*;
 import ipb.pt.safeeat.repository.*;
@@ -13,6 +13,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class OrderService {
@@ -109,6 +110,22 @@ public class OrderService {
     }
 
     public void delete(String id) {
+        Order order = orderRepository.findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.ORDER_NOT_FOUND));
+
+        Optional<User> user = userRepository.findById(order.getClient().getId());
+        Optional<Restaurant> restaurant = restaurantRepository.findById(order.getRestaurant().getId());
+
+        if (user.isPresent()) {
+            user.get().getOrders().remove(order);
+            userRepository.save(user.get());
+        }
+
+        if (restaurant.isPresent()) {
+            restaurant.get().getOrders().remove(order);
+            restaurantRepository.save(restaurant.get());
+        }
+
         orderRepository.deleteById(id);
     }
 }

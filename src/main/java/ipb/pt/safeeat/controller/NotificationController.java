@@ -30,13 +30,13 @@ public class NotificationController {
     }
 
     @PostMapping
-    public ResponseEntity<Object> create(@Valid @RequestBody NotificationDto notificationDto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(notificationService.create(notificationDto));
+    public ResponseEntity<Object> create(@Valid @RequestBody NotificationDto notificationDto, @RequestParam String userId) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(notificationService.create(notificationDto, userId));
     }
 
     @PostMapping("/many")
-    public ResponseEntity<Object> createMany(@Valid @RequestBody List<NotificationDto> notificationDtos) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(notificationService.createMany(notificationDtos));
+    public ResponseEntity<Object> createMany(@Valid @RequestBody List<NotificationDto> notificationDtos, @RequestParam String userId) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(notificationService.createMany(notificationDtos, userId));
     }
 
     @PutMapping
@@ -50,8 +50,8 @@ public class NotificationController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Object> delete(@PathVariable String id) {
-        notificationService.delete(id);
+    public ResponseEntity<Object> delete(@PathVariable String id, @RequestParam String userId) {
+        notificationService.delete(id, userId);
         return ResponseEntity.ok().build();
     }
 }

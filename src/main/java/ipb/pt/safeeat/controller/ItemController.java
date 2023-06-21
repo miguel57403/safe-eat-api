@@ -45,8 +45,8 @@ public class ItemController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Object> delete(@PathVariable String id) {
-        itemService.delete(id);
+    public ResponseEntity<Object> delete(@PathVariable String id, @RequestParam String cartId) {
+        itemService.delete(id, cartId);
         return ResponseEntity.ok().build();
     }
 }

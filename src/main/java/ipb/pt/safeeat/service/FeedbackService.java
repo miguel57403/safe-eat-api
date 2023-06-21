@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class FeedbackService {
@@ -52,7 +53,17 @@ public class FeedbackService {
         return feedbackRepository.save(old);
     }
 
-    public void delete(String id) {
+    public void delete(String id, String orderId) {
+        feedbackRepository.findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.FEEDBACK_NOT_FOUND));
+
+        Optional<Order> order = orderRepository.findById(orderId);
+
+        if (order.isPresent()) {
+            order.get().setFeedback(null);
+            orderRepository.save(order.get());
+        }
+
         feedbackRepository.deleteById(id);
     }
 }

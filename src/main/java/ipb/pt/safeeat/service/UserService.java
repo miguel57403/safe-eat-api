@@ -5,9 +5,7 @@ import ipb.pt.safeeat.dto.UserDto;
 import ipb.pt.safeeat.model.Cart;
 import ipb.pt.safeeat.model.Restriction;
 import ipb.pt.safeeat.model.User;
-import ipb.pt.safeeat.repository.CartRepository;
-import ipb.pt.safeeat.repository.RestrictionRepository;
-import ipb.pt.safeeat.repository.UserRepository;
+import ipb.pt.safeeat.repository.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -29,6 +27,10 @@ public class UserService {
     private RestrictionRepository restrictionRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private PaymentRepository paymentRepository;
+    @Autowired
+    private AddressRepository addressRepository;
 
     public List<User> getAll() {
         return userRepository.findAll();
@@ -79,10 +81,26 @@ public class UserService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.USER_NOT_FOUND));
 
         BeanUtils.copyProperties(userDto, old);
+
+        if (!userDto.getPassword().isBlank()) {
+            old.setPassword(passwordEncoder.encode(userDto.getPassword()));
+        }
+
         return userRepository.save(old);
     }
 
     public void delete(String id) {
+        User user = userRepository.findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.USER_NOT_FOUND));
+
+        if (!user.getRestaurants().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot delete user with restaurants");
+        }
+
+        paymentRepository.deleteAll(user.getPayments());
+        addressRepository.deleteAll(user.getAddress());
+        cartRepository.delete(user.getCart());
+
         userRepository.deleteById(id);
     }
 }

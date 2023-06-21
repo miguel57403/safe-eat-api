@@ -4,8 +4,10 @@ import ipb.pt.safeeat.constants.ExceptionConstants;
 import ipb.pt.safeeat.dto.NotificationDto;
 import ipb.pt.safeeat.model.Notification;
 import ipb.pt.safeeat.model.Order;
+import ipb.pt.safeeat.model.User;
 import ipb.pt.safeeat.repository.NotificationRepository;
 import ipb.pt.safeeat.repository.OrderRepository;
+import ipb.pt.safeeat.repository.UserRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,6 +18,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class NotificationService {
@@ -23,6 +26,9 @@ public class NotificationService {
     private NotificationRepository notificationRepository;
     @Autowired
     private OrderRepository orderRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     public List<Notification> getAll() {
         return notificationRepository.findAll();
@@ -33,9 +39,12 @@ public class NotificationService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.NOTIFICATION_NOT_FOUND));
     }
 
-    public Notification create(NotificationDto notificationDto) {
+    public Notification create(NotificationDto notificationDto, String userId) {
         Order order = orderRepository.findById(notificationDto.getOrderId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.ORDER_NOT_FOUND));
+
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.USER_NOT_FOUND));
 
         Notification notification = new Notification();
         BeanUtils.copyProperties(notificationDto, notification);
@@ -43,14 +52,19 @@ public class NotificationService {
         notification.setOrder(order);
         notification.setTime(LocalDateTime.now());
 
-        return notificationRepository.save(notification);
+        Notification created = notificationRepository.save(notification);
+
+        user.getNotifications().add(created);
+        userRepository.save(user);
+
+        return created;
     }
 
     @Transactional
-    public List<Notification> createMany(List<NotificationDto> notificationDtos) {
+    public List<Notification> createMany(List<NotificationDto> notificationDtos, String userId) {
         List<Notification> created = new ArrayList<>();
         for (NotificationDto notificationDto : notificationDtos) {
-            created.add(create(notificationDto));
+            created.add(create(notificationDto, userId));
         }
 
         return created;
@@ -72,7 +86,17 @@ public class NotificationService {
         return notificationRepository.save(notification);
     }
 
-    public void delete(String id) {
+    public void delete(String id, String userId) {
+        Notification notification = notificationRepository.findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.NOTIFICATION_NOT_FOUND));
+
+        Optional<User> user = userRepository.findById(userId);
+
+        if (user.isPresent()) {
+            user.get().getNotifications().remove(notification);
+            userRepository.save(user.get());
+        }
+
         notificationRepository.deleteById(id);
     }
 }

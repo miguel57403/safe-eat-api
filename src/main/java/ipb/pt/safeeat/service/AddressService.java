@@ -15,6 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class AddressService {
@@ -64,7 +65,17 @@ public class AddressService {
         return addressRepository.save(old);
     }
 
-    public void delete(String id) {
+    public void delete(String id, String userId) {
+        Address address = addressRepository.findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.ADDRESS_NOT_FOUND));
+
+        Optional<User> user = userRepository.findById(userId);
+
+        if (user.isPresent()) {
+            user.get().getAddress().remove(address);
+            userRepository.save(user.get());
+        }
+
         addressRepository.deleteById(id);
     }
 }

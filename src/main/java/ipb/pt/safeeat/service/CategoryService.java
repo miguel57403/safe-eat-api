@@ -3,7 +3,9 @@ package ipb.pt.safeeat.service;
 import ipb.pt.safeeat.constants.ExceptionConstants;
 import ipb.pt.safeeat.dto.CategoryDto;
 import ipb.pt.safeeat.model.Category;
+import ipb.pt.safeeat.model.Product;
 import ipb.pt.safeeat.repository.CategoryRepository;
+import ipb.pt.safeeat.repository.ProductRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,6 +20,9 @@ import java.util.List;
 public class CategoryService {
     @Autowired
     private CategoryRepository categoryRepository;
+
+    @Autowired
+    private ProductRepository productRepository;
 
     public List<Category> getAll() {
         return categoryRepository.findAll();
@@ -53,6 +58,15 @@ public class CategoryService {
     }
 
     public void delete(String id) {
+        Category category = categoryRepository.findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.CATEGORY_NOT_FOUND));
+
+        List<Product> products = productRepository.findAllByCategory(category);
+        for (Product product : products) {
+            product.setCategory(null);
+            productRepository.save(product);
+        }
+
         categoryRepository.deleteById(id);
     }
 }

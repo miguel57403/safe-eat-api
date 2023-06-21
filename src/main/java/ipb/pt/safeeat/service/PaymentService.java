@@ -15,6 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class PaymentService {
@@ -65,7 +66,17 @@ public class PaymentService {
         return paymentRepository.save(old);
     }
 
-    public void delete(String id) {
+    public void delete(String id, String userId) {
+        Payment payment = paymentRepository.findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.PAYMENT_NOT_FOUND));
+
+        Optional<User> user = userRepository.findById(userId);
+
+        if (user.isPresent()) {
+            user.get().getPayments().remove(payment);
+            userRepository.save(user.get());
+        }
+
         paymentRepository.deleteById(id);
     }
 }

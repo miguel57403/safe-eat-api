@@ -2,8 +2,12 @@ package ipb.pt.safeeat.service;
 
 import ipb.pt.safeeat.constants.ExceptionConstants;
 import ipb.pt.safeeat.dto.RestrictionDto;
+import ipb.pt.safeeat.model.Ingredient;
 import ipb.pt.safeeat.model.Restriction;
+import ipb.pt.safeeat.model.User;
+import ipb.pt.safeeat.repository.IngredientRepository;
 import ipb.pt.safeeat.repository.RestrictionRepository;
+import ipb.pt.safeeat.repository.UserRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,6 +22,10 @@ import java.util.List;
 public class RestrictionService {
     @Autowired
     private RestrictionRepository restrictionRepository;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private IngredientRepository ingredientRepository;
 
     public List<Restriction> getAll() {
         return restrictionRepository.findAll();
@@ -53,6 +61,21 @@ public class RestrictionService {
     }
 
     public void delete(String id) {
+        Restriction restriction = restrictionRepository.findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.RESTAURANT_NOT_FOUND));
+
+        List<User> users = userRepository.findAll();
+        for (User user : users) {
+            user.getRestrictions().remove(restriction);
+            userRepository.save(user);
+        }
+
+        List<Ingredient> ingredients = ingredientRepository.findAll();
+        for (Ingredient ingredient : ingredients) {
+            ingredient.getRestrictionIds().remove(restriction.getId());
+            ingredientRepository.save(ingredient);
+        }
+
         restrictionRepository.deleteById(id);
     }
 }
