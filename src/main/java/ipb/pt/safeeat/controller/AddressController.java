@@ -29,6 +29,11 @@ public class AddressController {
         return ResponseEntity.ok(addressService.findById(id));
     }
 
+    @GetMapping("/user/{id}")
+    public ResponseEntity<Object> findAllByUser(@PathVariable String id) {
+        return ResponseEntity.ok(addressService.findAllByUser(id));
+    }
+
     @PostMapping
     public ResponseEntity<Object> create(@Valid @RequestBody AddressDto addressDto, @RequestParam String userId) {
         return ResponseEntity.status(HttpStatus.CREATED).body(addressService.create(addressDto, userId));

@@ -29,6 +29,11 @@ public class OrderController {
         return ResponseEntity.ok(orderService.findById(id));
     }
 
+    @GetMapping("/user/{id}")
+    public ResponseEntity<Object> findByUser(@PathVariable String id) {
+        return ResponseEntity.ok(orderService.findAllByUser(id));
+    }
+
     @PostMapping
     public ResponseEntity<Object> create(@Valid @RequestBody OrderDto orderDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(orderService.create(orderDto));

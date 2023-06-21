@@ -24,6 +24,11 @@ public class CartController {
         return ResponseEntity.ok(cartService.findById(id));
     }
 
+    @GetMapping("/user/{id}")
+    public ResponseEntity<Object> findByUser(@PathVariable String id) {
+        return ResponseEntity.ok(cartService.findByUser(id));
+    }
+
     @GetMapping("/{id}/isBuying")
     public ResponseEntity<Object> isBuying(@PathVariable String id) {
         return ResponseEntity.ok(cartService.isBuying(id));

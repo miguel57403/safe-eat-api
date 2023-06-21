@@ -39,6 +39,13 @@ public class NotificationService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.NOTIFICATION_NOT_FOUND));
     }
 
+    public List<Notification> findAllByUser(String id) {
+        User user = userRepository.findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.USER_NOT_FOUND));
+
+        return user.getNotifications();
+    }
+
     public Notification create(NotificationDto notificationDto, String userId) {
         Order order = orderRepository.findById(notificationDto.getOrderId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.ORDER_NOT_FOUND));

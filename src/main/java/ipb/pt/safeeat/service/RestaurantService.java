@@ -80,6 +80,17 @@ public class RestaurantService {
         return restaurants;
     }
 
+    public List<Restaurant> findAllByName(String name) {
+        List<Restaurant> restaurants = new ArrayList<>();
+        for (Restaurant restaurant : restaurantRepository.findAll()) {
+            if (restaurant.getName().toLowerCase().contains(name.toLowerCase())) {
+                restaurants.add(restaurant);
+            }
+        }
+
+        return restaurants;
+    }
+
     public Restaurant create(RestaurantDto restaurantDto) {
         User owner = userRepository.findById(restaurantDto.getOwnerId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.USER_NOT_FOUND));

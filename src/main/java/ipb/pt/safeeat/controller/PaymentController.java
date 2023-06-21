@@ -29,6 +29,11 @@ public class PaymentController {
         return ResponseEntity.ok(paymentService.findById(id));
     }
 
+    @GetMapping("/user/{id}")
+    public ResponseEntity<Object> findByUser(@PathVariable String id) {
+        return ResponseEntity.ok(paymentService.findAllByUser(id));
+    }
+
     @PostMapping
     public ResponseEntity<Object> create(@Valid @RequestBody PaymentDto paymentDto, @RequestParam String userId) {
         return ResponseEntity.status(HttpStatus.CREATED).body(paymentService.create(paymentDto, userId));

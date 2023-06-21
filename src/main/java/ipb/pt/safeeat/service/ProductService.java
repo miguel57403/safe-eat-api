@@ -41,6 +41,27 @@ public class ProductService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.PRODUCT_NOT_FOUND));
     }
 
+    public List<Product> findAllByRestaurant(String id) {
+        Restaurant restaurant = restaurantRepository.findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.RESTAURANT_NOT_FOUND));
+
+        return restaurant.getProducts();
+    }
+
+    public List<Product> findAllByRestaurantAndName(String id, String name) {
+        Restaurant restaurant = restaurantRepository.findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.RESTAURANT_NOT_FOUND));
+
+        List<Product> products = new ArrayList<>();
+        for (Product product : restaurant.getProducts()) {
+            if (product.getName().toLowerCase().contains(name.toLowerCase())) {
+                products.add(product);
+            }
+        }
+
+        return products;
+    }
+
     public Product create(ProductDto productDto, String restaurantId) {
         Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.RESTAURANT_NOT_FOUND));

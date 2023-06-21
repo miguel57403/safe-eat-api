@@ -39,6 +39,11 @@ public class RestaurantController {
         return ResponseEntity.ok(restaurantService.findByOwner(id));
     }
 
+    @GetMapping("/name/{name}")
+    public ResponseEntity<Object> findByName(@PathVariable String name) {
+        return ResponseEntity.ok(restaurantService.findAllByName(name));
+    }
+
     @PostMapping
     public ResponseEntity<Object> create(@Valid @RequestBody RestaurantDto restaurantDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(restaurantService.create(restaurantDto));

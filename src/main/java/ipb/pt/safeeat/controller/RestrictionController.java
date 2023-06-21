@@ -29,6 +29,11 @@ public class RestrictionController {
         return ResponseEntity.ok(restrictionService.findById(id));
     }
 
+    @GetMapping("/user/{id}")
+    public ResponseEntity<Object> findByUser(@PathVariable String id) {
+        return ResponseEntity.ok(restrictionService.findAllByUser(id));
+    }
+
     @PostMapping
     public ResponseEntity<Object> create(@Valid @RequestBody RestrictionDto restrictionDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(restrictionService.create(restrictionDto));

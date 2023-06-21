@@ -36,6 +36,13 @@ public class RestrictionService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.RESTAURANT_NOT_FOUND));
     }
 
+    public List<Restriction> findAllByUser(String id) {
+        User user = userRepository.findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, ExceptionConstants.USER_NOT_FOUND));
+
+        return user.getRestrictions();
+    }
+
     public Restriction create(RestrictionDto restrictionDto) {
         Restriction restriction = new Restriction();
         BeanUtils.copyProperties(restrictionDto, restriction);
