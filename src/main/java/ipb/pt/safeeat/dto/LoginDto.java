@@ -1,4 +1,4 @@
-package ipb.pt.safeeat.security;
+package ipb.pt.safeeat.dto;
 
 public record LoginDto(String email, String password) {
 }

@@ -14,10 +14,12 @@ public class RestrictionChecker {
     public void checkProduct(Product product) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
+        product.setIsRestricted(false);
         for (Ingredient ingredient : product.getIngredients()) {
             for (Restriction restriction : ingredient.getRestrictions()) {
                 if (user.getRestrictions().contains(restriction)) {
                     product.setIsRestricted(true);
+                    break;
                 }
             }
         }

@@ -29,6 +29,11 @@ public class ProductSectionController {
         return ResponseEntity.ok(productSectionService.findById(id));
     }
 
+    @GetMapping("/restaurant/{id}")
+    public ResponseEntity<Object> findByRestaurant(@PathVariable String id) {
+        return ResponseEntity.ok(productSectionService.findByRestaurant(id));
+    }
+
     @PostMapping
     public ResponseEntity<Object> create(@Valid @RequestBody ProductSectionDto productSectionDto, @RequestParam String restaurantId) {
         return ResponseEntity.status(HttpStatus.CREATED).body(productSectionService.create(productSectionDto, restaurantId));

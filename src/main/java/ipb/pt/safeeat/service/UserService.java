@@ -1,11 +1,11 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.utility.NotFoundConstants;
 import ipb.pt.safeeat.dto.UserDto;
 import ipb.pt.safeeat.model.Cart;
 import ipb.pt.safeeat.model.Restriction;
 import ipb.pt.safeeat.model.User;
 import ipb.pt.safeeat.repository.*;
+import ipb.pt.safeeat.utility.NotFoundConstants;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

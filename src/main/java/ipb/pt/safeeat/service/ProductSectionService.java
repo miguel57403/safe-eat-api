@@ -49,6 +49,19 @@ public class ProductSectionService {
         return productSection;
     }
 
+    public List<ProductSection> findByRestaurant(String restaurantId) {
+        Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND));
+
+        List<ProductSection> productSections = restaurant.getProductSections();
+
+        for(ProductSection productSection : productSections) {
+            restrictionChecker.checkProductList(productSection.getProducts());
+        }
+
+        return productSections;
+    }
+
     public ProductSection create(ProductSectionDto productSectionDto, String restaurantId) {
         Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Restaurant not found"));

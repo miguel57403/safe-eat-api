@@ -1,4 +1,4 @@
-package ipb.pt.safeeat.security;
+package ipb.pt.safeeat.service;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
