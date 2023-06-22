@@ -21,7 +21,7 @@ public class PaymentController {
 
     @GetMapping
     public ResponseEntity<Object> findAll() {
-        return ResponseEntity.ok(paymentService.getAll());
+        return ResponseEntity.ok(paymentService.findAll());
     }
 
     @GetMapping("/{id}")

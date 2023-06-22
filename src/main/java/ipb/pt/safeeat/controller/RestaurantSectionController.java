@@ -21,7 +21,7 @@ public class RestaurantSectionController {
 
     @GetMapping
     public ResponseEntity<Object> findAll() {
-        return ResponseEntity.ok(restaurantSectionService.getAll());
+        return ResponseEntity.ok(restaurantSectionService.findAll());
     }
 
     @GetMapping("/{id}")

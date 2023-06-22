@@ -24,7 +24,7 @@ public class AdvertisementService {
     @Autowired
     private RestaurantRepository restaurantRepository;
 
-    public List<Advertisement> getAll() {
+    public List<Advertisement> findAll() {
         return advertisementRepository.findAll();
     }
 

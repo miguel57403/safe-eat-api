@@ -28,7 +28,7 @@ public class RestrictionService {
     @Autowired
     private IngredientRepository ingredientRepository;
 
-    public List<Restriction> getAll() {
+    public List<Restriction> findAll() {
         List<Restriction> restrictions = restrictionRepository.findAll();
         RestrictionChecker.checkRestrictionList(restrictions);
         return restrictions;

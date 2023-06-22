@@ -29,7 +29,7 @@ public class ItemService {
     @Autowired
     private CartRepository cartRepository;
 
-    public List<Item> getAll() {
+    public List<Item> findAll() {
         return itemRepository.findAll();
     }
 

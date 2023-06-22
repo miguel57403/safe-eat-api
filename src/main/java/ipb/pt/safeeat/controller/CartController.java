@@ -16,7 +16,7 @@ public class CartController {
 
     @GetMapping
     public ResponseEntity<Object> findAll() {
-        return ResponseEntity.ok(cartService.getAll());
+        return ResponseEntity.ok(cartService.findAll());
     }
 
     @GetMapping("/{id}")

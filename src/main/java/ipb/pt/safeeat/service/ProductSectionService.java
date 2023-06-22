@@ -29,7 +29,7 @@ public class ProductSectionService {
     @Autowired
     private RestaurantRepository restaurantRepository;
 
-    public List<ProductSection> getAll() {
+    public List<ProductSection> findAll() {
         List<ProductSection> productSections = productSectionRepository.findAll();
 
         for(ProductSection productSection : productSections) {

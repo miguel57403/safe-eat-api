@@ -23,7 +23,7 @@ public class RestaurantSectionService {
     @Autowired
     private RestaurantRepository restaurantRepository;
 
-    public List<RestaurantSection> getAll() {
+    public List<RestaurantSection> findAll() {
         return restaurantSectionRepository.findAll();
     }
 

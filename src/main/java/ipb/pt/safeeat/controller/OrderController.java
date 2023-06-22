@@ -21,7 +21,7 @@ public class OrderController {
 
     @GetMapping
     public ResponseEntity<Object> findAll() {
-        return ResponseEntity.ok(orderService.getAll());
+        return ResponseEntity.ok(orderService.findAll());
     }
 
     @GetMapping("/{id}")

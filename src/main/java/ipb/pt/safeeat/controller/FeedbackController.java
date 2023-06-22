@@ -19,7 +19,7 @@ public class FeedbackController {
 
     @GetMapping
     public ResponseEntity<Object> findAll() {
-        return ResponseEntity.ok(feedbackService.getAll());
+        return ResponseEntity.ok(feedbackService.findAll());
     }
 
     @GetMapping("/{id}")

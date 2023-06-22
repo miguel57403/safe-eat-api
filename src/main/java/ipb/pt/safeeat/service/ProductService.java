@@ -30,7 +30,7 @@ public class ProductService {
     @Autowired
     private RestaurantRepository restaurantRepository;
 
-    public List<Product> getAll() {
+    public List<Product> findAll() {
         List<Product> products = productRepository.findAll();
         RestrictionChecker.checkProductList(products);
         return products;

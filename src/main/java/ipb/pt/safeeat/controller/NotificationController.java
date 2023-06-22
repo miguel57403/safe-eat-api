@@ -21,7 +21,7 @@ public class NotificationController {
 
     @GetMapping
     public ResponseEntity<Object> findAll() {
-        return ResponseEntity.ok(notificationService.getAll());
+        return ResponseEntity.ok(notificationService.findAll());
     }
 
     @GetMapping("/{id}")

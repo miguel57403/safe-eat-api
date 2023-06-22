@@ -21,7 +21,7 @@ public class ItemController {
 
     @GetMapping
     public ResponseEntity<Object> findAll() {
-        return ResponseEntity.ok(itemService.getAll());
+        return ResponseEntity.ok(itemService.findAll());
     }
 
     @GetMapping("/{id}")

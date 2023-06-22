@@ -21,7 +21,7 @@ public class RestrictionController {
 
     @GetMapping
     public ResponseEntity<Object> findAll() {
-        return ResponseEntity.ok(restrictionService.getAll());
+        return ResponseEntity.ok(restrictionService.findAll());
     }
 
     @GetMapping("/{id}")

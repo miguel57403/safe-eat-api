@@ -33,7 +33,7 @@ public class IngredientService {
     @Autowired
     private ProductRepository productRepository;
 
-    public List<Ingredient> getAll() {
+    public List<Ingredient> findAll() {
         List<Ingredient> ingredients = ingredientRepository.findAll();
         RestrictionChecker.checkIngredientList(ingredients);
         return ingredients;

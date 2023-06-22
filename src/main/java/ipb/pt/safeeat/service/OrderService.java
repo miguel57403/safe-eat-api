@@ -32,7 +32,7 @@ public class OrderService {
     @Autowired
     private UserRepository userRepository;
 
-    public List<Order> getAll() {
+    public List<Order> findAll() {
         return orderRepository.findAll();
     }
 

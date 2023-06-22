@@ -32,7 +32,7 @@ public class UserService {
     @Autowired
     private AddressRepository addressRepository;
 
-    public List<User> getAll() {
+    public List<User> findAll() {
         return userRepository.findAll();
     }
 

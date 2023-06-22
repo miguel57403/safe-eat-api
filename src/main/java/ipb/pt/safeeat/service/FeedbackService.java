@@ -22,7 +22,7 @@ public class FeedbackService {
     @Autowired
     private OrderRepository orderRepository;
 
-    public List<Feedback> getAll() {
+    public List<Feedback> findAll() {
         return feedbackRepository.findAll();
     }
 

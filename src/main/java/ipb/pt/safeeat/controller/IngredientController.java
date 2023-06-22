@@ -21,7 +21,7 @@ public class IngredientController {
 
     @GetMapping
     public ResponseEntity<Object> findAll() {
-        return ResponseEntity.ok(ingredientService.getAll());
+        return ResponseEntity.ok(ingredientService.findAll());
     }
 
     @GetMapping("/{id}")

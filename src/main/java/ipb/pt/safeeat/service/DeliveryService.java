@@ -24,7 +24,7 @@ public class DeliveryService {
     @Autowired
     private RestaurantRepository restaurantRepository;
 
-    public List<Delivery> getAll() {
+    public List<Delivery> findAll() {
         return deliveryRepository.findAll();
     }
 

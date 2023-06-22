@@ -21,7 +21,7 @@ public class CartService {
     @Autowired
     private UserRepository userRepository;
 
-    public List<Cart> getAll() {
+    public List<Cart> findAll() {
         return cartRepository.findAll();
     }
 

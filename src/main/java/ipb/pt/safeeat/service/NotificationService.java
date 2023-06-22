@@ -30,7 +30,7 @@ public class NotificationService {
     @Autowired
     private UserRepository userRepository;
 
-    public List<Notification> getAll() {
+    public List<Notification> findAll() {
         return notificationRepository.findAll();
     }
 

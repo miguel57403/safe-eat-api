@@ -21,7 +21,7 @@ public class AdvertisementController {
 
     @GetMapping
     public ResponseEntity<Object> findAll() {
-        return ResponseEntity.ok(advertisementService.getAll());
+        return ResponseEntity.ok(advertisementService.findAll());
     }
 
     @GetMapping("/{id}")

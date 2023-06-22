@@ -21,7 +21,7 @@ public class ProductController {
 
     @GetMapping
     public ResponseEntity<Object> findAll() {
-        return ResponseEntity.ok(productService.getAll());
+        return ResponseEntity.ok(productService.findAll());
     }
 
     @GetMapping("/{id}")

@@ -37,7 +37,7 @@ public class RestaurantService {
     @Autowired
     private DeliveryRepository deliveryRepository;
 
-    public List<Restaurant> getAll() {
+    public List<Restaurant> findAll() {
         try {
             return restaurantRepository.findAll();
         } catch (Exception e) {
