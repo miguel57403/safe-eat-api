@@ -2,7 +2,6 @@ package ipb.pt.safeeat.security;
 
 import ipb.pt.safeeat.model.User;
 import ipb.pt.safeeat.repository.UserRepository;
-import ipb.pt.safeeat.service.TokenService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

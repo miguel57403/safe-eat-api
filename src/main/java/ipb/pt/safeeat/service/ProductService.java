@@ -1,15 +1,13 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.constants.NotFoundConstants;
+import ipb.pt.safeeat.utility.NotFoundConstants;
 import ipb.pt.safeeat.dto.ProductDto;
-import ipb.pt.safeeat.model.Category;
-import ipb.pt.safeeat.model.Ingredient;
-import ipb.pt.safeeat.model.Product;
-import ipb.pt.safeeat.model.Restaurant;
+import ipb.pt.safeeat.model.*;
 import ipb.pt.safeeat.repository.CategoryRepository;
 import ipb.pt.safeeat.repository.IngredientRepository;
 import ipb.pt.safeeat.repository.ProductRepository;
 import ipb.pt.safeeat.repository.RestaurantRepository;
+import ipb.pt.safeeat.utility.RestrictionChecker;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -33,18 +31,24 @@ public class ProductService {
     private RestaurantRepository restaurantRepository;
 
     public List<Product> getAll() {
-        return productRepository.findAll();
+        List<Product> products = productRepository.findAll();
+        RestrictionChecker.checkProductList(products);
+        return products;
     }
 
     public Product findById(String id) {
-        return productRepository.findById(id).orElseThrow(
+        Product product = productRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.PRODUCT_NOT_FOUND));
+
+        RestrictionChecker.checkProduct(product);
+        return product;
     }
 
     public List<Product> findAllByRestaurant(String id) {
         Restaurant restaurant = restaurantRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND));
 
+        RestrictionChecker.checkProductList(restaurant.getProducts());
         return restaurant.getProducts();
     }
 
@@ -59,6 +63,7 @@ public class ProductService {
             }
         }
 
+        RestrictionChecker.checkProductList(products);
         return products;
     }
 

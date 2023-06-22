@@ -1,14 +1,16 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.constants.NotFoundConstants;
+import ipb.pt.safeeat.utility.NotFoundConstants;
 import ipb.pt.safeeat.dto.IngredientDto;
 import ipb.pt.safeeat.model.Ingredient;
 import ipb.pt.safeeat.model.Product;
 import ipb.pt.safeeat.model.Restaurant;
+import ipb.pt.safeeat.model.Restriction;
 import ipb.pt.safeeat.repository.IngredientRepository;
 import ipb.pt.safeeat.repository.ProductRepository;
 import ipb.pt.safeeat.repository.RestaurantRepository;
 import ipb.pt.safeeat.repository.RestrictionRepository;
+import ipb.pt.safeeat.utility.RestrictionChecker;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -32,27 +34,35 @@ public class IngredientService {
     private ProductRepository productRepository;
 
     public List<Ingredient> getAll() {
-        return ingredientRepository.findAll();
+        List<Ingredient> ingredients = ingredientRepository.findAll();
+        RestrictionChecker.checkIngredientList(ingredients);
+        return ingredients;
     }
 
     public Ingredient findById(String id) {
-        return ingredientRepository.findById(id).orElseThrow(
+        Ingredient ingredient = ingredientRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.INGREDIENT_NOT_FOUND));
+
+        RestrictionChecker.checkRestrictionList(ingredient.getRestrictions());
+        return ingredient;
     }
 
     public Ingredient create(IngredientDto ingredientDto, String restaurantId) {
         Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND));
 
+        List<Restriction> restrictions = new ArrayList<>();
         if (ingredientDto.getRestrictionIds() != null && !ingredientDto.getRestrictionIds().isEmpty()) {
             for (String restrictionId : ingredientDto.getRestrictionIds()) {
-                restrictionRepository.findById(restrictionId).orElseThrow(
-                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTRICTION_NOT_FOUND));
+                restrictions.add(restrictionRepository.findById(restrictionId).orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTRICTION_NOT_FOUND)));
             }
         }
 
         Ingredient ingredient = new Ingredient();
         BeanUtils.copyProperties(ingredientDto, ingredient);
+        ingredient.setRestrictions(restrictions);
+
         Ingredient created = ingredientRepository.save(ingredient);
 
         restaurant.getIngredients().add(created);

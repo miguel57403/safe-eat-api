@@ -29,6 +29,11 @@ public class ItemController {
         return ResponseEntity.ok(itemService.findById(id));
     }
 
+    @GetMapping("/cart/{id}")
+    public ResponseEntity<Object> findByCartId(@PathVariable String id) {
+        return ResponseEntity.ok(itemService.findByCartId(id));
+    }
+
     @PostMapping
     public ResponseEntity<Object> create(@Valid @RequestBody ItemDto itemDto, @RequestParam String cartId) {
         return ResponseEntity.status(HttpStatus.CREATED).body(itemService.create(itemDto, cartId));

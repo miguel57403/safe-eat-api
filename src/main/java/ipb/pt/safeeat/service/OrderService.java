@@ -1,9 +1,9 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.constants.NotFoundConstants;
 import ipb.pt.safeeat.dto.OrderDto;
 import ipb.pt.safeeat.model.*;
 import ipb.pt.safeeat.repository.*;
+import ipb.pt.safeeat.utility.NotFoundConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;

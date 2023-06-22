@@ -1,6 +1,6 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.constants.NotFoundConstants;
+import ipb.pt.safeeat.utility.NotFoundConstants;
 import ipb.pt.safeeat.dto.FeedbackDto;
 import ipb.pt.safeeat.model.Feedback;
 import ipb.pt.safeeat.model.Order;

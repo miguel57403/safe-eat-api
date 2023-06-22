@@ -1,6 +1,6 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.constants.NotFoundConstants;
+import ipb.pt.safeeat.utility.NotFoundConstants;
 import ipb.pt.safeeat.dto.AdvertisementDto;
 import ipb.pt.safeeat.model.Advertisement;
 import ipb.pt.safeeat.model.Restaurant;

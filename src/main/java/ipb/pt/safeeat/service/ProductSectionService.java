@@ -1,6 +1,6 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.constants.NotFoundConstants;
+import ipb.pt.safeeat.utility.NotFoundConstants;
 import ipb.pt.safeeat.dto.ProductSectionDto;
 import ipb.pt.safeeat.model.Product;
 import ipb.pt.safeeat.model.ProductSection;
@@ -8,6 +8,7 @@ import ipb.pt.safeeat.model.Restaurant;
 import ipb.pt.safeeat.repository.ProductRepository;
 import ipb.pt.safeeat.repository.ProductSectionRepository;
 import ipb.pt.safeeat.repository.RestaurantRepository;
+import ipb.pt.safeeat.utility.RestrictionChecker;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -29,12 +30,21 @@ public class ProductSectionService {
     private RestaurantRepository restaurantRepository;
 
     public List<ProductSection> getAll() {
-        return productSectionRepository.findAll();
+        List<ProductSection> productSections = productSectionRepository.findAll();
+
+        for(ProductSection productSection : productSections) {
+            RestrictionChecker.checkProductList(productSection.getProducts());
+        }
+
+        return productSections;
     }
 
     public ProductSection findById(String id) {
-        return productSectionRepository.findById(id).orElseThrow(
+        ProductSection productSection = productSectionRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.PRODUCT_SECTION_NOT_FOUND));
+
+        RestrictionChecker.checkProductList(productSection.getProducts());
+        return productSection;
     }
 
     public ProductSection create(ProductSectionDto productSectionDto, String restaurantId) {

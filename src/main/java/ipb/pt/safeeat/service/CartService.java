@@ -1,10 +1,12 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.constants.NotFoundConstants;
+import ipb.pt.safeeat.model.Item;
+import ipb.pt.safeeat.utility.NotFoundConstants;
 import ipb.pt.safeeat.model.Cart;
 import ipb.pt.safeeat.model.User;
 import ipb.pt.safeeat.repository.CartRepository;
 import ipb.pt.safeeat.repository.UserRepository;
+import ipb.pt.safeeat.utility.RestrictionChecker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -24,13 +26,23 @@ public class CartService {
     }
 
     public Cart findById(String id) {
-        return cartRepository.findById(id).orElseThrow(
+        Cart cart = cartRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.CART_NOT_FOUND));
+
+        for(Item item : cart.getItems()) {
+            RestrictionChecker.checkProduct(item.getProduct());
+        }
+
+        return cart;
     }
 
     public Cart findByUser(String id) {
         User user = userRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.USER_NOT_FOUND));
+
+        for(Item item : user.getCart().getItems()) {
+            RestrictionChecker.checkProduct(item.getProduct());
+        }
 
         return user.getCart();
     }

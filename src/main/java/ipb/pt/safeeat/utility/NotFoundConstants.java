@@ -1,4 +1,4 @@
-package ipb.pt.safeeat.constants;
+package ipb.pt.safeeat.utility;
 
 public class NotFoundConstants {
     public static final String ADDRESS_NOT_FOUND = "Address not found";

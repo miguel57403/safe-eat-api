@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
 import java.util.List;
 
@@ -15,6 +16,7 @@ public class Ingredient {
     private String id;
     private String name;
     private String description;
-    private List<String> restrictionIds;
     private Boolean isRestricted;
+    @DocumentReference
+    private List<Restriction> restrictions;
 }

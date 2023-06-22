@@ -1,9 +1,7 @@
-package ipb.pt.safeeat.controller;
+package ipb.pt.safeeat.security;
 
-import ipb.pt.safeeat.dto.LoginDto;
 import ipb.pt.safeeat.dto.UserDto;
 import ipb.pt.safeeat.model.User;
-import ipb.pt.safeeat.service.TokenService;
 import ipb.pt.safeeat.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;

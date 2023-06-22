@@ -1,6 +1,6 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.constants.NotFoundConstants;
+import ipb.pt.safeeat.utility.NotFoundConstants;
 import ipb.pt.safeeat.dto.RestrictionDto;
 import ipb.pt.safeeat.model.Ingredient;
 import ipb.pt.safeeat.model.Restriction;
@@ -8,6 +8,7 @@ import ipb.pt.safeeat.model.User;
 import ipb.pt.safeeat.repository.IngredientRepository;
 import ipb.pt.safeeat.repository.RestrictionRepository;
 import ipb.pt.safeeat.repository.UserRepository;
+import ipb.pt.safeeat.utility.RestrictionChecker;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -28,7 +29,9 @@ public class RestrictionService {
     private IngredientRepository ingredientRepository;
 
     public List<Restriction> getAll() {
-        return restrictionRepository.findAll();
+        List<Restriction> restrictions = restrictionRepository.findAll();
+        RestrictionChecker.checkRestrictionList(restrictions);
+        return restrictions;
     }
 
     public Restriction findById(String id) {
@@ -79,7 +82,7 @@ public class RestrictionService {
 
         List<Ingredient> ingredients = ingredientRepository.findAll();
         for (Ingredient ingredient : ingredients) {
-            ingredient.getRestrictionIds().remove(restriction.getId());
+            ingredient.getRestrictions().remove(restriction);
             ingredientRepository.save(ingredient);
         }
 
