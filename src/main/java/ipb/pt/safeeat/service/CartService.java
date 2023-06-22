@@ -20,6 +20,8 @@ public class CartService {
     private CartRepository cartRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private RestrictionChecker restrictionChecker;
 
     public List<Cart> findAll() {
         return cartRepository.findAll();
@@ -30,7 +32,7 @@ public class CartService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.CART_NOT_FOUND));
 
         for(Item item : cart.getItems()) {
-            RestrictionChecker.checkProduct(item.getProduct());
+            restrictionChecker.checkProduct(item.getProduct());
         }
 
         return cart;
@@ -41,7 +43,7 @@ public class CartService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.USER_NOT_FOUND));
 
         for(Item item : user.getCart().getItems()) {
-            RestrictionChecker.checkProduct(item.getProduct());
+            restrictionChecker.checkProduct(item.getProduct());
         }
 
         return user.getCart();

@@ -29,10 +29,12 @@ public class ProductService {
     private CategoryRepository categoryRepository;
     @Autowired
     private RestaurantRepository restaurantRepository;
+    @Autowired
+    private RestrictionChecker restrictionChecker;
 
     public List<Product> findAll() {
         List<Product> products = productRepository.findAll();
-        RestrictionChecker.checkProductList(products);
+        restrictionChecker.checkProductList(products);
         return products;
     }
 
@@ -40,7 +42,7 @@ public class ProductService {
         Product product = productRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.PRODUCT_NOT_FOUND));
 
-        RestrictionChecker.checkProduct(product);
+        restrictionChecker.checkProduct(product);
         return product;
     }
 
@@ -48,7 +50,7 @@ public class ProductService {
         Restaurant restaurant = restaurantRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND));
 
-        RestrictionChecker.checkProductList(restaurant.getProducts());
+        restrictionChecker.checkProductList(restaurant.getProducts());
         return restaurant.getProducts();
     }
 
@@ -63,7 +65,7 @@ public class ProductService {
             }
         }
 
-        RestrictionChecker.checkProductList(products);
+        restrictionChecker.checkProductList(products);
         return products;
     }
 

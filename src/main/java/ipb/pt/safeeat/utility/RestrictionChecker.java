@@ -11,7 +11,7 @@ import java.util.List;
 
 @Component
 public class RestrictionChecker {
-    public static void checkProduct(Product product) {
+    public void checkProduct(Product product) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         for (Ingredient ingredient : product.getIngredients()) {
@@ -23,13 +23,13 @@ public class RestrictionChecker {
         }
     }
 
-    public static void checkProductList(List<Product> products) {
+    public void checkProductList(List<Product> products) {
         for(Product product : products) {
             checkProduct(product);
         }
     }
 
-    public static void checkIngredient(Ingredient ingredient) {
+    public void checkIngredient(Ingredient ingredient) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         for (Restriction restriction : ingredient.getRestrictions()) {
@@ -39,13 +39,13 @@ public class RestrictionChecker {
         }
     }
 
-    public static void checkIngredientList(List<Ingredient> ingredients) {
+    public void checkIngredientList(List<Ingredient> ingredients) {
         for(Ingredient ingredient : ingredients) {
             checkIngredient(ingredient);
         }
     }
 
-    public static void checkRestriction(Restriction restriction) {
+    public void checkRestriction(Restriction restriction) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (user.getRestrictions().contains(restriction)) {
@@ -53,7 +53,7 @@ public class RestrictionChecker {
         }
     }
 
-    public static void checkRestrictionList(List<Restriction> restrictions) {
+    public void checkRestrictionList(List<Restriction> restrictions) {
         for(Restriction restriction : restrictions) {
             checkRestriction(restriction);
         }

@@ -28,6 +28,8 @@ public class ItemService {
     private ProductRepository productRepository;
     @Autowired
     private CartRepository cartRepository;
+    @Autowired
+    private RestrictionChecker restrictionChecker;
 
     public List<Item> findAll() {
         return itemRepository.findAll();
@@ -37,7 +39,7 @@ public class ItemService {
         Item item = itemRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ITEM_NOT_FOUND));
 
-        RestrictionChecker.checkProduct(item.getProduct());
+        restrictionChecker.checkProduct(item.getProduct());
         return item;
     }
 
@@ -46,7 +48,7 @@ public class ItemService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.CART_NOT_FOUND));
 
         for(Item item : cart.getItems()) {
-            RestrictionChecker.checkProduct(item.getProduct());
+            restrictionChecker.checkProduct(item.getProduct());
         }
 
         return cart.getItems();

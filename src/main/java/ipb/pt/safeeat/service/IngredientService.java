@@ -32,10 +32,12 @@ public class IngredientService {
     private RestaurantRepository restaurantRepository;
     @Autowired
     private ProductRepository productRepository;
+    @Autowired
+    private RestrictionChecker restrictionChecker;
 
     public List<Ingredient> findAll() {
         List<Ingredient> ingredients = ingredientRepository.findAll();
-        RestrictionChecker.checkIngredientList(ingredients);
+        restrictionChecker.checkIngredientList(ingredients);
         return ingredients;
     }
 
@@ -43,7 +45,7 @@ public class IngredientService {
         Ingredient ingredient = ingredientRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.INGREDIENT_NOT_FOUND));
 
-        RestrictionChecker.checkRestrictionList(ingredient.getRestrictions());
+        restrictionChecker.checkRestrictionList(ingredient.getRestrictions());
         return ingredient;
     }
 

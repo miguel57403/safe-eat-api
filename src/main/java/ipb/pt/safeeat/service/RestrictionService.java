@@ -27,10 +27,12 @@ public class RestrictionService {
     private UserRepository userRepository;
     @Autowired
     private IngredientRepository ingredientRepository;
+    @Autowired
+    private RestrictionChecker restrictionChecker;
 
     public List<Restriction> findAll() {
         List<Restriction> restrictions = restrictionRepository.findAll();
-        RestrictionChecker.checkRestrictionList(restrictions);
+        restrictionChecker.checkRestrictionList(restrictions);
         return restrictions;
     }
 

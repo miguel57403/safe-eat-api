@@ -28,12 +28,14 @@ public class ProductSectionService {
     private ProductRepository productRepository;
     @Autowired
     private RestaurantRepository restaurantRepository;
+    @Autowired
+    private RestrictionChecker restrictionChecker;
 
     public List<ProductSection> findAll() {
         List<ProductSection> productSections = productSectionRepository.findAll();
 
         for(ProductSection productSection : productSections) {
-            RestrictionChecker.checkProductList(productSection.getProducts());
+            restrictionChecker.checkProductList(productSection.getProducts());
         }
 
         return productSections;
@@ -43,7 +45,7 @@ public class ProductSectionService {
         ProductSection productSection = productSectionRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.PRODUCT_SECTION_NOT_FOUND));
 
-        RestrictionChecker.checkProductList(productSection.getProducts());
+        restrictionChecker.checkProductList(productSection.getProducts());
         return productSection;
     }
 
