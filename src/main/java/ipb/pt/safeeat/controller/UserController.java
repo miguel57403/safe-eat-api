@@ -39,7 +39,6 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
-
     @PostMapping("/many")
     public ResponseEntity<Object> createMany(@Valid @RequestBody List<UserDto> userDtos) {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.createMany(userDtos));
