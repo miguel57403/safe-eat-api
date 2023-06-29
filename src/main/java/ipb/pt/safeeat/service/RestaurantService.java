@@ -92,8 +92,10 @@ public class RestaurantService {
     }
 
     public Restaurant create(RestaurantDto restaurantDto) {
-        User owner = userRepository.findById(restaurantDto.getOwnerId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.USER_NOT_FOUND));
+        User owner = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (!restaurantDto.getOwnerId().equals(owner.getId()))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "The user and owner ids don't match");
 
         Restaurant restaurant = new Restaurant();
         BeanUtils.copyProperties(restaurantDto, restaurant);
@@ -122,9 +124,8 @@ public class RestaurantService {
 
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        if (old.getOwner() != null && !old.getOwner().getId().equals(user.getId())) {
+        if (!old.getOwner().getId().equals(user.getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not the owner of this restaurant");
-        }
 
         BeanUtils.copyProperties(restaurantDto, old);
         return restaurantRepository.save(old);
@@ -136,9 +137,8 @@ public class RestaurantService {
 
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        if (restaurant.getOwner() != null && !restaurant.getOwner().getId().equals(user.getId())) {
+        if (restaurant.getOwner() != null && !restaurant.getOwner().getId().equals(user.getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not the owner of this restaurant");
-        }
 
         productRepository.deleteAll(restaurant.getProducts());
         ingredientRepository.deleteAll(restaurant.getIngredients());

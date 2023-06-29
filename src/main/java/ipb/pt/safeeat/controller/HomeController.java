@@ -18,6 +18,6 @@ public class HomeController {
 
     @GetMapping
     public ResponseEntity<Object> get() {
-        return ResponseEntity.ok(homeService.get());
+        return ResponseEntity.ok(homeService.getOne());
     }
 }

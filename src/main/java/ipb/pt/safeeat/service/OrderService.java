@@ -14,7 +14,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class OrderService {
@@ -65,6 +64,11 @@ public class OrderService {
         User client = userRepository.findById(orderDto.getClientId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.USER_NOT_FOUND));
 
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (!client.equals(user))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Cannot create order for another user");
+
         List<Item> items = new ArrayList<>();
         for (String itemId : orderDto.getItemIds()) {
             items.add(itemRepository.findById(itemId).orElseThrow(
@@ -114,9 +118,10 @@ public class OrderService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ORDER_NOT_FOUND));
 
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Optional <Restaurant> restaurant = restaurantRepository.findByOrders(old);
+        Restaurant restaurant = restaurantRepository.findByOrders(old).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND));
 
-        if (restaurant.isEmpty() || !restaurant.get().getOwner().equals(user))
+        if (!restaurant.getOwner().equals(user))
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND);
 
         old.setStatus(status);
@@ -127,18 +132,17 @@ public class OrderService {
         Order order = orderRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ORDER_NOT_FOUND));
 
-        Optional<User> user = userRepository.findById(order.getClient().getId());
-        Optional<Restaurant> restaurant = restaurantRepository.findById(order.getRestaurant().getId());
+        User user = userRepository.findById(order.getClient().getId()).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.USER_NOT_FOUND));
 
-        if (user.isPresent()) {
-            user.get().getOrders().remove(order);
-            userRepository.save(user.get());
-        }
+        Restaurant restaurant = restaurantRepository.findById(order.getRestaurant().getId()).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND));
 
-        if (restaurant.isPresent()) {
-            restaurant.get().getOrders().remove(order);
-            restaurantRepository.save(restaurant.get());
-        }
+        user.getOrders().remove(order);
+        userRepository.save(user);
+
+        restaurant.getOrders().remove(order);
+        restaurantRepository.save(restaurant);
 
         orderRepository.deleteById(id);
     }

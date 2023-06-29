@@ -1,12 +1,12 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.model.User;
-import ipb.pt.safeeat.utility.NotFoundConstants;
 import ipb.pt.safeeat.dto.AdvertisementDto;
 import ipb.pt.safeeat.model.Advertisement;
 import ipb.pt.safeeat.model.Restaurant;
+import ipb.pt.safeeat.model.User;
 import ipb.pt.safeeat.repository.AdvertisementRepository;
 import ipb.pt.safeeat.repository.RestaurantRepository;
+import ipb.pt.safeeat.utility.NotFoundConstants;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,7 +17,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class AdvertisementService {
@@ -38,6 +37,11 @@ public class AdvertisementService {
     public Advertisement create(AdvertisementDto advertisementDto) {
         Restaurant restaurant = restaurantRepository.findById(advertisementDto.getRestaurantId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND));
+
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (!restaurant.getOwner().equals(user))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND);
 
         Advertisement advertisement = new Advertisement();
         BeanUtils.copyProperties(advertisementDto, advertisement);
@@ -64,12 +68,13 @@ public class AdvertisementService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ADVERTISEMENT_NOT_FOUND));
 
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Optional<Restaurant> restaurant = restaurantRepository.findByAdvertisements(old);
+        Restaurant restaurant = restaurantRepository.findByAdvertisements(old).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND));
 
-        if (restaurant.isEmpty() || !restaurant.get().getOwner().equals(user))
+        if (!restaurant.getOwner().equals(user))
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND);
 
-        if (!restaurant.get().getAdvertisements().contains(old))
+        if (!restaurant.getAdvertisements().contains(old))
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ADVERTISEMENT_NOT_FOUND);
 
         BeanUtils.copyProperties(advertisementDto, old);
@@ -81,17 +86,18 @@ public class AdvertisementService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ADVERTISEMENT_NOT_FOUND));
 
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Optional<Restaurant> restaurant = restaurantRepository.findByAdvertisements(advertisement);
+        Restaurant restaurant = restaurantRepository.findByAdvertisements(advertisement).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND));
 
-        if (restaurant.isEmpty() || !restaurant.get().getOwner().equals(user))
+        if (!restaurant.getOwner().equals(user))
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND);
 
 
-        if (!restaurant.get().getAdvertisements().contains(advertisement))
+        if (!restaurant.getAdvertisements().contains(advertisement))
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ADVERTISEMENT_NOT_FOUND);
 
-        restaurant.get().getAdvertisements().remove(advertisement);
-        restaurantRepository.save(restaurant.get());
+        restaurant.getAdvertisements().remove(advertisement);
+        restaurantRepository.save(restaurant);
         advertisementRepository.deleteById(id);
     }
 }

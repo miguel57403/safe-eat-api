@@ -59,6 +59,11 @@ public class ItemService {
         Cart cart = cartRepository.findById(cartId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.CART_NOT_FOUND));
 
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (!user.getCart().equals(cart))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, NotFoundConstants.CART_NOT_FOUND);
+
         Product product = productRepository.findById(itemDto.getProductId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.PRODUCT_NOT_FOUND));
 

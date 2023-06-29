@@ -35,13 +35,13 @@ public class PaymentController {
     }
 
     @PostMapping
-    public ResponseEntity<Object> create(@Valid @RequestBody PaymentDto paymentDto, @RequestParam String userId) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(paymentService.create(paymentDto, userId));
+    public ResponseEntity<Object> create(@Valid @RequestBody PaymentDto paymentDto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(paymentService.create(paymentDto));
     }
 
     @PostMapping("/many")
-    public ResponseEntity<Object> createMany(@Valid @RequestBody List<PaymentDto> paymentDtos, @RequestParam String userId) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(paymentService.createMany(paymentDtos, userId));
+    public ResponseEntity<Object> createMany(@Valid @RequestBody List<PaymentDto> paymentDtos) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(paymentService.createMany(paymentDtos));
     }
 
     @PutMapping

@@ -3,6 +3,7 @@ package ipb.pt.safeeat.service;
 import ipb.pt.safeeat.dto.NotificationDto;
 import ipb.pt.safeeat.model.Notification;
 import ipb.pt.safeeat.model.Order;
+import ipb.pt.safeeat.model.Restaurant;
 import ipb.pt.safeeat.model.User;
 import ipb.pt.safeeat.repository.NotificationRepository;
 import ipb.pt.safeeat.repository.OrderRepository;
@@ -49,6 +50,12 @@ public class NotificationService {
     public Notification create(NotificationDto notificationDto, String userId) {
         Order order = orderRepository.findById(notificationDto.getOrderId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ORDER_NOT_FOUND));
+
+        User owner = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Restaurant restaurant = order.getRestaurant();
+
+        if(!owner.getRestaurants().contains(restaurant))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND);
 
         User user = userRepository.findById(userId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.USER_NOT_FOUND));

@@ -1,14 +1,14 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.model.User;
-import ipb.pt.safeeat.utility.NotFoundConstants;
 import ipb.pt.safeeat.dto.ProductSectionDto;
 import ipb.pt.safeeat.model.Product;
 import ipb.pt.safeeat.model.ProductSection;
 import ipb.pt.safeeat.model.Restaurant;
+import ipb.pt.safeeat.model.User;
 import ipb.pt.safeeat.repository.ProductRepository;
 import ipb.pt.safeeat.repository.ProductSectionRepository;
 import ipb.pt.safeeat.repository.RestaurantRepository;
+import ipb.pt.safeeat.utility.NotFoundConstants;
 import ipb.pt.safeeat.utility.RestrictionChecker;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +20,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class ProductSectionService {
@@ -66,7 +65,12 @@ public class ProductSectionService {
 
     public ProductSection create(ProductSectionDto productSectionDto, String restaurantId) {
         Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Restaurant not found"));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND));
+
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (!restaurant.getOwner().getId().equals(user.getId()))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, NotFoundConstants.RESTAURANT_NOT_FOUND);
 
         List<Product> products = new ArrayList<>();
         for (String productId : productSectionDto.getProductIds()) {
@@ -101,12 +105,13 @@ public class ProductSectionService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.PRODUCT_SECTION_NOT_FOUND));
 
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Optional<Restaurant> restaurant = restaurantRepository.findByProductSection(old);
+        Restaurant restaurant = restaurantRepository.findByProductSection(old).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND));
 
-        if (restaurant.isEmpty() || !restaurant.get().getOwner().equals(user))
+        if (!restaurant.getOwner().equals(user))
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND);
 
-        if (!restaurant.get().getProductSections().contains(old))
+        if (!restaurant.getProductSections().contains(old))
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.PRODUCT_SECTION_NOT_FOUND);
 
         BeanUtils.copyProperties(productSectionDto, old);
@@ -118,13 +123,14 @@ public class ProductSectionService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.PRODUCT_SECTION_NOT_FOUND));
 
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Optional<Restaurant> restaurant = restaurantRepository.findByProductSection(productSection);
+        Restaurant restaurant = restaurantRepository.findByProductSection(productSection).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND));
 
-        if (restaurant.isEmpty() || !restaurant.get().getOwner().equals(user))
+        if (!restaurant.getOwner().equals(user))
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND);
 
-        restaurant.get().getProductSections().remove(productSection);
-        restaurantRepository.save(restaurant.get());
+        restaurant.getProductSections().remove(productSection);
+        restaurantRepository.save(restaurant);
         productSectionRepository.deleteById(id);
     }
 }

@@ -18,7 +18,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class IngredientService {
@@ -50,6 +49,11 @@ public class IngredientService {
     public Ingredient create(IngredientDto ingredientDto, String restaurantId) {
         Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND));
+
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (!restaurant.getOwner().equals(user))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND);
 
         List<Restriction> restrictions = new ArrayList<>();
         if (ingredientDto.getRestrictionIds() != null && !ingredientDto.getRestrictionIds().isEmpty()) {
@@ -86,12 +90,13 @@ public class IngredientService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.INGREDIENT_NOT_FOUND));
 
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Optional<Restaurant> restaurant = restaurantRepository.findByIngredients(old);
+        Restaurant restaurant = restaurantRepository.findByIngredients(old).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND));
 
-        if (restaurant.isEmpty() || !restaurant.get().getOwner().equals(user))
+        if (!restaurant.getOwner().equals(user))
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND);
 
-        if (!restaurant.get().getIngredients().contains(old))
+        if (!restaurant.getIngredients().contains(old))
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.INGREDIENT_NOT_FOUND);
 
         BeanUtils.copyProperties(ingredientDto, old);
@@ -103,18 +108,19 @@ public class IngredientService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.INGREDIENT_NOT_FOUND));
 
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Optional<Restaurant> restaurant = restaurantRepository.findByIngredients(ingredient);
+        Restaurant restaurant = restaurantRepository.findByIngredients(ingredient).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND));
 
-        if (restaurant.isEmpty() || !restaurant.get().getOwner().equals(user))
+        if (!restaurant.getOwner().equals(user))
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND);
 
-        if (!restaurant.get().getIngredients().contains(ingredient))
+        if (!restaurant.getIngredients().contains(ingredient))
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.INGREDIENT_NOT_FOUND);
 
-        restaurant.get().getIngredients().remove(ingredient);
-        restaurantRepository.save(restaurant.get());
+        restaurant.getIngredients().remove(ingredient);
+        restaurantRepository.save(restaurant);
 
-        for (Product product : restaurant.get().getProducts()) {
+        for (Product product : restaurant.getProducts()) {
             if (product.getIngredients().contains(ingredient)) {
                 product.getIngredients().remove(ingredient);
                 productRepository.save(product);

@@ -1,12 +1,12 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.model.User;
-import ipb.pt.safeeat.utility.NotFoundConstants;
 import ipb.pt.safeeat.dto.FeedbackDto;
 import ipb.pt.safeeat.model.Feedback;
 import ipb.pt.safeeat.model.Order;
+import ipb.pt.safeeat.model.User;
 import ipb.pt.safeeat.repository.FeedbackRepository;
 import ipb.pt.safeeat.repository.OrderRepository;
+import ipb.pt.safeeat.utility.NotFoundConstants;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class FeedbackService {
@@ -37,6 +36,11 @@ public class FeedbackService {
         Order order = orderRepository.findById(orderId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ORDER_NOT_FOUND));
 
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (!user.getOrders().contains(order))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ORDER_NOT_FOUND);
+
         Feedback feedback = new Feedback();
         BeanUtils.copyProperties(feedbackDto, feedback);
         Feedback created = feedbackRepository.save(feedback);
@@ -52,9 +56,10 @@ public class FeedbackService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.FEEDBACK_NOT_FOUND));
 
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Optional<Order> order = orderRepository.findByFeedback(old);
+        Order order = orderRepository.findByFeedback(old).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ORDER_NOT_FOUND));
 
-        if(order.isEmpty() || !user.getOrders().contains(order.get()))
+        if (!user.getOrders().contains(order))
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ORDER_NOT_FOUND);
 
         BeanUtils.copyProperties(feedbackDto, old);
@@ -66,13 +71,14 @@ public class FeedbackService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.FEEDBACK_NOT_FOUND));
 
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Optional<Order> order = orderRepository.findByFeedback(feedback);
+        Order order = orderRepository.findByFeedback(feedback).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ORDER_NOT_FOUND));
 
-        if(order.isEmpty() || !user.getOrders().contains(order.get()))
+        if (!user.getOrders().contains(order))
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ORDER_NOT_FOUND);
 
-        order.get().setFeedback(null);
-        orderRepository.save(order.get());
+        order.setFeedback(null);
+        orderRepository.save(order);
         feedbackRepository.deleteById(id);
     }
 }

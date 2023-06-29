@@ -43,9 +43,8 @@ public class UserService {
     }
 
     public User create(UserDto userDto) {
-        if (userRepository.findByEmail(userDto.getEmail()).isPresent()) {
+        if (userRepository.findByEmail(userDto.getEmail()).isPresent())
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email already in use");
-        }
 
         List<Restriction> restrictions = getRestrictions(userDto);
 
@@ -88,15 +87,13 @@ public class UserService {
 
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        if (!user.getId().equals(userDto.getId())) {
+        if (!user.getId().equals(userDto.getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Cannot update other user");
-        }
 
         User byEmail = userRepository.findByEmail(userDto.getEmail()).orElse(null);
 
-        if (byEmail != null && !byEmail.getId().equals(old.getId())) {
+        if (byEmail != null && !byEmail.getId().equals(old.getId()))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email already in use");
-        }
 
         List<Restriction> restrictions = getRestrictions(userDto);
 
@@ -111,9 +108,8 @@ public class UserService {
         User user = userRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.USER_NOT_FOUND));
 
-        if (!user.getRestaurants().isEmpty()) {
+        if (!user.getRestaurants().isEmpty())
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot delete user with restaurants");
-        }
 
         paymentRepository.deleteAll(user.getPayments());
         addressRepository.deleteAll(user.getAddresses());

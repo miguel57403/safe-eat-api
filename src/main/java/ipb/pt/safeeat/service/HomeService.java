@@ -20,7 +20,7 @@ public class HomeService {
     @Autowired
     private AdvertisementRepository advertisementRepository;
 
-    public Home get() {
+    public Home getOne() {
         List<RestaurantSection> restaurantSections = restaurantSectionRepository.findAll();
         List<Advertisement> advertisements = advertisementRepository.findAll();
 

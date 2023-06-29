@@ -41,9 +41,8 @@ public class PaymentService {
         return user.getPayments();
     }
 
-    public Payment create(PaymentDto paymentDto, String userId) {
-        User user = userRepository.findById(userId).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.PAYMENT_NOT_FOUND));
+    public Payment create(PaymentDto paymentDto) {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         Payment payment = new Payment();
         BeanUtils.copyProperties(paymentDto, payment);
@@ -56,10 +55,10 @@ public class PaymentService {
     }
 
     @Transactional
-    public List<Payment> createMany(List<PaymentDto> paymentDtos, String userId) {
+    public List<Payment> createMany(List<PaymentDto> paymentDtos) {
         List<Payment> created = new ArrayList<>();
         for (PaymentDto paymentDto : paymentDtos) {
-            created.add(create(paymentDto, userId));
+            created.add(create(paymentDto));
         }
 
         return created;
