@@ -1,6 +1,7 @@
 package ipb.pt.safeeat.service;
 
 import ipb.pt.safeeat.model.Item;
+import ipb.pt.safeeat.utility.ForbiddenConstants;
 import ipb.pt.safeeat.utility.NotFoundConstants;
 import ipb.pt.safeeat.model.Cart;
 import ipb.pt.safeeat.model.User;
@@ -32,7 +33,12 @@ public class CartService {
         Cart cart = cartRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.CART_NOT_FOUND));
 
-        for(Item item : cart.getItems()) {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (!user.isAdmin() && !user.getCart().equals(cart))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_CART);
+
+        for (Item item : cart.getItems()) {
             restrictionChecker.checkProduct(item.getProduct());
         }
 
@@ -43,7 +49,12 @@ public class CartService {
         User user = userRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.USER_NOT_FOUND));
 
-        for(Item item : user.getCart().getItems()) {
+        User current = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (!current.isAdmin() && !current.equals(user))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_CART);
+
+        for (Item item : user.getCart().getItems()) {
             restrictionChecker.checkProduct(item.getProduct());
         }
 

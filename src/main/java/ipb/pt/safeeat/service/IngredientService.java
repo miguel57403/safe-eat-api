@@ -6,7 +6,7 @@ import ipb.pt.safeeat.repository.IngredientRepository;
 import ipb.pt.safeeat.repository.ProductRepository;
 import ipb.pt.safeeat.repository.RestaurantRepository;
 import ipb.pt.safeeat.repository.RestrictionRepository;
-import ipb.pt.safeeat.utility.NotAllowedConstants;
+import ipb.pt.safeeat.utility.ForbiddenConstants;
 import ipb.pt.safeeat.utility.NotFoundConstants;
 import ipb.pt.safeeat.utility.RestrictionChecker;
 import org.springframework.beans.BeanUtils;
@@ -42,6 +42,7 @@ public class IngredientService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.INGREDIENT_NOT_FOUND));
 
         restrictionChecker.checkIngredient(ingredient);
+
         return ingredient;
     }
 
@@ -52,10 +53,11 @@ public class IngredientService {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!user.isAdmin() && !restaurant.getOwner().equals(user))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, NotAllowedConstants.FORBIDDEN_INGREDIENT);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_INGREDIENT);
 
         List<Ingredient> ingredients = restaurant.getIngredients();
         restrictionChecker.checkIngredientList(ingredients);
+
         return ingredients;
     }
 
@@ -65,6 +67,7 @@ public class IngredientService {
 
         List<Ingredient> ingredients = product.getIngredients();
         restrictionChecker.checkIngredientList(ingredients);
+
         return ingredients;
     }
 
@@ -75,7 +78,7 @@ public class IngredientService {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!restaurant.getOwner().equals(user))
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_INGREDIENT);
 
         List<Restriction> restrictions = new ArrayList<>();
         if (ingredientDto.getRestrictionIds() != null && !ingredientDto.getRestrictionIds().isEmpty()) {
@@ -111,15 +114,16 @@ public class IngredientService {
         Ingredient old = ingredientRepository.findById(ingredientDto.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.INGREDIENT_NOT_FOUND));
 
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Restaurant restaurant = restaurantRepository.findByIngredients(old).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND));
 
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
         if (!restaurant.getOwner().equals(user))
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_INGREDIENT);
 
         if (!restaurant.getIngredients().contains(old))
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.INGREDIENT_NOT_FOUND);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_INGREDIENT);
 
         BeanUtils.copyProperties(ingredientDto, old);
         return ingredientRepository.save(old);
@@ -129,15 +133,16 @@ public class IngredientService {
         Ingredient ingredient = ingredientRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.INGREDIENT_NOT_FOUND));
 
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Restaurant restaurant = restaurantRepository.findByIngredients(ingredient).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND));
 
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
         if (!restaurant.getOwner().equals(user))
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_INGREDIENT);
 
         if (!restaurant.getIngredients().contains(ingredient))
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.INGREDIENT_NOT_FOUND);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_INGREDIENT);
 
         restaurant.getIngredients().remove(ingredient);
         restaurantRepository.save(restaurant);

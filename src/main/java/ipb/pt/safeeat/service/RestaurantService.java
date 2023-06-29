@@ -6,6 +6,7 @@ import ipb.pt.safeeat.model.Product;
 import ipb.pt.safeeat.model.Restaurant;
 import ipb.pt.safeeat.model.User;
 import ipb.pt.safeeat.repository.*;
+import ipb.pt.safeeat.utility.ForbiddenConstants;
 import ipb.pt.safeeat.utility.NotFoundConstants;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,7 +92,7 @@ public class RestaurantService {
         User owner = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!restaurantDto.getOwnerId().equals(owner.getId()))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "The user and owner ids don't match");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_RESTAURANT);
 
         Restaurant restaurant = new Restaurant();
         BeanUtils.copyProperties(restaurantDto, restaurant);
@@ -121,7 +122,7 @@ public class RestaurantService {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!old.getOwner().getId().equals(user.getId()))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not the owner of this restaurant");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_RESTAURANT);
 
         BeanUtils.copyProperties(restaurantDto, old);
         return restaurantRepository.save(old);
@@ -134,7 +135,7 @@ public class RestaurantService {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (restaurant.getOwner() != null && !restaurant.getOwner().getId().equals(user.getId()))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not the owner of this restaurant");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_RESTAURANT);
 
         productRepository.deleteAll(restaurant.getProducts());
         ingredientRepository.deleteAll(restaurant.getIngredients());

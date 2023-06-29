@@ -9,9 +9,14 @@ import java.util.Optional;
 @Repository
 public interface RestaurantRepository extends MongoRepository<Restaurant, String> {
     Optional<Restaurant> findByAdvertisements(Advertisement advertisement);
+
     Optional<Restaurant> findByDeliveries(Delivery delivery);
+
     Optional<Restaurant> findByIngredients(Ingredient ingredient);
+
     Optional<Restaurant> findByProductSections(ProductSection productSection);
+
     Optional<Restaurant> findByProducts(Product product);
+
     Optional<Restaurant> findByOrders(Order order);
 }

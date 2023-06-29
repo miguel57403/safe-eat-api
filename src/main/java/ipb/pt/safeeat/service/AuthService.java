@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 @Service
-public class AuthService implements UserDetailsService{
+public class AuthService implements UserDetailsService {
     @Autowired
     private UserRepository userRepository;
 

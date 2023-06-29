@@ -5,7 +5,7 @@ import ipb.pt.safeeat.model.*;
 import ipb.pt.safeeat.repository.FeedbackRepository;
 import ipb.pt.safeeat.repository.OrderRepository;
 import ipb.pt.safeeat.repository.RestaurantRepository;
-import ipb.pt.safeeat.utility.NotAllowedConstants;
+import ipb.pt.safeeat.utility.ForbiddenConstants;
 import ipb.pt.safeeat.utility.NotFoundConstants;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +42,7 @@ public class FeedbackService {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!user.isAdmin() && !restaurant.getOwner().equals(user) && !order.getClient().equals(user))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, NotAllowedConstants.FORBIDDEN_FEEDBACK);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_FEEDBACK);
 
         return feedback;
     }
@@ -54,7 +54,7 @@ public class FeedbackService {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!user.isAdmin() && !user.getOrders().contains(order))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, NotAllowedConstants.FORBIDDEN_FEEDBACK);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_FEEDBACK);
 
         return order.getFeedback();
     }
@@ -66,7 +66,7 @@ public class FeedbackService {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!user.getOrders().contains(order))
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ORDER_NOT_FOUND);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_FEEDBACK);
 
         Feedback feedback = new Feedback();
         BeanUtils.copyProperties(feedbackDto, feedback);
@@ -82,12 +82,13 @@ public class FeedbackService {
         Feedback old = feedbackRepository.findById(feedbackDto.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.FEEDBACK_NOT_FOUND));
 
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Order order = orderRepository.findByFeedback(old).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ORDER_NOT_FOUND));
 
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
         if (!user.getOrders().contains(order))
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ORDER_NOT_FOUND);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_FEEDBACK);
 
         BeanUtils.copyProperties(feedbackDto, old);
         return feedbackRepository.save(old);
@@ -97,15 +98,17 @@ public class FeedbackService {
         Feedback feedback = feedbackRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.FEEDBACK_NOT_FOUND));
 
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Order order = orderRepository.findByFeedback(feedback).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ORDER_NOT_FOUND));
 
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
         if (!user.getOrders().contains(order))
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ORDER_NOT_FOUND);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_FEEDBACK);
 
         order.setFeedback(null);
         orderRepository.save(order);
+
         feedbackRepository.deleteById(id);
     }
 }

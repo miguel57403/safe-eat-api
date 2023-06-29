@@ -26,7 +26,7 @@ public class RestrictionChecker {
     }
 
     public void checkProductList(List<Product> products) {
-        for(Product product : products) {
+        for (Product product : products) {
             checkProduct(product);
         }
     }
@@ -40,7 +40,7 @@ public class RestrictionChecker {
     }
 
     public void checkIngredientList(List<Ingredient> ingredients) {
-        for(Ingredient ingredient : ingredients) {
+        for (Ingredient ingredient : ingredients) {
             checkIngredient(ingredient);
         }
     }
@@ -51,7 +51,7 @@ public class RestrictionChecker {
     }
 
     public void checkRestrictionList(List<Restriction> restrictions) {
-        for(Restriction restriction : restrictions) {
+        for (Restriction restriction : restrictions) {
             checkRestriction(restriction);
         }
     }

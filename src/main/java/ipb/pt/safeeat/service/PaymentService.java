@@ -5,7 +5,7 @@ import ipb.pt.safeeat.model.Payment;
 import ipb.pt.safeeat.model.User;
 import ipb.pt.safeeat.repository.PaymentRepository;
 import ipb.pt.safeeat.repository.UserRepository;
-import ipb.pt.safeeat.utility.NotAllowedConstants;
+import ipb.pt.safeeat.utility.ForbiddenConstants;
 import ipb.pt.safeeat.utility.NotFoundConstants;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +37,7 @@ public class PaymentService {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!user.isAdmin() && !user.getPayments().contains(payment))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, NotAllowedConstants.FORBIDDEN_PAYMENT);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_PAYMENT);
 
         return payment;
     }
@@ -49,7 +49,7 @@ public class PaymentService {
         User current = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!current.isAdmin() && !current.equals(user))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, NotAllowedConstants.FORBIDDEN_PAYMENT);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_PAYMENT);
 
         return user.getPayments();
     }
@@ -84,7 +84,7 @@ public class PaymentService {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!user.getPayments().contains(old))
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.PAYMENT_NOT_FOUND);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_PAYMENT);
 
         BeanUtils.copyProperties(paymentDto, old);
         return paymentRepository.save(old);
@@ -97,10 +97,11 @@ public class PaymentService {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!user.getPayments().contains(payment))
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.PAYMENT_NOT_FOUND);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_PAYMENT);
 
         user.getPayments().remove(payment);
         userRepository.save(user);
+
         paymentRepository.deleteById(id);
     }
 }

@@ -8,7 +8,7 @@ import ipb.pt.safeeat.model.User;
 import ipb.pt.safeeat.repository.CartRepository;
 import ipb.pt.safeeat.repository.ItemRepository;
 import ipb.pt.safeeat.repository.ProductRepository;
-import ipb.pt.safeeat.utility.NotAllowedConstants;
+import ipb.pt.safeeat.utility.ForbiddenConstants;
 import ipb.pt.safeeat.utility.NotFoundConstants;
 import ipb.pt.safeeat.utility.RestrictionChecker;
 import org.springframework.beans.BeanUtils;
@@ -44,7 +44,7 @@ public class ItemService {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!user.isAdmin() && !user.getCart().getItems().contains(item))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, NotAllowedConstants.FORBIDDEN_ITEM);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_ITEM);
 
         restrictionChecker.checkProduct(item.getProduct());
         return item;
@@ -57,7 +57,7 @@ public class ItemService {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!user.isAdmin() && !user.getCart().equals(cart))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, NotAllowedConstants.FORBIDDEN_ITEM);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_ITEM);
 
         for (Item item : cart.getItems()) {
             restrictionChecker.checkProduct(item.getProduct());
@@ -112,7 +112,7 @@ public class ItemService {
         Cart cart = user.getCart();
 
         if (!cart.getItems().contains(old))
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ITEM_NOT_FOUND);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_ITEM);
 
         Product product = productRepository.findById(itemDto.getProductId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.PRODUCT_NOT_FOUND));
@@ -131,10 +131,11 @@ public class ItemService {
         Cart cart = user.getCart();
 
         if (!cart.getItems().contains(item))
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ITEM_NOT_FOUND);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_ITEM);
 
         cart.getItems().remove(item);
         cartRepository.save(cart);
+
         itemRepository.deleteById(id);
     }
 }

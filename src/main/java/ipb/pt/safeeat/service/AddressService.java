@@ -5,7 +5,7 @@ import ipb.pt.safeeat.model.Address;
 import ipb.pt.safeeat.model.User;
 import ipb.pt.safeeat.repository.AddressRepository;
 import ipb.pt.safeeat.repository.UserRepository;
-import ipb.pt.safeeat.utility.NotAllowedConstants;
+import ipb.pt.safeeat.utility.ForbiddenConstants;
 import ipb.pt.safeeat.utility.NotFoundConstants;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +36,7 @@ public class AddressService {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!user.isAdmin() && !user.getAddresses().contains(address))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, NotAllowedConstants.FORBIDDEN_ADDRESS);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_ADDRESS);
 
         return address;
     }
@@ -44,6 +44,11 @@ public class AddressService {
     public List<Address> findAllByUser(String id) {
         User user = userRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.USER_NOT_FOUND));
+
+        User current = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (!current.isAdmin() && !current.equals(user))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_ADDRESS);
 
         return user.getAddresses();
     }
@@ -78,7 +83,7 @@ public class AddressService {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!user.getAddresses().contains(old))
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ADDRESS_NOT_FOUND);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_ADDRESS);
 
         BeanUtils.copyProperties(addressDto, old);
         return addressRepository.save(old);
@@ -91,10 +96,11 @@ public class AddressService {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!user.getAddresses().contains(address))
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ADDRESS_NOT_FOUND);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_ADDRESS);
 
         user.getAddresses().remove(address);
         userRepository.save(user);
+
         addressRepository.deleteById(id);
     }
 }

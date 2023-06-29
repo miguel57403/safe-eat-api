@@ -6,7 +6,7 @@ import ipb.pt.safeeat.model.Restaurant;
 import ipb.pt.safeeat.model.User;
 import ipb.pt.safeeat.repository.AdvertisementRepository;
 import ipb.pt.safeeat.repository.RestaurantRepository;
-import ipb.pt.safeeat.utility.NotAllowedConstants;
+import ipb.pt.safeeat.utility.ForbiddenConstants;
 import ipb.pt.safeeat.utility.NotFoundConstants;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +40,7 @@ public class AdvertisementService {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!user.isAdmin() && !restaurant.getOwner().equals(user))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, NotAllowedConstants.FORBIDDEN_ADVERTISEMENT);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_ADVERTISEMENT);
 
         return advertisement;
     }
@@ -52,7 +52,7 @@ public class AdvertisementService {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!user.isAdmin() && !restaurant.getOwner().equals(user))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, NotAllowedConstants.FORBIDDEN_ADVERTISEMENT);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_ADVERTISEMENT);
 
         return restaurant.getAdvertisements();
     }
@@ -64,7 +64,7 @@ public class AdvertisementService {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!restaurant.getOwner().equals(user))
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_ADVERTISEMENT);
 
         Advertisement advertisement = new Advertisement();
         BeanUtils.copyProperties(advertisementDto, advertisement);
@@ -95,10 +95,10 @@ public class AdvertisementService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND));
 
         if (!restaurant.getOwner().equals(user))
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_ADVERTISEMENT);
 
         if (!restaurant.getAdvertisements().contains(old))
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ADVERTISEMENT_NOT_FOUND);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_ADVERTISEMENT);
 
         BeanUtils.copyProperties(advertisementDto, old);
         return advertisementRepository.save(old);
@@ -109,18 +109,20 @@ public class AdvertisementService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ADVERTISEMENT_NOT_FOUND));
 
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
         Restaurant restaurant = restaurantRepository.findByAdvertisements(advertisement).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND));
 
         if (!restaurant.getOwner().equals(user))
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_ADVERTISEMENT);
 
 
         if (!restaurant.getAdvertisements().contains(advertisement))
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ADVERTISEMENT_NOT_FOUND);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_ADVERTISEMENT);
 
         restaurant.getAdvertisements().remove(advertisement);
         restaurantRepository.save(restaurant);
+
         advertisementRepository.deleteById(id);
     }
 }
