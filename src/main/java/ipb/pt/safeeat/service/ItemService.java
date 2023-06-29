@@ -1,14 +1,14 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.model.User;
-import ipb.pt.safeeat.utility.NotFoundConstants;
 import ipb.pt.safeeat.dto.ItemDto;
 import ipb.pt.safeeat.model.Cart;
 import ipb.pt.safeeat.model.Item;
 import ipb.pt.safeeat.model.Product;
+import ipb.pt.safeeat.model.User;
 import ipb.pt.safeeat.repository.CartRepository;
 import ipb.pt.safeeat.repository.ItemRepository;
 import ipb.pt.safeeat.repository.ProductRepository;
+import ipb.pt.safeeat.utility.NotFoundConstants;
 import ipb.pt.safeeat.utility.RestrictionChecker;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +20,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class ItemService {
@@ -49,7 +48,7 @@ public class ItemService {
         Cart cart = cartRepository.findById(cartId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.CART_NOT_FOUND));
 
-        for(Item item : cart.getItems()) {
+        for (Item item : cart.getItems()) {
             restrictionChecker.checkProduct(item.getProduct());
         }
 
@@ -76,7 +75,7 @@ public class ItemService {
     }
 
     private static void calculateValues(Product product, Item item) {
-        if(item.getQuantity() <= 0)
+        if (item.getQuantity() <= 0)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Quantity must be greater than 0");
 
         double subtotal = product.getPrice() * item.getQuantity();
@@ -97,6 +96,12 @@ public class ItemService {
     public Item update(ItemDto itemDto) {
         Item old = itemRepository.findById(itemDto.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ITEM_NOT_FOUND));
+
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Cart cart = user.getCart();
+
+        if (!cart.getItems().contains(old))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ITEM_NOT_FOUND);
 
         Product product = productRepository.findById(itemDto.getProductId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.PRODUCT_NOT_FOUND));

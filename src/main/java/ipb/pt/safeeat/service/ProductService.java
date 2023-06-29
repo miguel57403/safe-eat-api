@@ -111,6 +111,15 @@ public class ProductService {
         Product old = productRepository.findById(productDto.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.PRODUCT_NOT_FOUND));
 
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Optional<Restaurant> restaurant = restaurantRepository.findByProducts(old);
+
+        if (restaurant.isEmpty() || !restaurant.get().getOwner().equals(user))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND);
+
+        if (!restaurant.get().getProducts().contains(old))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.PRODUCT_NOT_FOUND);
+
         BeanUtils.copyProperties(productDto, old);
         return productRepository.save(old);
     }

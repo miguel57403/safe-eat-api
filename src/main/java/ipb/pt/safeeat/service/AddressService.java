@@ -1,11 +1,11 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.utility.NotFoundConstants;
 import ipb.pt.safeeat.dto.AddressDto;
 import ipb.pt.safeeat.model.Address;
 import ipb.pt.safeeat.model.User;
 import ipb.pt.safeeat.repository.AddressRepository;
 import ipb.pt.safeeat.repository.UserRepository;
+import ipb.pt.safeeat.utility.NotFoundConstants;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,7 +16,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class AddressService {
@@ -65,10 +64,10 @@ public class AddressService {
     }
 
     public Address update(AddressDto addressDto) {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
         Address old = addressRepository.findById(addressDto.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ADDRESS_NOT_FOUND));
+
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!user.getAddresses().contains(old))
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ADDRESS_NOT_FOUND);

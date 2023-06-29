@@ -9,6 +9,7 @@ import ipb.pt.safeeat.utility.NotFoundConstants;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -84,6 +85,12 @@ public class UserService {
     public User update(UserDto userDto) {
         User old = userRepository.findById(userDto.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.USER_NOT_FOUND));
+
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (!user.getId().equals(userDto.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Cannot update other user");
+        }
 
         User byEmail = userRepository.findByEmail(userDto.getEmail()).orElse(null);
 

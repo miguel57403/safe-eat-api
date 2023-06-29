@@ -1,12 +1,12 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.utility.NotFoundConstants;
 import ipb.pt.safeeat.dto.RestaurantDto;
 import ipb.pt.safeeat.model.Category;
 import ipb.pt.safeeat.model.Product;
 import ipb.pt.safeeat.model.Restaurant;
 import ipb.pt.safeeat.model.User;
 import ipb.pt.safeeat.repository.*;
+import ipb.pt.safeeat.utility.NotFoundConstants;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,7 +17,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class RestaurantService {
@@ -120,6 +119,12 @@ public class RestaurantService {
     public Restaurant update(RestaurantDto restaurantDto) {
         Restaurant old = restaurantRepository.findById(restaurantDto.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND));
+
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (old.getOwner() != null && !old.getOwner().getId().equals(user.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not the owner of this restaurant");
+        }
 
         BeanUtils.copyProperties(restaurantDto, old);
         return restaurantRepository.save(old);

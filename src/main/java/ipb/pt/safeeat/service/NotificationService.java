@@ -1,6 +1,5 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.utility.NotFoundConstants;
 import ipb.pt.safeeat.dto.NotificationDto;
 import ipb.pt.safeeat.model.Notification;
 import ipb.pt.safeeat.model.Order;
@@ -8,6 +7,7 @@ import ipb.pt.safeeat.model.User;
 import ipb.pt.safeeat.repository.NotificationRepository;
 import ipb.pt.safeeat.repository.OrderRepository;
 import ipb.pt.safeeat.repository.UserRepository;
+import ipb.pt.safeeat.utility.NotFoundConstants;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,7 +19,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class NotificationService {
@@ -82,6 +81,11 @@ public class NotificationService {
         Notification old = notificationRepository.findById(notificationDto.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.NOTIFICATION_NOT_FOUND));
 
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (!user.getNotifications().contains(old))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.NOTIFICATION_NOT_FOUND);
+
         BeanUtils.copyProperties(notificationDto, old);
         return notificationRepository.save(old);
     }
@@ -89,6 +93,11 @@ public class NotificationService {
     public Notification view(String id) {
         Notification notification = notificationRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.NOTIFICATION_NOT_FOUND));
+
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (!user.getNotifications().contains(notification))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.NOTIFICATION_NOT_FOUND);
 
         notification.setIsViewed(true);
         return notificationRepository.save(notification);

@@ -63,8 +63,14 @@ public class AdvertisementService {
         Advertisement old = advertisementRepository.findById(advertisementDto.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ADVERTISEMENT_NOT_FOUND));
 
-        if (!advertisementDto.getRestaurantId().equals(old.getRestaurantId()))
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, NotFoundConstants.RESTAURANT_NOT_FOUND);
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Optional<Restaurant> restaurant = restaurantRepository.findByAdvertisements(old);
+
+        if (restaurant.isEmpty() || !restaurant.get().getOwner().equals(user))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND);
+
+        if (!restaurant.get().getAdvertisements().contains(old))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ADVERTISEMENT_NOT_FOUND);
 
         BeanUtils.copyProperties(advertisementDto, old);
         return advertisementRepository.save(old);

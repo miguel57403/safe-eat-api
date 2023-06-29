@@ -6,6 +6,7 @@ import ipb.pt.safeeat.repository.*;
 import ipb.pt.safeeat.utility.NotFoundConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -111,6 +112,12 @@ public class OrderService {
     public Order updateStatus(String id, String status) {
         Order old = orderRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ORDER_NOT_FOUND));
+
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Optional <Restaurant> restaurant = restaurantRepository.findByOrders(old);
+
+        if (restaurant.isEmpty() || !restaurant.get().getOwner().equals(user))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND);
 
         old.setStatus(status);
         return orderRepository.save(old);

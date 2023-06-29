@@ -1,12 +1,12 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.model.*;
-import ipb.pt.safeeat.utility.NotFoundConstants;
 import ipb.pt.safeeat.dto.IngredientDto;
+import ipb.pt.safeeat.model.*;
 import ipb.pt.safeeat.repository.IngredientRepository;
 import ipb.pt.safeeat.repository.ProductRepository;
 import ipb.pt.safeeat.repository.RestaurantRepository;
 import ipb.pt.safeeat.repository.RestrictionRepository;
+import ipb.pt.safeeat.utility.NotFoundConstants;
 import ipb.pt.safeeat.utility.RestrictionChecker;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +18,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -85,6 +84,15 @@ public class IngredientService {
     public Ingredient update(IngredientDto ingredientDto) {
         Ingredient old = ingredientRepository.findById(ingredientDto.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.INGREDIENT_NOT_FOUND));
+
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Optional<Restaurant> restaurant = restaurantRepository.findByIngredients(old);
+
+        if (restaurant.isEmpty() || !restaurant.get().getOwner().equals(user))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND);
+
+        if (!restaurant.get().getIngredients().contains(old))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.INGREDIENT_NOT_FOUND);
 
         BeanUtils.copyProperties(ingredientDto, old);
         return ingredientRepository.save(old);

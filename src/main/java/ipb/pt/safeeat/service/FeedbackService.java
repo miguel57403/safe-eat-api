@@ -51,6 +51,12 @@ public class FeedbackService {
         Feedback old = feedbackRepository.findById(feedbackDto.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.FEEDBACK_NOT_FOUND));
 
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Optional<Order> order = orderRepository.findByFeedback(old);
+
+        if(order.isEmpty() || !user.getOrders().contains(order.get()))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ORDER_NOT_FOUND);
+
         BeanUtils.copyProperties(feedbackDto, old);
         return feedbackRepository.save(old);
     }

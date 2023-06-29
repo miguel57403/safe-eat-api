@@ -1,11 +1,11 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.utility.NotFoundConstants;
 import ipb.pt.safeeat.dto.PaymentDto;
 import ipb.pt.safeeat.model.Payment;
 import ipb.pt.safeeat.model.User;
 import ipb.pt.safeeat.repository.PaymentRepository;
 import ipb.pt.safeeat.repository.UserRepository;
+import ipb.pt.safeeat.utility.NotFoundConstants;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,7 +16,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class PaymentService {
@@ -69,6 +68,11 @@ public class PaymentService {
     public Payment update(PaymentDto paymentDto) {
         Payment old = paymentRepository.findById(paymentDto.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.PAYMENT_NOT_FOUND));
+
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (!user.getPayments().contains(old))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.PAYMENT_NOT_FOUND);
 
         BeanUtils.copyProperties(paymentDto, old);
         return paymentRepository.save(old);
