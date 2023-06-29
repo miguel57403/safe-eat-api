@@ -50,8 +50,8 @@ public class ProductSectionController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Object> delete(@PathVariable String id, @RequestParam String restaurantId) {
-        productSectionService.delete(id, restaurantId);
+    public ResponseEntity<Object> delete(@PathVariable String id) {
+        productSectionService.delete(id);
         return ResponseEntity.ok().build();
     }
 }

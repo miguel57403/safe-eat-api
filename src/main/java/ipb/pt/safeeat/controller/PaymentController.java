@@ -50,8 +50,8 @@ public class PaymentController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Object> delete(@PathVariable String id, @RequestParam String userId) {
-        paymentService.delete(id, userId);
+    public ResponseEntity<Object> delete(@PathVariable String id) {
+        paymentService.delete(id);
         return ResponseEntity.ok().build();
     }
 }

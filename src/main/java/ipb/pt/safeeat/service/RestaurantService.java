@@ -10,6 +10,7 @@ import ipb.pt.safeeat.repository.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -128,7 +129,11 @@ public class RestaurantService {
         Restaurant restaurant = restaurantRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND));
 
-        Optional<User> owner = userRepository.findById(restaurant.getOwner().getId());
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (restaurant.getOwner() != null && !restaurant.getOwner().getId().equals(user.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not the owner of this restaurant");
+        }
 
         productRepository.deleteAll(restaurant.getProducts());
         ingredientRepository.deleteAll(restaurant.getIngredients());
@@ -136,10 +141,8 @@ public class RestaurantService {
         advertisementRepository.deleteAll(restaurant.getAdvertisements());
         deliveryRepository.deleteAll(restaurant.getDeliveries());
 
-        if (owner.isPresent()) {
-            owner.get().getRestaurants().remove(restaurant);
-            userRepository.save(owner.get());
-        }
+        user.getRestaurants().remove(restaurant);
+        userRepository.save(user);
 
         restaurantRepository.deleteById(id);
     }

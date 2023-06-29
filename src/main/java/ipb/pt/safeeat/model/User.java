@@ -38,7 +38,7 @@ public class User implements UserDetails {
     private List<Payment> payments = new ArrayList<>();
     @JsonIgnore
     @DocumentReference
-    private List<Address> address = new ArrayList<>();
+    private List<Address> addresses = new ArrayList<>();
     @JsonIgnore
     @DocumentReference
     private List<Order> orders = new ArrayList<>();

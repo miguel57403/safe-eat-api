@@ -9,6 +9,7 @@ import ipb.pt.safeeat.repository.UserRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -73,17 +74,17 @@ public class PaymentService {
         return paymentRepository.save(old);
     }
 
-    public void delete(String id, String userId) {
+    public void delete(String id) {
         Payment payment = paymentRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.PAYMENT_NOT_FOUND));
 
-        Optional<User> user = userRepository.findById(userId);
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        if (user.isPresent()) {
-            user.get().getPayments().remove(payment);
-            userRepository.save(user.get());
-        }
+        if (!user.getPayments().contains(payment))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.PAYMENT_NOT_FOUND);
 
+        user.getPayments().remove(payment);
+        userRepository.save(user);
         paymentRepository.deleteById(id);
     }
 }

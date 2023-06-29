@@ -1,5 +1,6 @@
 package ipb.pt.safeeat.service;
 
+import ipb.pt.safeeat.model.User;
 import ipb.pt.safeeat.utility.NotFoundConstants;
 import ipb.pt.safeeat.dto.DeliveryDto;
 import ipb.pt.safeeat.model.Delivery;
@@ -9,6 +10,7 @@ import ipb.pt.safeeat.repository.RestaurantRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -65,17 +67,23 @@ public class DeliveryService {
         return deliveryRepository.save(old);
     }
 
-    public void delete(String id, String restaurantId) {
+    public void delete(String id) {
         Delivery delivery = deliveryRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.DELIVERY_NOT_FOUND));
 
-        Optional<Restaurant> restaurant = restaurantRepository.findById(restaurantId);
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Optional<Restaurant> restaurant = restaurantRepository.findByDeliveries(delivery);
 
-        if (restaurant.isPresent()) {
-            restaurant.get().getDeliveries().remove(delivery);
-            restaurantRepository.save(restaurant.get());
-        }
+        if (restaurant.isEmpty() || !restaurant.get().getOwner().equals(user))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND);
 
+
+        if (!restaurant.get().getDeliveries().contains(delivery))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.DELIVERY_NOT_FOUND);
+
+
+        restaurant.get().getDeliveries().remove(delivery);
+        restaurantRepository.save(restaurant.get());
         deliveryRepository.deleteById(id);
     }
 }

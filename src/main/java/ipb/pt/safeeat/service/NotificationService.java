@@ -11,6 +11,7 @@ import ipb.pt.safeeat.repository.UserRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -93,17 +94,17 @@ public class NotificationService {
         return notificationRepository.save(notification);
     }
 
-    public void delete(String id, String userId) {
+    public void delete(String id) {
         Notification notification = notificationRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.NOTIFICATION_NOT_FOUND));
 
-        Optional<User> user = userRepository.findById(userId);
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        if (user.isPresent()) {
-            user.get().getNotifications().remove(notification);
-            userRepository.save(user.get());
-        }
+        if (!user.getNotifications().contains(notification))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.NOTIFICATION_NOT_FOUND);
 
+        user.getNotifications().remove(notification);
+        userRepository.save(user);
         notificationRepository.deleteById(id);
     }
 }

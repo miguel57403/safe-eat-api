@@ -45,8 +45,8 @@ public class DeliveryController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Object> delete(@PathVariable String id, @RequestParam String restaurantId) {
-        deliveryService.delete(id, restaurantId);
+    public ResponseEntity<Object> delete(@PathVariable String id) {
+        deliveryService.delete(id);
         return ResponseEntity.ok().build();
     }
 }

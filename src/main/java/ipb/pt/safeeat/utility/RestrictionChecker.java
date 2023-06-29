@@ -35,9 +35,7 @@ public class RestrictionChecker {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         for (Restriction restriction : ingredient.getRestrictions()) {
-            if (user.getRestrictions().contains(restriction)) {
-                ingredient.setIsRestricted(true);
-            }
+            ingredient.setIsRestricted(user.getRestrictions().contains(restriction));
         }
     }
 
@@ -49,10 +47,7 @@ public class RestrictionChecker {
 
     public void checkRestriction(Restriction restriction) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        if (user.getRestrictions().contains(restriction)) {
-            restriction.setIsRestricted(true);
-        }
+        restriction.setIsRestricted(user.getRestrictions().contains(restriction));
     }
 
     public void checkRestrictionList(List<Restriction> restrictions) {

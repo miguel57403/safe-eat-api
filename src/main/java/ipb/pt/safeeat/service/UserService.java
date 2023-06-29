@@ -42,17 +42,11 @@ public class UserService {
     }
 
     public User create(UserDto userDto) {
-        if (userDto.getPassword().isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid password");
+        if (userRepository.findByEmail(userDto.getEmail()).isPresent()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email already in use");
         }
 
-        List<Restriction> restrictions = new ArrayList<>();
-        if (!userDto.getRestrictionIds().isEmpty()) {
-            for (String restrictionId : userDto.getRestrictionIds()) {
-                restrictions.add(restrictionRepository.findById(restrictionId).orElseThrow(
-                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTRICTION_NOT_FOUND)));
-            }
-        }
+        List<Restriction> restrictions = getRestrictions(userDto);
 
         User user = new User();
         BeanUtils.copyProperties(userDto, user);
@@ -64,6 +58,17 @@ public class UserService {
         user.setCart(cart);
 
         return userRepository.save(user);
+    }
+
+    private List<Restriction> getRestrictions(UserDto userDto) {
+        List<Restriction> restrictions = new ArrayList<>();
+        if (!userDto.getRestrictionIds().isEmpty()) {
+            for (String restrictionId : userDto.getRestrictionIds()) {
+                restrictions.add(restrictionRepository.findById(restrictionId).orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTRICTION_NOT_FOUND)));
+            }
+        }
+        return restrictions;
     }
 
     @Transactional
@@ -80,11 +85,17 @@ public class UserService {
         User old = userRepository.findById(userDto.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.USER_NOT_FOUND));
 
-        BeanUtils.copyProperties(userDto, old);
+        User byEmail = userRepository.findByEmail(userDto.getEmail()).orElse(null);
 
-        if (!userDto.getPassword().isBlank()) {
-            old.setPassword(passwordEncoder.encode(userDto.getPassword()));
+        if (byEmail != null && !byEmail.getId().equals(old.getId())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email already in use");
         }
+
+        List<Restriction> restrictions = getRestrictions(userDto);
+
+        BeanUtils.copyProperties(userDto, old);
+        old.setPassword(passwordEncoder.encode(userDto.getPassword()));
+        old.setRestrictions(restrictions);
 
         return userRepository.save(old);
     }
@@ -98,9 +109,8 @@ public class UserService {
         }
 
         paymentRepository.deleteAll(user.getPayments());
-        addressRepository.deleteAll(user.getAddress());
+        addressRepository.deleteAll(user.getAddresses());
         cartRepository.delete(user.getCart());
-
         userRepository.deleteById(id);
     }
 }

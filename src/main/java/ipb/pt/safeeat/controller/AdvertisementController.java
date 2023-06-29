@@ -45,8 +45,8 @@ public class AdvertisementController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Object> delete(@PathVariable String id, @RequestParam String restaurantId) {
-        advertisementService.delete(id, restaurantId);
+    public ResponseEntity<Object> delete(@PathVariable String id) {
+        advertisementService.delete(id);
         return ResponseEntity.ok().build();
     }
 }

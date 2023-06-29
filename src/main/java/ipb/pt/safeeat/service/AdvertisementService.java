@@ -1,5 +1,6 @@
 package ipb.pt.safeeat.service;
 
+import ipb.pt.safeeat.model.User;
 import ipb.pt.safeeat.utility.NotFoundConstants;
 import ipb.pt.safeeat.dto.AdvertisementDto;
 import ipb.pt.safeeat.model.Advertisement;
@@ -9,6 +10,7 @@ import ipb.pt.safeeat.repository.RestaurantRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -61,25 +63,29 @@ public class AdvertisementService {
         Advertisement old = advertisementRepository.findById(advertisementDto.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ADVERTISEMENT_NOT_FOUND));
 
-        if (!advertisementDto.getRestaurantId().equals(old.getRestaurantId())) {
+        if (!advertisementDto.getRestaurantId().equals(old.getRestaurantId()))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, NotFoundConstants.RESTAURANT_NOT_FOUND);
-        }
 
         BeanUtils.copyProperties(advertisementDto, old);
         return advertisementRepository.save(old);
     }
 
-    public void delete(String id, String restaurantId) {
+    public void delete(String id) {
         Advertisement advertisement = advertisementRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ADVERTISEMENT_NOT_FOUND));
 
-        Optional<Restaurant> restaurant = restaurantRepository.findById(restaurantId);
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Optional<Restaurant> restaurant = restaurantRepository.findByAdvertisements(advertisement);
 
-        if (restaurant.isPresent()) {
-            restaurant.get().getAdvertisements().remove(advertisement);
-            restaurantRepository.save(restaurant.get());
-        }
+        if (restaurant.isEmpty() || !restaurant.get().getOwner().equals(user))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND);
 
+
+        if (!restaurant.get().getAdvertisements().contains(advertisement))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ADVERTISEMENT_NOT_FOUND);
+
+        restaurant.get().getAdvertisements().remove(advertisement);
+        restaurantRepository.save(restaurant.get());
         advertisementRepository.deleteById(id);
     }
 }

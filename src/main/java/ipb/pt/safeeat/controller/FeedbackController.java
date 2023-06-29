@@ -38,8 +38,8 @@ public class FeedbackController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Object> delete(@PathVariable String id, @RequestParam String orderId) {
-        feedbackService.delete(id, orderId);
+    public ResponseEntity<Object> delete(@PathVariable String id) {
+        feedbackService.delete(id);
         return ResponseEntity.ok().build();
     }
 }

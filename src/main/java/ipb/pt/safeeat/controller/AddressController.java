@@ -35,13 +35,13 @@ public class AddressController {
     }
 
     @PostMapping
-    public ResponseEntity<Object> create(@Valid @RequestBody AddressDto addressDto, @RequestParam String userId) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(addressService.create(addressDto, userId));
+    public ResponseEntity<Object> create(@Valid @RequestBody AddressDto addressDto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(addressService.create(addressDto));
     }
 
     @PostMapping("/many")
-    public ResponseEntity<Object> createMany(@Valid @RequestBody List<AddressDto> addressDtos, @RequestParam String userId) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(addressService.createMany(addressDtos, userId));
+    public ResponseEntity<Object> createMany(@Valid @RequestBody List<AddressDto> addressDtos) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(addressService.createMany(addressDtos));
     }
 
     @PutMapping
@@ -50,8 +50,8 @@ public class AddressController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Object> delete(@PathVariable String id, @RequestParam String userId) {
-        addressService.delete(id, userId);
+    public ResponseEntity<Object> delete(@PathVariable String id) {
+        addressService.delete(id);
         return ResponseEntity.ok().build();
     }
 }

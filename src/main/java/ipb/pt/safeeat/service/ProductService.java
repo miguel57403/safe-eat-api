@@ -11,6 +11,7 @@ import ipb.pt.safeeat.utility.RestrictionChecker;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -114,17 +115,21 @@ public class ProductService {
         return productRepository.save(old);
     }
 
-    public void delete(String id, String restaurantId) {
+    public void delete(String id) {
         Product product = productRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.PRODUCT_NOT_FOUND));
 
-        Optional<Restaurant> restaurant = restaurantRepository.findById(restaurantId);
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Optional<Restaurant> restaurant = restaurantRepository.findByProducts(product);
 
-        if (restaurant.isPresent()) {
-            restaurant.get().getProducts().remove(product);
-            restaurantRepository.save(restaurant.get());
-        }
+        if (restaurant.isEmpty() || !restaurant.get().getOwner().equals(user))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND);
 
+        if (!restaurant.get().getProducts().contains(product))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.PRODUCT_NOT_FOUND);
+
+        restaurant.get().getProducts().remove(product);
+        restaurantRepository.save(restaurant.get());
         productRepository.deleteById(id);
     }
 }

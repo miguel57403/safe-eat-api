@@ -9,6 +9,7 @@ import ipb.pt.safeeat.repository.UserRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -37,52 +38,56 @@ public class AddressService {
         User user = userRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.USER_NOT_FOUND));
 
-        return user.getAddress();
+        return user.getAddresses();
     }
 
-    public Address create(AddressDto addressDto, String userId) {
-        User user = userRepository.findById(userId).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ADDRESS_NOT_FOUND));
+    public Address create(AddressDto addressDto) {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         Address address = new Address();
         BeanUtils.copyProperties(addressDto, address);
         Address created = addressRepository.save(address);
 
-        user.getAddress().add(created);
+        user.getAddresses().add(created);
         userRepository.save(user);
 
         return created;
     }
 
     @Transactional
-    public List<Address> createMany(List<AddressDto> addressDtos, String userId) {
+    public List<Address> createMany(List<AddressDto> addressDtos) {
         List<Address> created = new ArrayList<>();
         for (AddressDto addressDto : addressDtos) {
-            created.add(create(addressDto, userId));
+            created.add(create(addressDto));
         }
 
         return created;
     }
 
     public Address update(AddressDto addressDto) {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
         Address old = addressRepository.findById(addressDto.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ADDRESS_NOT_FOUND));
+
+        if (!user.getAddresses().contains(old))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ADDRESS_NOT_FOUND);
 
         BeanUtils.copyProperties(addressDto, old);
         return addressRepository.save(old);
     }
 
-    public void delete(String id, String userId) {
+    public void delete(String id) {
         Address address = addressRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ADDRESS_NOT_FOUND));
 
-        Optional<User> user = userRepository.findById(userId);
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        if (user.isPresent()) {
-            user.get().getAddress().remove(address);
-            userRepository.save(user.get());
-        }
+        if (!user.getAddresses().contains(address))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ADDRESS_NOT_FOUND);
 
+        user.getAddresses().remove(address);
+        userRepository.save(user);
         addressRepository.deleteById(id);
     }
 }

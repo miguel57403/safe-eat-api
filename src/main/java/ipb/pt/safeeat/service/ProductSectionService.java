@@ -1,5 +1,6 @@
 package ipb.pt.safeeat.service;
 
+import ipb.pt.safeeat.model.User;
 import ipb.pt.safeeat.utility.NotFoundConstants;
 import ipb.pt.safeeat.dto.ProductSectionDto;
 import ipb.pt.safeeat.model.Product;
@@ -12,6 +13,7 @@ import ipb.pt.safeeat.utility.RestrictionChecker;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -102,17 +104,18 @@ public class ProductSectionService {
         return productSectionRepository.save(old);
     }
 
-    public void delete(String id, String restaurantId) {
+    public void delete(String id) {
         ProductSection productSection = productSectionRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.PRODUCT_SECTION_NOT_FOUND));
 
-        Optional<Restaurant> restaurant = restaurantRepository.findById(restaurantId);
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Optional<Restaurant> restaurant = restaurantRepository.findByProductSection(productSection);
 
-        if (restaurant.isPresent()) {
-            restaurant.get().getProductSections().remove(productSection);
-            restaurantRepository.save(restaurant.get());
-        }
+        if (restaurant.isEmpty() || !restaurant.get().getOwner().equals(user))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND);
 
+        restaurant.get().getProductSections().remove(productSection);
+        restaurantRepository.save(restaurant.get());
         productSectionRepository.deleteById(id);
     }
 }

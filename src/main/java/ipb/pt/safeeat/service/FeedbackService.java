@@ -1,5 +1,6 @@
 package ipb.pt.safeeat.service;
 
+import ipb.pt.safeeat.model.User;
 import ipb.pt.safeeat.utility.NotFoundConstants;
 import ipb.pt.safeeat.dto.FeedbackDto;
 import ipb.pt.safeeat.model.Feedback;
@@ -9,6 +10,7 @@ import ipb.pt.safeeat.repository.OrderRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -53,17 +55,18 @@ public class FeedbackService {
         return feedbackRepository.save(old);
     }
 
-    public void delete(String id, String orderId) {
-        feedbackRepository.findById(id).orElseThrow(
+    public void delete(String id) {
+        Feedback feedback = feedbackRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.FEEDBACK_NOT_FOUND));
 
-        Optional<Order> order = orderRepository.findById(orderId);
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Optional<Order> order = orderRepository.findByFeedback(feedback);
 
-        if (order.isPresent()) {
-            order.get().setFeedback(null);
-            orderRepository.save(order.get());
-        }
+        if(order.isEmpty() || !user.getOrders().contains(order.get()))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ORDER_NOT_FOUND);
 
+        order.get().setFeedback(null);
+        orderRepository.save(order.get());
         feedbackRepository.deleteById(id);
     }
 }

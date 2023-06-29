@@ -76,13 +76,14 @@ public class RestrictionService {
         Restriction restriction = restrictionRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND));
 
-        List<User> users = userRepository.findAll();
+        List<User> users = userRepository.findByRestrictions(restriction);
+
         for (User user : users) {
             user.getRestrictions().remove(restriction);
             userRepository.save(user);
         }
 
-        List<Ingredient> ingredients = ingredientRepository.findAll();
+        List<Ingredient> ingredients = ingredientRepository.findByRestrictions(restriction);
         for (Ingredient ingredient : ingredients) {
             ingredient.getRestrictions().remove(restriction);
             ingredientRepository.save(ingredient);

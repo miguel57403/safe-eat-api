@@ -15,8 +15,8 @@ import java.util.List;
 public class Cart {
     @Id
     private String id;
-    private Integer quantity;
-    private Double subtotal;
+    private Integer quantity = 0;
+    private Double subtotal = 0.0;
     @DocumentReference
     private List<Item> items = new ArrayList<>();
 }

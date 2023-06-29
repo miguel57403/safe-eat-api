@@ -1,11 +1,8 @@
 package ipb.pt.safeeat.service;
 
+import ipb.pt.safeeat.model.*;
 import ipb.pt.safeeat.utility.NotFoundConstants;
 import ipb.pt.safeeat.dto.IngredientDto;
-import ipb.pt.safeeat.model.Ingredient;
-import ipb.pt.safeeat.model.Product;
-import ipb.pt.safeeat.model.Restaurant;
-import ipb.pt.safeeat.model.Restriction;
 import ipb.pt.safeeat.repository.IngredientRepository;
 import ipb.pt.safeeat.repository.ProductRepository;
 import ipb.pt.safeeat.repository.RestaurantRepository;
@@ -14,12 +11,14 @@ import ipb.pt.safeeat.utility.RestrictionChecker;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -91,22 +90,26 @@ public class IngredientService {
         return ingredientRepository.save(old);
     }
 
-    public void delete(String id, String restaurantId) {
+    public void delete(String id) {
         Ingredient ingredient = ingredientRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.INGREDIENT_NOT_FOUND));
 
-        Optional<Restaurant> restaurant = restaurantRepository.findById(restaurantId);
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Optional<Restaurant> restaurant = restaurantRepository.findByIngredients(ingredient);
 
-        if (restaurant.isPresent()) {
-            restaurant.get().getIngredients().remove(ingredient);
-            restaurantRepository.save(restaurant.get());
+        if (restaurant.isEmpty() || !restaurant.get().getOwner().equals(user))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND);
 
-            List<Product> products = restaurant.get().getProducts();
-            for (Product product : products) {
-                if (product.getIngredients().contains(ingredient)) {
-                    product.getIngredients().remove(ingredient);
-                    productRepository.save(product);
-                }
+        if (!restaurant.get().getIngredients().contains(ingredient))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.INGREDIENT_NOT_FOUND);
+
+        restaurant.get().getIngredients().remove(ingredient);
+        restaurantRepository.save(restaurant.get());
+
+        for (Product product : restaurant.get().getProducts()) {
+            if (product.getIngredients().contains(ingredient)) {
+                product.getIngredients().remove(ingredient);
+                productRepository.save(product);
             }
         }
 

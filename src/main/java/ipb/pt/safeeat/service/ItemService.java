@@ -1,5 +1,6 @@
 package ipb.pt.safeeat.service;
 
+import ipb.pt.safeeat.model.User;
 import ipb.pt.safeeat.utility.NotFoundConstants;
 import ipb.pt.safeeat.dto.ItemDto;
 import ipb.pt.safeeat.model.Cart;
@@ -12,6 +13,7 @@ import ipb.pt.safeeat.utility.RestrictionChecker;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -105,17 +107,18 @@ public class ItemService {
         return itemRepository.save(old);
     }
 
-    public void delete(String id, String cartId) {
+    public void delete(String id) {
         Item item = itemRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ITEM_NOT_FOUND));
 
-        Optional<Cart> cart = cartRepository.findById(cartId);
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Cart cart = user.getCart();
 
-        if (cart.isPresent()) {
-            cart.get().getItems().remove(item);
-            cartRepository.save(cart.get());
-        }
+        if (!cart.getItems().contains(item))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ITEM_NOT_FOUND);
 
+        cart.getItems().remove(item);
+        cartRepository.save(cart);
         itemRepository.deleteById(id);
     }
 }
