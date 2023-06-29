@@ -9,6 +9,7 @@ import ipb.pt.safeeat.repository.UserRepository;
 import ipb.pt.safeeat.utility.RestrictionChecker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -49,16 +50,15 @@ public class CartService {
         return user.getCart();
     }
 
-    public Boolean isBuying(String id) {
-        Cart cart = cartRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.CART_NOT_FOUND));
-
-        return cart.getItems().size() != 0;
+    public Boolean isEmpty() {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Cart cart = user.getCart();
+        return cart.getItems().size() == 0;
     }
 
-    public Cart empty(String cartId) {
-        Cart cart = cartRepository.findById(cartId).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.CART_NOT_FOUND));
+    public Cart empty() {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Cart cart = user.getCart();
 
         cart.getItems().clear();
         cart.setQuantity(0);

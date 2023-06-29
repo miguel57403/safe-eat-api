@@ -47,7 +47,7 @@ public class NotificationService {
         return user.getNotifications();
     }
 
-    public Notification create(NotificationDto notificationDto, String userId) {
+    public Notification create(NotificationDto notificationDto) {
         Order order = orderRepository.findById(notificationDto.getOrderId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ORDER_NOT_FOUND));
 
@@ -57,7 +57,7 @@ public class NotificationService {
         if(!owner.getRestaurants().contains(restaurant))
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND);
 
-        User user = userRepository.findById(userId).orElseThrow(
+        User client = userRepository.findById(order.getClient().getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.USER_NOT_FOUND));
 
         Notification notification = new Notification();
@@ -68,17 +68,17 @@ public class NotificationService {
 
         Notification created = notificationRepository.save(notification);
 
-        user.getNotifications().add(created);
-        userRepository.save(user);
+        client.getNotifications().add(created);
+        userRepository.save(client);
 
         return created;
     }
 
     @Transactional
-    public List<Notification> createMany(List<NotificationDto> notificationDtos, String userId) {
+    public List<Notification> createMany(List<NotificationDto> notificationDtos) {
         List<Notification> created = new ArrayList<>();
         for (NotificationDto notificationDto : notificationDtos) {
-            created.add(create(notificationDto, userId));
+            created.add(create(notificationDto));
         }
 
         return created;

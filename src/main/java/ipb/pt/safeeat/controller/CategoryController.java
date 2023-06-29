@@ -2,6 +2,7 @@ package ipb.pt.safeeat.controller;
 
 import ipb.pt.safeeat.dto.CategoryDto;
 import ipb.pt.safeeat.service.CategoryService;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -30,21 +31,25 @@ public class CategoryController {
     }
 
     @PostMapping
+    @RolesAllowed("ADMIN")
     public ResponseEntity<Object> create(@Valid @RequestBody CategoryDto categoryDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(categoryService.create(categoryDto));
     }
 
     @PostMapping("/many")
+    @RolesAllowed("ADMIN")
     public ResponseEntity<Object> createMany(@Valid @RequestBody List<CategoryDto> categoryDtos) {
         return ResponseEntity.status(HttpStatus.CREATED).body(categoryService.createMany(categoryDtos));
     }
 
     @PutMapping
+    @RolesAllowed("ADMIN")
     public ResponseEntity<Object> update(@Valid @RequestBody CategoryDto categoryDto) {
         return ResponseEntity.ok().body(categoryService.update(categoryDto));
     }
 
     @DeleteMapping("/{id}")
+    @RolesAllowed("ADMIN")
     public ResponseEntity<Object> delete(@PathVariable String id) {
         categoryService.delete(id);
         return ResponseEntity.ok().build();

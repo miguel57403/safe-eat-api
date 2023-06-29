@@ -35,13 +35,13 @@ public class ItemController {
     }
 
     @PostMapping
-    public ResponseEntity<Object> create(@Valid @RequestBody ItemDto itemDto, @RequestParam String cartId) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(itemService.create(itemDto, cartId));
+    public ResponseEntity<Object> create(@Valid @RequestBody ItemDto itemDto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(itemService.create(itemDto));
     }
 
     @PostMapping("/many")
-    public ResponseEntity<Object> createMany(@Valid @RequestBody List<ItemDto> itemDtos, @RequestParam String cartId) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(itemService.createMany(itemDtos, cartId));
+    public ResponseEntity<Object> createMany(@Valid @RequestBody List<ItemDto> itemDtos) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(itemService.createMany(itemDtos));
     }
 
     @PutMapping

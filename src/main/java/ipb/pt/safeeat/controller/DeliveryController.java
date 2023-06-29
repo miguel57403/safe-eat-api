@@ -29,13 +29,13 @@ public class DeliveryController {
         return ResponseEntity.ok(deliveryService.findById(id));
     }
 
-    @PostMapping
-    public ResponseEntity<Object> create(@Valid @RequestBody DeliveryDto deliveryDto, @RequestParam String restaurantId) {
+    @PostMapping("/{restaurantId}")
+    public ResponseEntity<Object> create(@Valid @RequestBody DeliveryDto deliveryDto, @PathVariable String restaurantId) {
         return ResponseEntity.status(HttpStatus.CREATED).body(deliveryService.create(deliveryDto, restaurantId));
     }
 
-    @PostMapping("/many")
-    public ResponseEntity<Object> createMany(@Valid @RequestBody List<DeliveryDto> deliveryDtos, @RequestParam String restaurantId) {
+    @PostMapping("/many/{restaurantId}")
+    public ResponseEntity<Object> createMany(@Valid @RequestBody List<DeliveryDto> deliveryDtos, @PathVariable String restaurantId) {
         return ResponseEntity.status(HttpStatus.CREATED).body(deliveryService.createMany(deliveryDtos, restaurantId));
     }
 

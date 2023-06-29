@@ -29,13 +29,13 @@ public class IngredientController {
         return ResponseEntity.ok(ingredientService.findById(id));
     }
 
-    @PostMapping
-    public ResponseEntity<Object> create(@Valid @RequestBody IngredientDto ingredientDto, @RequestParam String restaurantId) {
+    @PostMapping("/{restaurantId}")
+    public ResponseEntity<Object> create(@Valid @RequestBody IngredientDto ingredientDto, @PathVariable String restaurantId) {
         return ResponseEntity.status(HttpStatus.CREATED).body(ingredientService.create(ingredientDto, restaurantId));
     }
 
-    @PostMapping("/many")
-    public ResponseEntity<Object> createMany(@Valid @RequestBody List<IngredientDto> ingredientDtos, @RequestParam String restaurantId) {
+    @PostMapping("/many/{restaurantId}")
+    public ResponseEntity<Object> createMany(@Valid @RequestBody List<IngredientDto> ingredientDtos, @PathVariable String restaurantId) {
         return ResponseEntity.status(HttpStatus.CREATED).body(ingredientService.createMany(ingredientDtos, restaurantId));
     }
 

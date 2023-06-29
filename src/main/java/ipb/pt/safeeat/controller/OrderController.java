@@ -2,6 +2,7 @@ package ipb.pt.safeeat.controller;
 
 import ipb.pt.safeeat.dto.OrderDto;
 import ipb.pt.safeeat.service.OrderService;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -50,6 +51,7 @@ public class OrderController {
     }
 
     @DeleteMapping("/{id}")
+    @RolesAllowed("ADMIN")
     public ResponseEntity<Object> delete(@PathVariable String id) {
         orderService.delete(id);
         return ResponseEntity.ok().build();

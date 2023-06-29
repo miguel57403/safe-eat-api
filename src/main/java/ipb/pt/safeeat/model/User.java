@@ -26,6 +26,7 @@ public class User implements UserDetails {
     private String name;
     private String email;
     private String cellphone;
+    private String role;
 
     @JsonIgnore
     @DocumentReference
@@ -52,7 +53,7 @@ public class User implements UserDetails {
     @JsonIgnore
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_USER"));
+        return List.of(new SimpleGrantedAuthority(role));
     }
 
     @JsonIgnore

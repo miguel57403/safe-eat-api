@@ -105,7 +105,7 @@ public class ProductSectionService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.PRODUCT_SECTION_NOT_FOUND));
 
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Restaurant restaurant = restaurantRepository.findByProductSection(old).orElseThrow(
+        Restaurant restaurant = restaurantRepository.findByProductSections(old).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND));
 
         if (!restaurant.getOwner().equals(user))
@@ -123,7 +123,7 @@ public class ProductSectionService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.PRODUCT_SECTION_NOT_FOUND));
 
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Restaurant restaurant = restaurantRepository.findByProductSection(productSection).orElseThrow(
+        Restaurant restaurant = restaurantRepository.findByProductSections(productSection).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND));
 
         if (!restaurant.getOwner().equals(user))

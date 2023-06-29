@@ -1,6 +1,7 @@
 package ipb.pt.safeeat.controller;
 
 import ipb.pt.safeeat.service.CartService;
+import jakarta.annotation.security.RolesAllowed;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -15,6 +16,7 @@ public class CartController {
     private CartService cartService;
 
     @GetMapping
+    @RolesAllowed("ADMIN")
     public ResponseEntity<Object> findAll() {
         return ResponseEntity.ok(cartService.findAll());
     }
@@ -29,13 +31,13 @@ public class CartController {
         return ResponseEntity.ok(cartService.findByUser(id));
     }
 
-    @GetMapping("/{id}/isBuying")
-    public ResponseEntity<Object> isBuying(@PathVariable String id) {
-        return ResponseEntity.ok(cartService.isBuying(id));
+    @GetMapping("/isEmpty")
+    public ResponseEntity<Object> isEmpty() {
+        return ResponseEntity.ok(cartService.isEmpty());
     }
 
     @PutMapping
-    public ResponseEntity<Object> empty(@RequestParam String cartId) {
-        return ResponseEntity.ok().body(cartService.empty(cartId));
+    public ResponseEntity<Object> empty() {
+        return ResponseEntity.ok().body(cartService.empty());
     }
 }

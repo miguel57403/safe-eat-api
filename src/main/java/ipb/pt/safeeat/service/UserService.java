@@ -51,6 +51,7 @@ public class UserService {
         User user = new User();
         BeanUtils.copyProperties(userDto, user);
 
+        user.setRole("USER");
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRestrictions(restrictions);
 

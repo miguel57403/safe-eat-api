@@ -29,7 +29,7 @@ public class ProductController {
         return ResponseEntity.ok(productService.findById(id));
     }
 
-    @GetMapping("/restaurant/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<Object> findByRestaurant(@PathVariable String id) {
         return ResponseEntity.ok(productService.findAllByRestaurant(id));
     }
@@ -39,13 +39,13 @@ public class ProductController {
         return ResponseEntity.ok(productService.findAllByRestaurantAndName(id, name));
     }
 
-    @PostMapping
-    public ResponseEntity<Object> create(@Valid @RequestBody ProductDto productDto, @RequestParam String restaurantId) {
+    @PostMapping("/{restaurantId}")
+    public ResponseEntity<Object> create(@Valid @RequestBody ProductDto productDto, @PathVariable String restaurantId) {
         return ResponseEntity.status(HttpStatus.CREATED).body(productService.create(productDto, restaurantId));
     }
 
-    @PostMapping("/many")
-    public ResponseEntity<Object> createMany(@Valid @RequestBody List<ProductDto> productDtos, @RequestParam String restaurantId) {
+    @PostMapping("/many/{restaurantId}")
+    public ResponseEntity<Object> createMany(@Valid @RequestBody List<ProductDto> productDtos, @PathVariable String restaurantId) {
         return ResponseEntity.status(HttpStatus.CREATED).body(productService.createMany(productDtos, restaurantId));
     }
 

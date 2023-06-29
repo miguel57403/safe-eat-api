@@ -2,6 +2,7 @@ package ipb.pt.safeeat.controller;
 
 import ipb.pt.safeeat.dto.RestrictionDto;
 import ipb.pt.safeeat.service.RestrictionService;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -35,21 +36,25 @@ public class RestrictionController {
     }
 
     @PostMapping
+    @RolesAllowed("ADMIN")
     public ResponseEntity<Object> create(@Valid @RequestBody RestrictionDto restrictionDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(restrictionService.create(restrictionDto));
     }
 
     @PostMapping("/many")
+    @RolesAllowed("ADMIN")
     public ResponseEntity<Object> createMany(@Valid @RequestBody List<RestrictionDto> restrictionDtos) {
         return ResponseEntity.status(HttpStatus.CREATED).body(restrictionService.createMany(restrictionDtos));
     }
 
     @PutMapping
+    @RolesAllowed("ADMIN")
     public ResponseEntity<Object> update(@Valid @RequestBody RestrictionDto restrictionDto) {
         return ResponseEntity.ok().body(restrictionService.update(restrictionDto));
     }
 
     @DeleteMapping("/{id}")
+    @RolesAllowed("ADMIN")
     public ResponseEntity<Object> delete(@PathVariable String id) {
         restrictionService.delete(id);
         return ResponseEntity.ok().build();

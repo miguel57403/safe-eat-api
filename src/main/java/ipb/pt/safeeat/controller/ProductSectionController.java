@@ -34,13 +34,13 @@ public class ProductSectionController {
         return ResponseEntity.ok(productSectionService.findByRestaurant(id));
     }
 
-    @PostMapping
-    public ResponseEntity<Object> create(@Valid @RequestBody ProductSectionDto productSectionDto, @RequestParam String restaurantId) {
+    @PostMapping("/{restaurantId}")
+    public ResponseEntity<Object> create(@Valid @RequestBody ProductSectionDto productSectionDto, @PathVariable String restaurantId) {
         return ResponseEntity.status(HttpStatus.CREATED).body(productSectionService.create(productSectionDto, restaurantId));
     }
 
-    @PostMapping("/many")
-    public ResponseEntity<Object> createMany(@Valid @RequestBody List<ProductSectionDto> productSectionDtos, @RequestParam String restaurantId) {
+    @PostMapping("/many/{restaurantId}")
+    public ResponseEntity<Object> createMany(@Valid @RequestBody List<ProductSectionDto> productSectionDtos, @PathVariable String restaurantId) {
         return ResponseEntity.status(HttpStatus.CREATED).body(productSectionService.createMany(productSectionDtos, restaurantId));
     }
 

@@ -35,13 +35,13 @@ public class NotificationController {
     }
 
     @PostMapping
-    public ResponseEntity<Object> create(@Valid @RequestBody NotificationDto notificationDto, @RequestParam String userId) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(notificationService.create(notificationDto, userId));
+    public ResponseEntity<Object> create(@Valid @RequestBody NotificationDto notificationDto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(notificationService.create(notificationDto));
     }
 
     @PostMapping("/many")
-    public ResponseEntity<Object> createMany(@Valid @RequestBody List<NotificationDto> notificationDtos, @RequestParam String userId) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(notificationService.createMany(notificationDtos, userId));
+    public ResponseEntity<Object> createMany(@Valid @RequestBody List<NotificationDto> notificationDtos) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(notificationService.createMany(notificationDtos));
     }
 
     @PutMapping

@@ -55,14 +55,9 @@ public class ItemService {
         return cart.getItems();
     }
 
-    public Item create(ItemDto itemDto, String cartId) {
-        Cart cart = cartRepository.findById(cartId).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.CART_NOT_FOUND));
-
+    public Item create(ItemDto itemDto) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        if (!user.getCart().equals(cart))
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, NotFoundConstants.CART_NOT_FOUND);
+        Cart cart = user.getCart();
 
         Product product = productRepository.findById(itemDto.getProductId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.PRODUCT_NOT_FOUND));
@@ -89,10 +84,10 @@ public class ItemService {
     }
 
     @Transactional
-    public List<Item> createMany(List<ItemDto> itemDtos, String cartId) {
+    public List<Item> createMany(List<ItemDto> itemDtos) {
         List<Item> created = new ArrayList<>();
         for (ItemDto itemDto : itemDtos) {
-            created.add(create(itemDto, cartId));
+            created.add(create(itemDto));
         }
 
         return created;
