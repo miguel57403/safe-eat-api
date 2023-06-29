@@ -29,9 +29,9 @@ public class NotificationController {
         return ResponseEntity.ok(notificationService.findById(id));
     }
 
-    @GetMapping("/user/{id}")
-    public ResponseEntity<Object> findByUser(@PathVariable String id) {
-        return ResponseEntity.ok(notificationService.findAllByUser(id));
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<Object> findByUser(@PathVariable String userId) {
+        return ResponseEntity.ok(notificationService.findAllByUser(userId));
     }
 
     @PostMapping

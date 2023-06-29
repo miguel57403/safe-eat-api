@@ -29,14 +29,14 @@ public class RestaurantController {
         return ResponseEntity.ok(restaurantService.findById(id));
     }
 
-    @GetMapping("/productCategory/{id}")
-    public ResponseEntity<Object> findByCategory(@PathVariable String id) {
-        return ResponseEntity.ok(restaurantService.findByProductCategory(id));
+    @GetMapping("/productCategory/{categoryId}")
+    public ResponseEntity<Object> findByCategory(@PathVariable String categoryId) {
+        return ResponseEntity.ok(restaurantService.findByProductCategory(categoryId));
     }
 
-    @GetMapping("/owner/{id}")
-    public ResponseEntity<Object> findByOwner(@PathVariable String id) {
-        return ResponseEntity.ok(restaurantService.findByOwner(id));
+    @GetMapping("/owner/{ownerId}")
+    public ResponseEntity<Object> findByOwner(@PathVariable String ownerId) {
+        return ResponseEntity.ok(restaurantService.findByOwner(ownerId));
     }
 
     @GetMapping("/name/{name}")

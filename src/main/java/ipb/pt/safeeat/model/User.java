@@ -50,6 +50,10 @@ public class User implements UserDetails {
     @DocumentReference
     private List<Restaurant> restaurants = new ArrayList<>();
 
+    public Boolean isAdmin() {
+        return role.equals("ADMIN");
+    }
+
     @JsonIgnore
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

@@ -29,9 +29,9 @@ public class ItemController {
         return ResponseEntity.ok(itemService.findById(id));
     }
 
-    @GetMapping("/cart/{id}")
-    public ResponseEntity<Object> findByCartId(@PathVariable String id) {
-        return ResponseEntity.ok(itemService.findByCartId(id));
+    @GetMapping("/cart/{cartId}")
+    public ResponseEntity<Object> findByCartId(@PathVariable String cartId) {
+        return ResponseEntity.ok(itemService.findByCartId(cartId));
     }
 
     @PostMapping

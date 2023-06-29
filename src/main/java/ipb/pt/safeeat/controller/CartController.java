@@ -26,9 +26,9 @@ public class CartController {
         return ResponseEntity.ok(cartService.findById(id));
     }
 
-    @GetMapping("/user/{id}")
-    public ResponseEntity<Object> findByUser(@PathVariable String id) {
-        return ResponseEntity.ok(cartService.findByUser(id));
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<Object> findByUser(@PathVariable String userId) {
+        return ResponseEntity.ok(cartService.findByUser(userId));
     }
 
     @GetMapping("/isEmpty")

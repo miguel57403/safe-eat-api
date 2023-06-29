@@ -30,8 +30,18 @@ public class AdvertisementService {
     }
 
     public Advertisement findById(String id) {
-        return advertisementRepository.findById(id).orElseThrow(
+        Advertisement advertisement = advertisementRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ADVERTISEMENT_NOT_FOUND));
+
+        Restaurant restaurant = restaurantRepository.findByAdvertisements(advertisement).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND));
+
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (!user.isAdmin() && !restaurant.getOwner().equals(user))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND);
+
+        return advertisement;
     }
 
     public Advertisement create(AdvertisementDto advertisementDto) {

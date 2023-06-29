@@ -29,9 +29,9 @@ public class AddressController {
         return ResponseEntity.ok(addressService.findById(id));
     }
 
-    @GetMapping("/user/{id}")
-    public ResponseEntity<Object> findAllByUser(@PathVariable String id) {
-        return ResponseEntity.ok(addressService.findAllByUser(id));
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<Object> findAllByUser(@PathVariable String userId) {
+        return ResponseEntity.ok(addressService.findAllByUser(userId));
     }
 
     @PostMapping

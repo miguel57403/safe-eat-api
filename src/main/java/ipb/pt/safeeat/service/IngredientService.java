@@ -42,6 +42,14 @@ public class IngredientService {
         Ingredient ingredient = ingredientRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.INGREDIENT_NOT_FOUND));
 
+        Restaurant restaurant = restaurantRepository.findByIngredients(ingredient).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND));
+
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (!user.isAdmin() && !restaurant.getOwner().equals(user))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND);
+
         restrictionChecker.checkRestrictionList(ingredient.getRestrictions());
         return ingredient;
     }

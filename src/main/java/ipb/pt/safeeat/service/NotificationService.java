@@ -36,8 +36,15 @@ public class NotificationService {
     }
 
     public Notification findById(String id) {
-        return notificationRepository.findById(id).orElseThrow(
+        Notification notification = notificationRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.NOTIFICATION_NOT_FOUND));
+
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (!user.isAdmin() && !user.getNotifications().contains(notification))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.NOTIFICATION_NOT_FOUND);
+
+        return notification;
     }
 
     public List<Notification> findAllByUser(String id) {

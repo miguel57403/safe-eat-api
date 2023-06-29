@@ -37,8 +37,16 @@ public class OrderService {
     }
 
     public Order findById(String id) {
-        return orderRepository.findById(id).orElseThrow(
+        Order order = orderRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ORDER_NOT_FOUND));
+
+        Restaurant restaurant = order.getRestaurant();
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (!user.isAdmin() && !restaurant.getOwner().equals(user))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ORDER_NOT_FOUND);
+
+        return order;
     }
 
     public List<Order> findAllByUser(String id) {

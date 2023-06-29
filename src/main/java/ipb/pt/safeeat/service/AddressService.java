@@ -25,12 +25,20 @@ public class AddressService {
     private UserRepository userRepository;
 
     public List<Address> findAll() {
-        return addressRepository.findAll();
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return user.isAdmin() ? addressRepository.findAll() : user.getAddresses();
     }
 
     public Address findById(String id) {
-        return addressRepository.findById(id).orElseThrow(
+        Address address = addressRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ADDRESS_NOT_FOUND));
+
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (!user.isAdmin() && !user.getAddresses().contains(address))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ADDRESS_NOT_FOUND);
+
+        return address;
     }
 
     public List<Address> findAllByUser(String id) {

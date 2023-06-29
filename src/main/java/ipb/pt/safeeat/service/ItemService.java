@@ -40,6 +40,11 @@ public class ItemService {
         Item item = itemRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ITEM_NOT_FOUND));
 
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (!user.isAdmin() && !user.getCart().getItems().contains(item))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ITEM_NOT_FOUND);
+
         restrictionChecker.checkProduct(item.getProduct());
         return item;
     }

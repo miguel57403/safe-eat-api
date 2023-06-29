@@ -29,22 +29,22 @@ public class ProductController {
         return ResponseEntity.ok(productService.findById(id));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Object> findByRestaurant(@PathVariable String id) {
-        return ResponseEntity.ok(productService.findAllByRestaurant(id));
+    @GetMapping("/restaurant/{restaurantId}")
+    public ResponseEntity<Object> findByRestaurant(@PathVariable String restaurantId) {
+        return ResponseEntity.ok(productService.findAllByRestaurant(restaurantId));
     }
 
-    @GetMapping("/restaurant/{id}/name/{name}")
-    public ResponseEntity<Object> findByRestaurantAndName(@PathVariable String id, @PathVariable String name) {
-        return ResponseEntity.ok(productService.findAllByRestaurantAndName(id, name));
+    @GetMapping("/restaurant/{restaurantId}/name/{name}")
+    public ResponseEntity<Object> findByRestaurantAndName(@PathVariable String restaurantId, @PathVariable String name) {
+        return ResponseEntity.ok(productService.findAllByRestaurantAndName(restaurantId, name));
     }
 
-    @PostMapping("/{restaurantId}")
+    @PostMapping("/restaurant/{restaurantId}")
     public ResponseEntity<Object> create(@Valid @RequestBody ProductDto productDto, @PathVariable String restaurantId) {
         return ResponseEntity.status(HttpStatus.CREATED).body(productService.create(productDto, restaurantId));
     }
 
-    @PostMapping("/many/{restaurantId}")
+    @PostMapping("/many/restaurant/{restaurantId}")
     public ResponseEntity<Object> createMany(@Valid @RequestBody List<ProductDto> productDtos, @PathVariable String restaurantId) {
         return ResponseEntity.status(HttpStatus.CREATED).body(productService.createMany(productDtos, restaurantId));
     }

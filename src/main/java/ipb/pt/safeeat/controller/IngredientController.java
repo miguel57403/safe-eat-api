@@ -29,12 +29,12 @@ public class IngredientController {
         return ResponseEntity.ok(ingredientService.findById(id));
     }
 
-    @PostMapping("/{restaurantId}")
+    @PostMapping("/restaurant/{restaurantId}")
     public ResponseEntity<Object> create(@Valid @RequestBody IngredientDto ingredientDto, @PathVariable String restaurantId) {
         return ResponseEntity.status(HttpStatus.CREATED).body(ingredientService.create(ingredientDto, restaurantId));
     }
 
-    @PostMapping("/many/{restaurantId}")
+    @PostMapping("/many/restaurant/{restaurantId}")
     public ResponseEntity<Object> createMany(@Valid @RequestBody List<IngredientDto> ingredientDtos, @PathVariable String restaurantId) {
         return ResponseEntity.status(HttpStatus.CREATED).body(ingredientService.createMany(ingredientDtos, restaurantId));
     }

@@ -27,7 +27,7 @@ public class FeedbackController {
         return ResponseEntity.ok(feedbackService.findById(id));
     }
 
-    @PostMapping("/{orderId}")
+    @PostMapping("/order/{orderId}")
     public ResponseEntity<Object> create(@Valid @RequestBody FeedbackDto feedbackDto, @PathVariable String orderId) {
         return ResponseEntity.status(HttpStatus.CREATED).body(feedbackService.create(feedbackDto, orderId));
     }

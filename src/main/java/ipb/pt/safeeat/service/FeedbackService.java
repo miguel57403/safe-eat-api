@@ -1,11 +1,10 @@
 package ipb.pt.safeeat.service;
 
 import ipb.pt.safeeat.dto.FeedbackDto;
-import ipb.pt.safeeat.model.Feedback;
-import ipb.pt.safeeat.model.Order;
-import ipb.pt.safeeat.model.User;
+import ipb.pt.safeeat.model.*;
 import ipb.pt.safeeat.repository.FeedbackRepository;
 import ipb.pt.safeeat.repository.OrderRepository;
+import ipb.pt.safeeat.repository.RestaurantRepository;
 import ipb.pt.safeeat.utility.NotFoundConstants;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,14 +21,29 @@ public class FeedbackService {
     private FeedbackRepository feedbackRepository;
     @Autowired
     private OrderRepository orderRepository;
+    @Autowired
+    private RestaurantRepository restaurantRepository;
 
     public List<Feedback> findAll() {
         return feedbackRepository.findAll();
     }
 
     public Feedback findById(String id) {
-        return feedbackRepository.findById(id).orElseThrow(
+        Feedback feedback = feedbackRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.FEEDBACK_NOT_FOUND));
+
+        Order order = orderRepository.findByFeedback(feedback).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ORDER_NOT_FOUND));
+
+        Restaurant restaurant = restaurantRepository.findByOrders(order).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND));
+
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (!user.isAdmin() && !restaurant.getOwner().equals(user) && !order.getClient().equals(user))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND);
+
+        return feedback;
     }
 
     public Feedback create(FeedbackDto feedbackDto, String orderId) {
