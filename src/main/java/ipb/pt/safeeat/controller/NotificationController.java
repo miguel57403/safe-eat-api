@@ -2,6 +2,7 @@ package ipb.pt.safeeat.controller;
 
 import ipb.pt.safeeat.dto.NotificationDto;
 import ipb.pt.safeeat.service.NotificationService;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,7 @@ public class NotificationController {
     private NotificationService notificationService;
 
     @GetMapping
+    @RolesAllowed("ADMIN")
     public ResponseEntity<Object> findAll() {
         return ResponseEntity.ok(notificationService.findAll());
     }
@@ -30,7 +32,7 @@ public class NotificationController {
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<Object> findByUser(@PathVariable String userId) {
+    public ResponseEntity<Object> findAllByUser(@PathVariable String userId) {
         return ResponseEntity.ok(notificationService.findAllByUser(userId));
     }
 

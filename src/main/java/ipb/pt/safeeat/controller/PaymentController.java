@@ -2,6 +2,7 @@ package ipb.pt.safeeat.controller;
 
 import ipb.pt.safeeat.dto.PaymentDto;
 import ipb.pt.safeeat.service.PaymentService;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,7 @@ public class PaymentController {
     private PaymentService paymentService;
 
     @GetMapping
+    @RolesAllowed("ADMIN")
     public ResponseEntity<Object> findAll() {
         return ResponseEntity.ok(paymentService.findAll());
     }
@@ -30,7 +32,7 @@ public class PaymentController {
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<Object> findByUser(@PathVariable String userId) {
+    public ResponseEntity<Object> findAllByUser(@PathVariable String userId) {
         return ResponseEntity.ok(paymentService.findAllByUser(userId));
     }
 

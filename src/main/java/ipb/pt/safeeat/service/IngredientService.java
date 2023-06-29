@@ -6,6 +6,7 @@ import ipb.pt.safeeat.repository.IngredientRepository;
 import ipb.pt.safeeat.repository.ProductRepository;
 import ipb.pt.safeeat.repository.RestaurantRepository;
 import ipb.pt.safeeat.repository.RestrictionRepository;
+import ipb.pt.safeeat.utility.NotAllowedConstants;
 import ipb.pt.safeeat.utility.NotFoundConstants;
 import ipb.pt.safeeat.utility.RestrictionChecker;
 import org.springframework.beans.BeanUtils;
@@ -33,25 +34,38 @@ public class IngredientService {
     private RestrictionChecker restrictionChecker;
 
     public List<Ingredient> findAll() {
-        List<Ingredient> ingredients = ingredientRepository.findAll();
-        restrictionChecker.checkIngredientList(ingredients);
-        return ingredients;
+        return ingredientRepository.findAll();
     }
 
     public Ingredient findById(String id) {
         Ingredient ingredient = ingredientRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.INGREDIENT_NOT_FOUND));
 
-        Restaurant restaurant = restaurantRepository.findByIngredients(ingredient).orElseThrow(
+        restrictionChecker.checkIngredient(ingredient);
+        return ingredient;
+    }
+
+    public List<Ingredient> findAllByRestaurant(String restaurantId) {
+        Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND));
 
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!user.isAdmin() && !restaurant.getOwner().equals(user))
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, NotAllowedConstants.FORBIDDEN_INGREDIENT);
 
-        restrictionChecker.checkRestrictionList(ingredient.getRestrictions());
-        return ingredient;
+        List<Ingredient> ingredients = restaurant.getIngredients();
+        restrictionChecker.checkIngredientList(ingredients);
+        return ingredients;
+    }
+
+    public List<Ingredient> findAllByProduct(String productId) {
+        Product product = productRepository.findById(productId).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.PRODUCT_NOT_FOUND));
+
+        List<Ingredient> ingredients = product.getIngredients();
+        restrictionChecker.checkIngredientList(ingredients);
+        return ingredients;
     }
 
     public Ingredient create(IngredientDto ingredientDto, String restaurantId) {

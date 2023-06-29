@@ -3,6 +3,7 @@ package ipb.pt.safeeat.controller;
 import ipb.pt.safeeat.dto.UserDto;
 import ipb.pt.safeeat.model.User;
 import ipb.pt.safeeat.service.UserService;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,20 +23,22 @@ public class UserController {
     private UserService userService;
 
     @GetMapping
+    @RolesAllowed("ADMIN")
     public ResponseEntity<Object> findAll() {
         return ResponseEntity.ok(userService.findAll());
-    }
-
-    @GetMapping("/me")
-    public ResponseEntity<Object> getMe() {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return ResponseEntity.ok(user);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Object> findById(@PathVariable String id) {
         return ResponseEntity.ok(userService.findById(id));
     }
+
+    @GetMapping("/me")
+    public ResponseEntity<Object> findMe() {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return ResponseEntity.ok(user);
+    }
+
 
     @PostMapping("/many")
     public ResponseEntity<Object> createMany(@Valid @RequestBody List<UserDto> userDtos) {

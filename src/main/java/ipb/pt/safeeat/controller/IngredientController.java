@@ -2,6 +2,7 @@ package ipb.pt.safeeat.controller;
 
 import ipb.pt.safeeat.dto.IngredientDto;
 import ipb.pt.safeeat.service.IngredientService;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,7 @@ public class IngredientController {
     private IngredientService ingredientService;
 
     @GetMapping
+    @RolesAllowed("ADMIN")
     public ResponseEntity<Object> findAll() {
         return ResponseEntity.ok(ingredientService.findAll());
     }
@@ -27,6 +29,16 @@ public class IngredientController {
     @GetMapping("/{id}")
     public ResponseEntity<Object> findById(@PathVariable String id) {
         return ResponseEntity.ok(ingredientService.findById(id));
+    }
+
+    @GetMapping("/restaurant/{restaurantId}")
+    public ResponseEntity<Object> findByAllRestaurant(@PathVariable String restaurantId) {
+        return ResponseEntity.ok(ingredientService.findAllByRestaurant(restaurantId));
+    }
+
+    @GetMapping("/product/{productId}")
+    public ResponseEntity<Object> findByAllProduct(@PathVariable String productId) {
+        return ResponseEntity.ok(ingredientService.findAllByProduct(productId));
     }
 
     @PostMapping("/restaurant/{restaurantId}")

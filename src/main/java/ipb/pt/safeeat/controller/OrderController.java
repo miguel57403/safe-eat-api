@@ -21,6 +21,7 @@ public class OrderController {
     private OrderService orderService;
 
     @GetMapping
+    @RolesAllowed("ADMIN")
     public ResponseEntity<Object> findAll() {
         return ResponseEntity.ok(orderService.findAll());
     }
@@ -31,8 +32,13 @@ public class OrderController {
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<Object> findByUser(@PathVariable String userId) {
+    public ResponseEntity<Object> findAllByUser(@PathVariable String userId) {
         return ResponseEntity.ok(orderService.findAllByUser(userId));
+    }
+
+    @GetMapping("/restaurant/{restaurantId}")
+    public ResponseEntity<Object> findAllByRestaurant(@PathVariable String restaurantId) {
+        return ResponseEntity.ok(orderService.findAllByRestaurant(restaurantId));
     }
 
     @PostMapping

@@ -8,6 +8,7 @@ import ipb.pt.safeeat.model.User;
 import ipb.pt.safeeat.repository.CartRepository;
 import ipb.pt.safeeat.repository.ItemRepository;
 import ipb.pt.safeeat.repository.ProductRepository;
+import ipb.pt.safeeat.utility.NotAllowedConstants;
 import ipb.pt.safeeat.utility.NotFoundConstants;
 import ipb.pt.safeeat.utility.RestrictionChecker;
 import org.springframework.beans.BeanUtils;
@@ -43,15 +44,20 @@ public class ItemService {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!user.isAdmin() && !user.getCart().getItems().contains(item))
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ITEM_NOT_FOUND);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, NotAllowedConstants.FORBIDDEN_ITEM);
 
         restrictionChecker.checkProduct(item.getProduct());
         return item;
     }
 
-    public List<Item> findByCartId(String cartId) {
+    public List<Item> findAllByCartId(String cartId) {
         Cart cart = cartRepository.findById(cartId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.CART_NOT_FOUND));
+
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (!user.isAdmin() && !user.getCart().equals(cart))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, NotAllowedConstants.FORBIDDEN_ITEM);
 
         for (Item item : cart.getItems()) {
             restrictionChecker.checkProduct(item.getProduct());

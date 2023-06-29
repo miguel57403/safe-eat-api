@@ -5,6 +5,7 @@ import ipb.pt.safeeat.model.Address;
 import ipb.pt.safeeat.model.User;
 import ipb.pt.safeeat.repository.AddressRepository;
 import ipb.pt.safeeat.repository.UserRepository;
+import ipb.pt.safeeat.utility.NotAllowedConstants;
 import ipb.pt.safeeat.utility.NotFoundConstants;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,8 +26,7 @@ public class AddressService {
     private UserRepository userRepository;
 
     public List<Address> findAll() {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return user.isAdmin() ? addressRepository.findAll() : user.getAddresses();
+        return addressRepository.findAll();
     }
 
     public Address findById(String id) {
@@ -36,7 +36,7 @@ public class AddressService {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!user.isAdmin() && !user.getAddresses().contains(address))
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ADDRESS_NOT_FOUND);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, NotAllowedConstants.FORBIDDEN_ADDRESS);
 
         return address;
     }

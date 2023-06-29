@@ -29,6 +29,11 @@ public class AdvertisementController {
         return ResponseEntity.ok().body(advertisementService.findById(id));
     }
 
+    @GetMapping("/restaurant/{restaurantId}")
+    public ResponseEntity<Object> findAllByRestaurant(@PathVariable String restaurantId) {
+        return ResponseEntity.ok(advertisementService.findAllByRestaurant(restaurantId));
+    }
+
     @PostMapping
     public ResponseEntity<Object> create(@Valid @RequestBody AdvertisementDto advertisementDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(advertisementService.create(advertisementDto));

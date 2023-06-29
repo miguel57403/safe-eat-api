@@ -5,6 +5,7 @@ import ipb.pt.safeeat.model.Cart;
 import ipb.pt.safeeat.model.Restriction;
 import ipb.pt.safeeat.model.User;
 import ipb.pt.safeeat.repository.*;
+import ipb.pt.safeeat.utility.NotAllowedConstants;
 import ipb.pt.safeeat.utility.NotFoundConstants;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,8 +39,15 @@ public class UserService {
     }
 
     public User findById(String id) {
-        return userRepository.findById(id).orElseThrow(
+        User user = userRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.USER_NOT_FOUND));
+
+        User current = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if(!current.isAdmin() && !current.equals(user))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, NotAllowedConstants.FORBIDDEN_USER);
+
+        return user;
     }
 
     public User create(UserDto userDto) {

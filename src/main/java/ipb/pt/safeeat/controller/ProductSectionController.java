@@ -30,8 +30,8 @@ public class ProductSectionController {
     }
 
     @GetMapping("/restaurant/{restaurantId}")
-    public ResponseEntity<Object> findByRestaurant(@PathVariable String restaurantId) {
-        return ResponseEntity.ok(productSectionService.findByRestaurant(restaurantId));
+    public ResponseEntity<Object> findAllByRestaurant(@PathVariable String restaurantId) {
+        return ResponseEntity.ok(productSectionService.findAllByRestaurant(restaurantId));
     }
 
     @PostMapping("/restaurant/{restaurantId}")

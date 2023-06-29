@@ -38,11 +38,7 @@ public class RestaurantService {
     private DeliveryRepository deliveryRepository;
 
     public List<Restaurant> findAll() {
-        try {
-            return restaurantRepository.findAll();
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
-        }
+        return restaurantRepository.findAll();
     }
 
     public Restaurant findById(String id) {
@@ -67,7 +63,7 @@ public class RestaurantService {
         return restaurants;
     }
 
-    public List<Restaurant> findByOwner(String ownerId) {
+    public List<Restaurant> findAllByOwner(String ownerId) {
         User owner = userRepository.findById(ownerId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.USER_NOT_FOUND));
 

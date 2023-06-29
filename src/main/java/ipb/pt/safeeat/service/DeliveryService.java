@@ -29,19 +29,16 @@ public class DeliveryService {
         return deliveryRepository.findAll();
     }
 
-    public Delivery findById(String id) {
-        Delivery delivery = deliveryRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.DELIVERY_NOT_FOUND));
-
-        Restaurant restaurant = restaurantRepository.findByDeliveries(delivery).orElseThrow(
+    public List<Delivery> findAllByRestaurant(String restaurantId) {
+        Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND));
 
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return restaurant.getDeliveries();
+    }
 
-        if (!user.isAdmin() && !restaurant.getOwner().equals(user))
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND);
-
-        return delivery;
+    public Delivery findById(String id) {
+        return deliveryRepository.findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.DELIVERY_NOT_FOUND));
     }
 
     public Delivery create(DeliveryDto deliveryDto, String restaurantId) {

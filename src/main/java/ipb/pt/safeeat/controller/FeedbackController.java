@@ -2,6 +2,7 @@ package ipb.pt.safeeat.controller;
 
 import ipb.pt.safeeat.dto.FeedbackDto;
 import ipb.pt.safeeat.service.FeedbackService;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,6 +19,7 @@ public class FeedbackController {
     private FeedbackService feedbackService;
 
     @GetMapping
+    @RolesAllowed("ADMIN")
     public ResponseEntity<Object> findAll() {
         return ResponseEntity.ok(feedbackService.findAll());
     }
@@ -25,6 +27,11 @@ public class FeedbackController {
     @GetMapping("/{id}")
     public ResponseEntity<Object> findById(@PathVariable String id) {
         return ResponseEntity.ok(feedbackService.findById(id));
+    }
+
+    @GetMapping("/order/{orderId}")
+    public ResponseEntity<Object> findByOrder(@PathVariable String orderId) {
+        return ResponseEntity.ok(feedbackService.findByOrder(orderId));
     }
 
     @PostMapping("/order/{orderId}")

@@ -43,14 +43,11 @@ public class ProductSectionService {
     }
 
     public ProductSection findById(String id) {
-        ProductSection productSection = productSectionRepository.findById(id).orElseThrow(
+        return productSectionRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.PRODUCT_SECTION_NOT_FOUND));
-
-        restrictionChecker.checkProductList(productSection.getProducts());
-        return productSection;
     }
 
-    public List<ProductSection> findByRestaurant(String restaurantId) {
+    public List<ProductSection> findAllByRestaurant(String restaurantId) {
         Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND));
 
