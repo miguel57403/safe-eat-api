@@ -106,6 +106,7 @@ public class ProductService {
         restaurant.getProducts().add(created);
         restaurantRepository.save(restaurant);
 
+        restrictionCheckerComponent.checkProduct(created);
         return created;
     }
 
@@ -125,7 +126,10 @@ public class ProductService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_PRODUCT);
 
         BeanUtils.copyProperties(productDto, old);
-        return productRepository.save(old);
+        Product updated = productRepository.save(old);
+
+        restrictionCheckerComponent.checkProduct(updated);
+        return updated;
     }
 
     public Product updateImage(String id, MultipartFile imageFile) throws IOException {
@@ -149,7 +153,10 @@ public class ProductService {
 
         String newBlobName = azureBlobService.getBlobUrl(partialBlobName);
         product.setImage(newBlobName);
-        return productRepository.save(product);
+        Product updated = productRepository.save(product);
+
+        restrictionCheckerComponent.checkProduct(updated);
+        return updated;
     }
 
     public void delete(String id) {

@@ -1,6 +1,7 @@
 package ipb.pt.safeeat.service;
 
 import ipb.pt.safeeat.component.RestrictionCheckerComponent;
+import ipb.pt.safeeat.constant.ForbiddenConstant;
 import ipb.pt.safeeat.constant.NotFoundConstant;
 import ipb.pt.safeeat.dto.RestrictionDto;
 import ipb.pt.safeeat.model.Ingredient;
@@ -12,6 +13,7 @@ import ipb.pt.safeeat.repository.UserRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -35,21 +37,34 @@ public class RestrictionService {
     }
 
     public Restriction findById(String id) {
-        return restrictionRepository.findById(id).orElseThrow(
+        Restriction restriction = restrictionRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
+
+        restrictionCheckerComponent.checkRestriction(restriction);
+        return restriction;
     }
 
     public List<Restriction> findAllByUser(String id) {
         User user = userRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.USER_NOT_FOUND));
 
-        return user.getRestrictions();
+        User current = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (!current.isAdmin() && !current.equals(user))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_RESTRICTION);
+
+        List<Restriction> restrictions = user.getRestrictions();
+        restrictionCheckerComponent.checkRestrictionList(restrictions);
+        return restrictions;
     }
 
     public Restriction create(RestrictionDto restrictionDto) {
         Restriction restriction = new Restriction();
         BeanUtils.copyProperties(restrictionDto, restriction);
-        return restrictionRepository.save(restriction);
+        Restriction created = restrictionRepository.save(restriction);
+
+        restrictionCheckerComponent.checkRestriction(created);
+        return created;
     }
 
     public Restriction update(RestrictionDto restrictionDto) {
@@ -57,7 +72,10 @@ public class RestrictionService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
         BeanUtils.copyProperties(restrictionDto, old);
-        return restrictionRepository.save(old);
+        Restriction updated = restrictionRepository.save(old);
+
+        restrictionCheckerComponent.checkRestriction(updated);
+        return updated;
     }
 
     public void delete(String id) {

@@ -43,8 +43,11 @@ public class ProductSectionService {
     }
 
     public ProductSection findById(String id) {
-        return productSectionRepository.findById(id).orElseThrow(
+        ProductSection productSection = productSectionRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.PRODUCT_SECTION_NOT_FOUND));
+
+        restrictionCheckerComponent.checkProductList(productSection.getProducts());
+        return productSection;
     }
 
     public List<ProductSection> findAllByRestaurant(String restaurantId) {
@@ -84,6 +87,7 @@ public class ProductSectionService {
         restaurant.getProductSections().add(created);
         restaurantRepository.save(restaurant);
 
+        restrictionCheckerComponent.checkProductList(created.getProducts());
         return created;
     }
 
@@ -103,7 +107,10 @@ public class ProductSectionService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_PRODUCT_SECTION);
 
         BeanUtils.copyProperties(productSectionDto, old);
-        return productSectionRepository.save(old);
+        ProductSection updated = productSectionRepository.save(old);
+
+        restrictionCheckerComponent.checkProductList(updated.getProducts());
+        return updated;
     }
 
     public void delete(String id) {

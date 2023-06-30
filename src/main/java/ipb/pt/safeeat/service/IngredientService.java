@@ -98,6 +98,7 @@ public class IngredientService {
 
         restaurant.getIngredients().add(created);
         restaurantRepository.save(restaurant);
+        restrictionCheckerComponent.checkIngredient(ingredient);
 
         return created;
     }
@@ -109,6 +110,14 @@ public class IngredientService {
         Restaurant restaurant = restaurantRepository.findByIngredients(old).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
+        List<Restriction> restrictions = new ArrayList<>();
+        if (ingredientDto.getRestrictionIds() != null && !ingredientDto.getRestrictionIds().isEmpty()) {
+            for (String restrictionId : ingredientDto.getRestrictionIds()) {
+                restrictions.add(restrictionRepository.findById(restrictionId).orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTRICTION_NOT_FOUND)));
+            }
+        }
+
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!restaurant.getOwner().equals(user))
@@ -118,7 +127,11 @@ public class IngredientService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_INGREDIENT);
 
         BeanUtils.copyProperties(ingredientDto, old);
-        return ingredientRepository.save(old);
+        old.setRestrictions(restrictions);
+        Ingredient updated = ingredientRepository.save(old);
+        restrictionCheckerComponent.checkIngredient(updated);
+
+        return updated;
     }
 
     public void delete(String id) {

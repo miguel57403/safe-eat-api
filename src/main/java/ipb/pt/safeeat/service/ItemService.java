@@ -90,6 +90,7 @@ public class ItemService {
         cart.getItems().add(created);
         cartRepository.save(cart);
 
+        restrictionCheckerComponent.checkItem(created);
         return created;
     }
 
@@ -117,8 +118,10 @@ public class ItemService {
 
         BeanUtils.copyProperties(itemDto, old);
         calculateValues(old.getProduct(), old);
+        Item updated = itemRepository.save(old);
 
-        return itemRepository.save(old);
+        restrictionCheckerComponent.checkItem(updated);
+        return updated;
     }
 
     public void delete(String id) {

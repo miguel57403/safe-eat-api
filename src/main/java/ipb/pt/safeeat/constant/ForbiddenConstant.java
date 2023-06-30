@@ -11,6 +11,7 @@ public class ForbiddenConstant {
     public static final String FORBIDDEN_NOTIFICATION = "Forbidden Notification(s)";
     public static final String FORBIDDEN_ORDER = "Forbidden Order(s)";
     public static final String FORBIDDEN_RESTAURANT = "Forbidden Restaurant(s)";
+    public static final String FORBIDDEN_RESTRICTION = "Forbidden Restriction(s)";
     public static final String FORBIDDEN_PAYMENT = "Forbidden Payment(s)";
     public static final String FORBIDDEN_PRODUCT = "Forbidden Product(s)";
     public static final String FORBIDDEN_PRODUCT_SECTION = "Forbidden Product Sections(s)";
