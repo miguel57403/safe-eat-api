@@ -9,6 +9,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @Controller
 @CrossOrigin
@@ -47,6 +50,11 @@ public class ProductController {
     @PutMapping
     public ResponseEntity<Object> update(@Valid @RequestBody ProductDto productDto) {
         return ResponseEntity.ok().body(productService.update(productDto));
+    }
+
+    @PutMapping("/{id}/image")
+    public ResponseEntity<Object> updateImage(@PathVariable String id, @RequestParam("image") MultipartFile imageFile) throws IOException {
+        return ResponseEntity.ok().body(productService.updateImage(id, imageFile));
     }
 
     @DeleteMapping("/{id}")

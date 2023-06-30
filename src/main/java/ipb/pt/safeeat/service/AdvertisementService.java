@@ -13,8 +13,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 @Service
@@ -23,6 +26,8 @@ public class AdvertisementService {
     private AdvertisementRepository advertisementRepository;
     @Autowired
     private RestaurantRepository restaurantRepository;
+    @Autowired
+    private AzureBlobService azureBlobService;
 
     public List<Advertisement> findAll() {
         return advertisementRepository.findAll();
@@ -93,6 +98,30 @@ public class AdvertisementService {
         old.setRestaurantId(restaurant.getId());
 
         return advertisementRepository.save(old);
+    }
+
+    public Advertisement updateImage(String id, MultipartFile imageFile) throws IOException {
+        Advertisement advertisement = advertisementRepository.findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CATEGORY_NOT_FOUND));
+
+        InputStream imageStream = imageFile.getInputStream();
+        String blobName = imageFile.getOriginalFilename();
+
+        if (blobName == null)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Image file is null");
+
+        if (advertisement.getImage() != null && !advertisement.getImage().isBlank()) {
+            String containerUrl = azureBlobService.getContainerUrl() + "/";
+            azureBlobService.deleteBlob(advertisement.getImage().replace(containerUrl, ""));
+        }
+
+        String extension = blobName.substring(blobName.lastIndexOf(".") + 1);
+        String partialBlobName = "advertisements/" + advertisement.getId() + "." + extension;
+        azureBlobService.uploadBlob(partialBlobName, imageStream);
+
+        String newBlobName = azureBlobService.getBlobUrl(partialBlobName);
+        advertisement.setImage(newBlobName);
+        return advertisementRepository.save(advertisement);
     }
 
     public void delete(String id) {

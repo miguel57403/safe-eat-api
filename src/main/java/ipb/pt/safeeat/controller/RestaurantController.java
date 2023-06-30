@@ -8,6 +8,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @Controller
 @CrossOrigin
@@ -50,6 +53,16 @@ public class RestaurantController {
     @PutMapping
     public ResponseEntity<Object> update(@Valid @RequestBody RestaurantDto restaurantDto) {
         return ResponseEntity.ok().body(restaurantService.update(restaurantDto));
+    }
+
+    @PutMapping("/{id}/logo")
+    public ResponseEntity<Object> updateLogo(@PathVariable String id, @RequestParam("image") MultipartFile imageFile) throws IOException {
+        return ResponseEntity.ok().body(restaurantService.updateLogo(id, imageFile));
+    }
+
+    @PutMapping("/{id}/cover")
+    public ResponseEntity<Object> updateCover(@PathVariable String id, @RequestParam("image") MultipartFile imageFile) throws IOException {
+        return ResponseEntity.ok().body(restaurantService.updateCover(id, imageFile));
     }
 
     @DeleteMapping("/{id}")

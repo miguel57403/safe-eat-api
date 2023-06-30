@@ -12,8 +12,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,6 +38,8 @@ public class RestaurantService {
     private AdvertisementRepository advertisementRepository;
     @Autowired
     private DeliveryRepository deliveryRepository;
+    @Autowired
+    private AzureBlobService azureBlobService;
 
     public List<Restaurant> findAll() {
         return restaurantRepository.findAll();
@@ -104,6 +109,54 @@ public class RestaurantService {
 
         BeanUtils.copyProperties(restaurantDto, old);
         return restaurantRepository.save(old);
+    }
+
+    public Restaurant updateLogo(String id, MultipartFile imageFile) throws IOException {
+        Restaurant restaurant = restaurantRepository.findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CATEGORY_NOT_FOUND));
+
+        InputStream imageStream = imageFile.getInputStream();
+        String blobName = imageFile.getOriginalFilename();
+
+        if (blobName == null)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Image file is null");
+
+        if (restaurant.getLogo() != null && !restaurant.getLogo().isBlank()) {
+            String containerUrl = azureBlobService.getContainerUrl() + "/";
+            azureBlobService.deleteBlob(restaurant.getLogo().replace(containerUrl, ""));
+        }
+
+        String extension = blobName.substring(blobName.lastIndexOf(".") + 1);
+        String partialBlobName = "restaurants/" + restaurant.getId() + "." + extension;
+        azureBlobService.uploadBlob(partialBlobName, imageStream);
+
+        String newBlobName = azureBlobService.getBlobUrl(partialBlobName);
+        restaurant.setLogo(newBlobName);
+        return restaurantRepository.save(restaurant);
+    }
+
+    public Restaurant updateCover(String id, MultipartFile imageFile) throws IOException {
+        Restaurant restaurant = restaurantRepository.findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CATEGORY_NOT_FOUND));
+
+        InputStream imageStream = imageFile.getInputStream();
+        String blobName = imageFile.getOriginalFilename();
+
+        if (blobName == null)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Image file is null");
+
+        if (restaurant.getCover() != null && !restaurant.getCover().isBlank()) {
+            String containerUrl = azureBlobService.getContainerUrl() + "/";
+            azureBlobService.deleteBlob(restaurant.getCover().replace(containerUrl, ""));
+        }
+
+        String extension = blobName.substring(blobName.lastIndexOf(".") + 1);
+        String partialBlobName = "restaurants/" + restaurant.getId() + "." + extension;
+        azureBlobService.uploadBlob(partialBlobName, imageStream);
+
+        String newBlobName = azureBlobService.getBlobUrl(partialBlobName);
+        restaurant.setCover(newBlobName);
+        return restaurantRepository.save(restaurant);
     }
 
     public void delete(String id) {

@@ -14,8 +14,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,6 +34,8 @@ public class ProductService {
     private RestaurantRepository restaurantRepository;
     @Autowired
     private RestrictionCheckerComponent restrictionCheckerComponent;
+    @Autowired
+    private AzureBlobService azureBlobService;
 
     public List<Product> findAll() {
         List<Product> products = productRepository.findAll();
@@ -119,6 +124,30 @@ public class ProductService {
 
         BeanUtils.copyProperties(productDto, old);
         return productRepository.save(old);
+    }
+
+    public Product updateImage(String id, MultipartFile imageFile) throws IOException {
+        Product product = productRepository.findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CATEGORY_NOT_FOUND));
+
+        InputStream imageStream = imageFile.getInputStream();
+        String blobName = imageFile.getOriginalFilename();
+
+        if (blobName == null)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Image file is null");
+
+        if (product.getImage() != null && !product.getImage().isBlank()) {
+            String containerUrl = azureBlobService.getContainerUrl() + "/";
+            azureBlobService.deleteBlob(product.getImage().replace(containerUrl, ""));
+        }
+
+        String extension = blobName.substring(blobName.lastIndexOf(".") + 1);
+        String partialBlobName = "products/" + product.getId() + "." + extension;
+        azureBlobService.uploadBlob(partialBlobName, imageStream);
+
+        String newBlobName = azureBlobService.getBlobUrl(partialBlobName);
+        product.setImage(newBlobName);
+        return productRepository.save(product);
     }
 
     public void delete(String id) {
