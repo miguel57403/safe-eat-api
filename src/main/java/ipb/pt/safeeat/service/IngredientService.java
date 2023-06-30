@@ -33,7 +33,10 @@ public class IngredientService {
     private RestrictionCheckerComponent restrictionCheckerComponent;
 
     public List<Ingredient> findAll() {
-        return ingredientRepository.findAll();
+        List<Ingredient> ingredients = ingredientRepository.findAll();
+        restrictionCheckerComponent.checkIngredientList(ingredients);
+
+        return ingredients;
     }
 
     public Ingredient findById(String id) {

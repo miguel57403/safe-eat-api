@@ -54,7 +54,7 @@ public class RestaurantService {
         Category category = categoryRepository.findById(categoryId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CATEGORY_NOT_FOUND));
 
-        return restaurantRepository.findAllByProductsCategory(category);
+        return restaurantRepository.findAllByProductsCategories(category);
     }
 
     public List<Restaurant> findAllByOwner(String ownerId) {
@@ -90,6 +90,7 @@ public class RestaurantService {
         Restaurant restaurant = new Restaurant();
         BeanUtils.copyProperties(restaurantDto, restaurant);
 
+        restaurant.setOwner(owner);
         Restaurant created = restaurantRepository.save(restaurant);
 
         owner.getRestaurants().add(created);

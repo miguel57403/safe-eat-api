@@ -32,7 +32,9 @@ public class ItemService {
     private RestrictionCheckerComponent restrictionCheckerComponent;
 
     public List<Item> findAll() {
-        return itemRepository.findAll();
+        List<Item> items = itemRepository.findAll();
+        restrictionCheckerComponent.checkItemList(items);
+        return items;
     }
 
     public Item findById(String id) {
@@ -44,7 +46,7 @@ public class ItemService {
         if (!user.isAdmin() && !user.getCart().getItems().contains(item))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ITEM);
 
-        restrictionCheckerComponent.checkProduct(item.getProduct());
+        restrictionCheckerComponent.checkItem(item);
         return item;
     }
 
@@ -57,10 +59,7 @@ public class ItemService {
         if (!user.isAdmin() && !user.getCart().equals(cart))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ITEM);
 
-        for (Item item : cart.getItems()) {
-            restrictionCheckerComponent.checkProduct(item.getProduct());
-        }
-
+        restrictionCheckerComponent.checkItemList(cart.getItems());
         return cart.getItems();
     }
 

@@ -1,9 +1,6 @@
 package ipb.pt.safeeat.component;
 
-import ipb.pt.safeeat.model.Ingredient;
-import ipb.pt.safeeat.model.Product;
-import ipb.pt.safeeat.model.Restriction;
-import ipb.pt.safeeat.model.User;
+import ipb.pt.safeeat.model.*;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
@@ -34,6 +31,7 @@ public class RestrictionCheckerComponent {
     public void checkIngredient(Ingredient ingredient) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
+        ingredient.setIsRestricted(false);
         for (Restriction restriction : ingredient.getRestrictions()) {
             ingredient.setIsRestricted(user.getRestrictions().contains(restriction));
         }
@@ -53,6 +51,16 @@ public class RestrictionCheckerComponent {
     public void checkRestrictionList(List<Restriction> restrictions) {
         for (Restriction restriction : restrictions) {
             checkRestriction(restriction);
+        }
+    }
+
+    public void checkItem(Item item) {
+        checkProduct(item.getProduct());
+    }
+
+    public void checkItemList(List<Item> items) {
+        for (Item item : items) {
+            checkItem(item);
         }
     }
 }

@@ -19,7 +19,7 @@ public class Restaurant {
     private String name;
     private String logo;
     private String cover;
-    private List<Delivery> deliveries;
+    private List<Delivery> deliveries = new ArrayList<>();
 
     @JsonIgnore
     @DocumentReference

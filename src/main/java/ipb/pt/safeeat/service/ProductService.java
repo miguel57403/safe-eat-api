@@ -78,9 +78,11 @@ public class ProductService {
         Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-
-        Category category = categoryRepository.findById(productDto.getCategoryId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CATEGORY_NOT_FOUND));
+        List<Category> categories = new ArrayList<>();
+        for (String categoryId : productDto.getCategoryIds()) {
+            categories.add(categoryRepository.findById(categoryId).orElseThrow(
+                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CATEGORY_NOT_FOUND)));
+        }
 
         List<Ingredient> ingredients = new ArrayList<>();
         for (String ingredientId : productDto.getIngredientIds()) {
@@ -97,7 +99,7 @@ public class ProductService {
         BeanUtils.copyProperties(productDto, product);
 
         product.setIngredients(ingredients);
-        product.setCategory(category);
+        product.setCategories(categories);
 
         Product created = productRepository.save(product);
 
