@@ -37,16 +37,16 @@ public class CategoryController {
         return ResponseEntity.status(HttpStatus.CREATED).body(categoryService.create(categoryDto));
     }
 
-    @PutMapping("/{id}/image")
-    @RolesAllowed("ADMIN")
-    public ResponseEntity<Object> updateImage(@PathVariable String id, @RequestParam("image") MultipartFile imageFile) throws IOException {
-        return ResponseEntity.ok().body(categoryService.updateImage(id, imageFile));
-    }
-
     @PutMapping
     @RolesAllowed("ADMIN")
     public ResponseEntity<Object> update(@Valid @RequestBody CategoryDto categoryDto) {
         return ResponseEntity.ok().body(categoryService.update(categoryDto));
+    }
+
+    @PutMapping("/{id}/image")
+    @RolesAllowed("ADMIN")
+    public ResponseEntity<Object> updateImage(@PathVariable String id, @RequestParam("image") MultipartFile imageFile) throws IOException {
+        return ResponseEntity.ok().body(categoryService.updateImage(id, imageFile));
     }
 
     @DeleteMapping("/{id}")

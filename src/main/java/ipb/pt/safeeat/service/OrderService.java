@@ -74,31 +74,40 @@ public class OrderService {
     }
 
     public Order create(OrderDto orderDto) {
-        Address address = addressRepository.findById(orderDto.getAddressId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ADDRESS_NOT_FOUND));
-
-        Payment payment = paymentRepository.findById(orderDto.getPaymentId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.PAYMENT_NOT_FOUND));
-
-        Delivery delivery = deliveryRepository.findById(orderDto.getDeliveryId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.DELIVERY_NOT_FOUND));
-
-        Restaurant restaurant = restaurantRepository.findById(orderDto.getRestaurantId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
-
-        User client = userRepository.findById(orderDto.getClientId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.USER_NOT_FOUND));
-
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        if (!client.equals(user))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ORDER);
+        if (orderDto.getItemIds().isEmpty())
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No items in order");
 
         List<Item> items = new ArrayList<>();
         for (String itemId : orderDto.getItemIds()) {
             items.add(itemRepository.findById(itemId).orElseThrow(
                     () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ITEM_NOT_FOUND)));
         }
+
+        Restaurant restaurant = restaurantRepository.findByProducts(items.get(0).getProduct()).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
+
+        Delivery delivery = deliveryRepository.findById(orderDto.getDeliveryId()).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.DELIVERY_NOT_FOUND));
+
+        Payment payment = paymentRepository.findById(orderDto.getPaymentId()).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.PAYMENT_NOT_FOUND));
+
+        Address address = addressRepository.findById(orderDto.getAddressId()).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ADDRESS_NOT_FOUND));
+
+        User client = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (!items.stream().allMatch(item -> restaurant.getProducts().contains(item.getProduct())))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot order from different restaurants");
+
+        if (!restaurant.getDeliveries().contains(delivery))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Delivery method not available");
+
+        if (!client.getPayments().contains(payment))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Payment method not available");
+
+        if (!client.getAddresses().contains(address))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Address not available");
 
         Order order = new Order();
 

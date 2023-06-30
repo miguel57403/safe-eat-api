@@ -41,7 +41,7 @@ public class RestaurantController {
     }
 
     @GetMapping("/name/{name}")
-    public ResponseEntity<Object> findByName(@PathVariable String name) {
+    public ResponseEntity<Object> findAllByName(@PathVariable String name) {
         return ResponseEntity.ok(restaurantService.findAllByName(name));
     }
 

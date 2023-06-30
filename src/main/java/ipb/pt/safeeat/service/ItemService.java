@@ -4,13 +4,11 @@ import ipb.pt.safeeat.component.RestrictionCheckerComponent;
 import ipb.pt.safeeat.constant.ForbiddenConstant;
 import ipb.pt.safeeat.constant.NotFoundConstant;
 import ipb.pt.safeeat.dto.ItemDto;
-import ipb.pt.safeeat.model.Cart;
-import ipb.pt.safeeat.model.Item;
-import ipb.pt.safeeat.model.Product;
-import ipb.pt.safeeat.model.User;
+import ipb.pt.safeeat.model.*;
 import ipb.pt.safeeat.repository.CartRepository;
 import ipb.pt.safeeat.repository.ItemRepository;
 import ipb.pt.safeeat.repository.ProductRepository;
+import ipb.pt.safeeat.repository.RestaurantRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -28,6 +26,8 @@ public class ItemService {
     private ProductRepository productRepository;
     @Autowired
     private CartRepository cartRepository;
+    @Autowired
+    private RestaurantRepository restaurantRepository;
     @Autowired
     private RestrictionCheckerComponent restrictionCheckerComponent;
 
@@ -48,7 +48,7 @@ public class ItemService {
         return item;
     }
 
-    public List<Item> findAllByCartId(String cartId) {
+    public List<Item> findAllByCart(String cartId) {
         Cart cart = cartRepository.findById(cartId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CART_NOT_FOUND));
 
@@ -70,6 +70,17 @@ public class ItemService {
 
         Product product = productRepository.findById(itemDto.getProductId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.PRODUCT_NOT_FOUND));
+
+        Restaurant restaurant = restaurantRepository.findByProducts(product).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
+
+        if (!cart.getItems().isEmpty()) {
+            Restaurant current = restaurantRepository.findByProducts(cart.getItems().get(0).getProduct()).orElseThrow(
+                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
+
+            if (!current.equals(restaurant))
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cart must contain items from the same restaurant");
+        }
 
         Item item = new Item();
         BeanUtils.copyProperties(itemDto, item);
@@ -102,11 +113,11 @@ public class ItemService {
         if (!cart.getItems().contains(old))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ITEM);
 
-        Product product = productRepository.findById(itemDto.getProductId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.PRODUCT_NOT_FOUND));
+        if (!old.getProduct().getId().equals(itemDto.getProductId()))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product cannot be changed");
 
         BeanUtils.copyProperties(itemDto, old);
-        calculateValues(product, old);
+        calculateValues(old.getProduct(), old);
 
         return itemRepository.save(old);
     }
