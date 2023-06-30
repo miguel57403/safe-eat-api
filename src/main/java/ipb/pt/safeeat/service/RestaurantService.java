@@ -127,7 +127,7 @@ public class RestaurantService {
         }
 
         String extension = blobName.substring(blobName.lastIndexOf(".") + 1);
-        String partialBlobName = "restaurants/" + restaurant.getId() + "." + extension;
+        String partialBlobName = "restaurants/logos/" + restaurant.getId() + "." + extension;
         azureBlobService.uploadBlob(partialBlobName, imageStream);
 
         String newBlobName = azureBlobService.getBlobUrl(partialBlobName);
@@ -151,7 +151,7 @@ public class RestaurantService {
         }
 
         String extension = blobName.substring(blobName.lastIndexOf(".") + 1);
-        String partialBlobName = "restaurants/" + restaurant.getId() + "." + extension;
+        String partialBlobName = "restaurants/covers/" + restaurant.getId() + "." + extension;
         azureBlobService.uploadBlob(partialBlobName, imageStream);
 
         String newBlobName = azureBlobService.getBlobUrl(partialBlobName);
