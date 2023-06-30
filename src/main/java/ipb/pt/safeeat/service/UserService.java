@@ -14,8 +14,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,6 +36,10 @@ public class UserService {
     private PaymentRepository paymentRepository;
     @Autowired
     private AddressRepository addressRepository;
+
+
+    @Autowired
+    private AzureBlobService azureBlobService;
 
     public List<User> findAll() {
         return userRepository.findAll();
@@ -81,6 +88,7 @@ public class UserService {
         return restrictions;
     }
 
+    // FIXME: Check why Transactional was not working
     @Transactional
     public List<User> createMany(List<UserDto> userDtos) {
         List<User> created = new ArrayList<>();
@@ -112,6 +120,30 @@ public class UserService {
         old.setRestrictions(restrictions);
 
         return userRepository.save(old);
+    }
+
+    public User updateImage(MultipartFile imageFile) throws IOException {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        InputStream imageStream = imageFile.getInputStream();
+        String blobName = imageFile.getOriginalFilename();
+
+        if (blobName == null)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Image file is null");
+
+
+        if (user.getImage() != null && !user.getImage().isBlank()) {
+            String containerUrl = azureBlobService.getContainerUrl() + "/";
+            azureBlobService.deleteBlob(user.getImage().replace(containerUrl, ""));
+        }
+
+        String extension = blobName.substring(blobName.lastIndexOf(".") + 1);
+        String partialBlobName = "users/" + user.getId() + "." + extension;
+        azureBlobService.uploadBlob(partialBlobName, imageStream);
+
+        String newBlobName = azureBlobService.getBlobUrl(partialBlobName);
+        user.setImage(newBlobName);
+        return userRepository.save(user);
     }
 
     public void delete(String id) {

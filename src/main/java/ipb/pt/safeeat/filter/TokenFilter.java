@@ -1,4 +1,4 @@
-package ipb.pt.safeeat.security;
+package ipb.pt.safeeat.filter;
 
 import ipb.pt.safeeat.model.User;
 import ipb.pt.safeeat.repository.UserRepository;
@@ -31,6 +31,7 @@ public class TokenFilter extends OncePerRequestFilter {
         String token;
 
         var authorizationHeader = request.getHeader("Authorization");
+
         if(authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             token = authorizationHeader.replace("Bearer ", "");
             var subject = this.tokenService.getSubject(token);

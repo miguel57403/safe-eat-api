@@ -68,7 +68,7 @@ public class ProductSectionService {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!restaurant.getOwner().getId().equals(user.getId()))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, NotFoundConstants.RESTAURANT_NOT_FOUND);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_RESTAURANT);
 
         List<Product> products = new ArrayList<>();
         for (String productId : productSectionDto.getProductIds()) {

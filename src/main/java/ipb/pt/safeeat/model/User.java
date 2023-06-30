@@ -26,6 +26,7 @@ public class User implements UserDetails {
     private String name;
     private String email;
     private String cellphone;
+    @JsonIgnore
     private String role;
 
     @JsonIgnore
@@ -50,6 +51,7 @@ public class User implements UserDetails {
     @DocumentReference
     private List<Restaurant> restaurants = new ArrayList<>();
 
+    @JsonIgnore
     public Boolean isAdmin() {
         return role.equals("ADMIN");
     }

@@ -11,7 +11,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @Controller
@@ -21,6 +23,7 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
 
     @GetMapping
     @RolesAllowed("ADMIN")
@@ -47,6 +50,11 @@ public class UserController {
     @PutMapping
     public ResponseEntity<Object> update(@Valid @RequestBody UserDto userDto) {
         return ResponseEntity.ok().body(userService.update(userDto));
+    }
+
+    @PutMapping("/image")
+    public ResponseEntity<Object> updateImage(@RequestParam("image") MultipartFile imageFile) throws IOException {
+        return ResponseEntity.ok().body(userService.updateImage(imageFile));
     }
 
     @DeleteMapping("/{id}")

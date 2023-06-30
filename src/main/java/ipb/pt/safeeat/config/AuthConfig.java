@@ -1,5 +1,6 @@
-package ipb.pt.safeeat.security;
+package ipb.pt.safeeat.config;
 
+import ipb.pt.safeeat.filter.TokenFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
