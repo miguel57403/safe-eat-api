@@ -15,8 +15,8 @@ public class ProductDto {
     private String name;
     @NotNull(message = "Invalid price")
     private Double price;
-    @NotEmpty(message = "Invalid categoryIds")
-    private List<String> categoryIds;
+    @NotEmpty(message = "Invalid categoryId")
+    private String categoryId;
     @NotEmpty(message = "Invalid ingredientIds")
     private List<String> ingredientIds;
 }

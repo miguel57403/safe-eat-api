@@ -30,7 +30,7 @@ public class RestaurantController {
         return ResponseEntity.ok(restaurantService.findById(id));
     }
 
-    @GetMapping("/productCategory/{categoryId}")
+    @GetMapping("/category/{categoryId}")
     public ResponseEntity<Object> findAllByCategory(@PathVariable String categoryId) {
         return ResponseEntity.ok(restaurantService.findAllByProductCategory(categoryId));
     }

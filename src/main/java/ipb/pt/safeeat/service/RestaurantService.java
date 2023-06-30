@@ -4,6 +4,7 @@ import ipb.pt.safeeat.constant.ForbiddenConstant;
 import ipb.pt.safeeat.constant.NotFoundConstant;
 import ipb.pt.safeeat.dto.RestaurantDto;
 import ipb.pt.safeeat.model.Category;
+import ipb.pt.safeeat.model.Product;
 import ipb.pt.safeeat.model.Restaurant;
 import ipb.pt.safeeat.model.User;
 import ipb.pt.safeeat.repository.*;
@@ -18,6 +19,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 @Service
@@ -54,7 +56,24 @@ public class RestaurantService {
         Category category = categoryRepository.findById(categoryId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CATEGORY_NOT_FOUND));
 
-        return restaurantRepository.findAllByProductsCategories(category);
+        // FIXME: implement a query to find all restaurants that have a product that has a category with the given id
+        List<Restaurant> restaurants = restaurantRepository.findAll();
+        Iterator<Restaurant> iterator = restaurants.iterator();
+        while (iterator.hasNext()) {
+            Restaurant restaurant = iterator.next();
+            boolean foundCategory = false;
+            for (Product product : restaurant.getProducts()) {
+                if (product.getCategory().equals(category)) {
+                    foundCategory = true;
+                    break;
+                }
+            }
+            if (!foundCategory) {
+                iterator.remove();
+            }
+        }
+
+        return restaurants;
     }
 
     public List<Restaurant> findAllByOwner(String ownerId) {
