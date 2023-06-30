@@ -143,6 +143,11 @@ public class UserService {
         if (!user.getRestaurants().isEmpty())
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot delete user with restaurants");
 
+        if (user.getImage() != null && !user.getImage().isBlank()) {
+            String containerUrl = azureBlobService.getContainerUrl() + "/";
+            azureBlobService.deleteBlob(user.getImage().replace(containerUrl, ""));
+        }
+
         paymentRepository.deleteAll(user.getPayments());
         addressRepository.deleteAll(user.getAddresses());
         cartRepository.delete(user.getCart());

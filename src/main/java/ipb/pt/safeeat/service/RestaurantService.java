@@ -168,6 +168,16 @@ public class RestaurantService {
         if (restaurant.getOwner() != null && !restaurant.getOwner().getId().equals(user.getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_RESTAURANT);
 
+        if (restaurant.getLogo() != null && !restaurant.getLogo().isBlank()) {
+            String containerUrl = azureBlobService.getContainerUrl() + "/";
+            azureBlobService.deleteBlob(restaurant.getLogo().replace(containerUrl, ""));
+        }
+
+        if (restaurant.getCover() != null && !restaurant.getCover().isBlank()) {
+            String containerUrl = azureBlobService.getContainerUrl() + "/";
+            azureBlobService.deleteBlob(restaurant.getCover().replace(containerUrl, ""));
+        }
+
         productRepository.deleteAll(restaurant.getProducts());
         ingredientRepository.deleteAll(restaurant.getIngredients());
         productSectionRepository.deleteAll(restaurant.getProductSections());

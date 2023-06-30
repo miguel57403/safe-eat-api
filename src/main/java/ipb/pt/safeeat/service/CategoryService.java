@@ -82,6 +82,11 @@ public class CategoryService {
         if (products.size() > 0)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot delete category with products");
 
+        if (category.getImage() != null && !category.getImage().isBlank()) {
+            String containerUrl = azureBlobService.getContainerUrl() + "/";
+            azureBlobService.deleteBlob(category.getImage().replace(containerUrl, ""));
+        }
+
         categoryRepository.deleteById(id);
     }
 }

@@ -136,9 +136,13 @@ public class AdvertisementService {
         if (!restaurant.getOwner().equals(user))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ADVERTISEMENT);
 
-
         if (!restaurant.getAdvertisements().contains(advertisement))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ADVERTISEMENT);
+
+        if (advertisement.getImage() != null && !advertisement.getImage().isBlank()) {
+            String containerUrl = azureBlobService.getContainerUrl() + "/";
+            azureBlobService.deleteBlob(advertisement.getImage().replace(containerUrl, ""));
+        }
 
         restaurant.getAdvertisements().remove(advertisement);
         restaurantRepository.save(restaurant);

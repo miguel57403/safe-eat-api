@@ -165,6 +165,11 @@ public class ProductService {
         if (!restaurant.getProducts().contains(product))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_PRODUCT);
 
+        if (product.getImage() != null && !product.getImage().isBlank()) {
+            String containerUrl = azureBlobService.getContainerUrl() + "/";
+            azureBlobService.deleteBlob(product.getImage().replace(containerUrl, ""));
+        }
+
         restaurant.getProducts().remove(product);
         restaurantRepository.save(restaurant);
 
