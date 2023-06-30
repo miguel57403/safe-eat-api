@@ -2,7 +2,6 @@ package ipb.pt.safeeat.service;
 
 import ipb.pt.safeeat.dto.RestaurantDto;
 import ipb.pt.safeeat.model.Category;
-import ipb.pt.safeeat.model.Product;
 import ipb.pt.safeeat.model.Restaurant;
 import ipb.pt.safeeat.model.User;
 import ipb.pt.safeeat.repository.*;
@@ -47,21 +46,11 @@ public class RestaurantService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND));
     }
 
-    public List<Restaurant> findByProductCategory(String categoryId) {
+    public List<Restaurant> findAllByProductCategory(String categoryId) {
         Category category = categoryRepository.findById(categoryId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.CATEGORY_NOT_FOUND));
 
-        List<Restaurant> restaurants = new ArrayList<>();
-        for (Restaurant restaurant : restaurantRepository.findAll()) {
-            for (Product product : restaurant.getProducts()) {
-                if (product.getCategory().getId().equals(category.getId())) {
-                    restaurants.add(restaurant);
-                    break;
-                }
-            }
-        }
-
-        return restaurants;
+        return restaurantRepository.findAllByProductsCategory(category);
     }
 
     public List<Restaurant> findAllByOwner(String ownerId) {

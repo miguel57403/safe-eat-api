@@ -90,9 +90,10 @@ public class AdvertisementService {
         Advertisement old = advertisementRepository.findById(advertisementDto.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ADVERTISEMENT_NOT_FOUND));
 
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Restaurant restaurant = restaurantRepository.findByAdvertisements(old).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND));
+
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!restaurant.getOwner().equals(user))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_ADVERTISEMENT);
@@ -101,6 +102,8 @@ public class AdvertisementService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_ADVERTISEMENT);
 
         BeanUtils.copyProperties(advertisementDto, old);
+        old.setRestaurantId(restaurant.getId());
+
         return advertisementRepository.save(old);
     }
 

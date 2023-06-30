@@ -31,7 +31,7 @@ public class RestrictionController {
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<Object> findByUser(@PathVariable String userId) {
+    public ResponseEntity<Object> findAllByUser(@PathVariable String userId) {
         return ResponseEntity.ok(restrictionService.findAllByUser(userId));
     }
 

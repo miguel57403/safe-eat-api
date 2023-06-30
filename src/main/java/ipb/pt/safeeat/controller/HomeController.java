@@ -17,7 +17,7 @@ public class HomeController {
     private HomeService homeService;
 
     @GetMapping
-    public ResponseEntity<Object> get() {
+    public ResponseEntity<Object> findOne() {
         return ResponseEntity.ok(homeService.findOne());
     }
 }

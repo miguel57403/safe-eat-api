@@ -30,8 +30,8 @@ public class RestaurantController {
     }
 
     @GetMapping("/productCategory/{categoryId}")
-    public ResponseEntity<Object> findByCategory(@PathVariable String categoryId) {
-        return ResponseEntity.ok(restaurantService.findByProductCategory(categoryId));
+    public ResponseEntity<Object> findAllByCategory(@PathVariable String categoryId) {
+        return ResponseEntity.ok(restaurantService.findAllByProductCategory(categoryId));
     }
 
     @GetMapping("/owner/{ownerId}")

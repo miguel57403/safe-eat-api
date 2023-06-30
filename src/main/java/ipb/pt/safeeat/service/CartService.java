@@ -61,13 +61,13 @@ public class CartService {
         return user.getCart();
     }
 
-    public Boolean isEmpty() {
+    public Boolean isMineEmpty() {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Cart cart = user.getCart();
         return cart.getItems().size() == 0;
     }
 
-    public Cart empty() {
+    public Cart emptyMine() {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Cart cart = user.getCart();
 
