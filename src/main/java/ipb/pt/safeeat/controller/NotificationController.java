@@ -10,8 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @Controller
 @CrossOrigin
 @RequestMapping("/notifications")
@@ -39,11 +37,6 @@ public class NotificationController {
     @PostMapping
     public ResponseEntity<Object> create(@Valid @RequestBody NotificationDto notificationDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(notificationService.create(notificationDto));
-    }
-
-    @PostMapping("/many")
-    public ResponseEntity<Object> createMany(@Valid @RequestBody List<NotificationDto> notificationDtos) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(notificationService.createMany(notificationDtos));
     }
 
     @PutMapping

@@ -1,6 +1,6 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.utility.NotFoundConstants;
+import ipb.pt.safeeat.constant.NotFoundConstant;
 import ipb.pt.safeeat.dto.CategoryDto;
 import ipb.pt.safeeat.model.Category;
 import ipb.pt.safeeat.model.Product;
@@ -10,19 +10,21 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 @Service
 public class CategoryService {
     @Autowired
     private CategoryRepository categoryRepository;
-
     @Autowired
     private ProductRepository productRepository;
+    @Autowired
+    private AzureBlobService azureBlobService;
 
     public List<Category> findAll() {
         return categoryRepository.findAll();
@@ -30,7 +32,7 @@ public class CategoryService {
 
     public Category findById(String id) {
         return categoryRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.CATEGORY_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CATEGORY_NOT_FOUND));
     }
 
     public Category create(CategoryDto categoryDto) {
@@ -39,27 +41,41 @@ public class CategoryService {
         return categoryRepository.save(category);
     }
 
-    @Transactional
-    public List<Category> createMany(List<CategoryDto> categoryDtos) {
-        List<Category> created = new ArrayList<>();
-        for (CategoryDto categoryDto : categoryDtos) {
-            created.add(create(categoryDto));
-        }
-
-        return created;
-    }
-
     public Category update(CategoryDto categoryDto) {
         Category old = categoryRepository.findById(categoryDto.getId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.CATEGORY_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CATEGORY_NOT_FOUND));
 
         BeanUtils.copyProperties(categoryDto, old);
         return categoryRepository.save(old);
     }
 
+    public Category updateImage(String id, MultipartFile imageFile) throws IOException {
+        Category category = categoryRepository.findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CATEGORY_NOT_FOUND));
+
+        InputStream imageStream = imageFile.getInputStream();
+        String blobName = imageFile.getOriginalFilename();
+
+        if (blobName == null)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Image file is null");
+
+        if (category.getImage() != null && !category.getImage().isBlank()) {
+            String containerUrl = azureBlobService.getContainerUrl() + "/";
+            azureBlobService.deleteBlob(category.getImage().replace(containerUrl, ""));
+        }
+
+        String extension = blobName.substring(blobName.lastIndexOf(".") + 1);
+        String partialBlobName = "categories/" + category.getId() + "." + extension;
+        azureBlobService.uploadBlob(partialBlobName, imageStream);
+
+        String newBlobName = azureBlobService.getBlobUrl(partialBlobName);
+        category.setImage(newBlobName);
+        return categoryRepository.save(category);
+    }
+
     public void delete(String id) {
         Category category = categoryRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.CATEGORY_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CATEGORY_NOT_FOUND));
 
         List<Product> products = productRepository.findAllByCategory(category);
 

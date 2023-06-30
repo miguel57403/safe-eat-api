@@ -1,4 +1,4 @@
-package ipb.pt.safeeat.utility;
+package ipb.pt.safeeat.component;
 
 import ipb.pt.safeeat.model.Ingredient;
 import ipb.pt.safeeat.model.Product;
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class RestrictionChecker {
+public class RestrictionCheckerComponent {
     public void checkProduct(Product product) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 

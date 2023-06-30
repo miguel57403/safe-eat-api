@@ -1,15 +1,14 @@
 package ipb.pt.safeeat.service;
 
+import ipb.pt.safeeat.constant.ForbiddenConstant;
+import ipb.pt.safeeat.constant.NotFoundConstant;
 import ipb.pt.safeeat.dto.OrderDto;
 import ipb.pt.safeeat.model.*;
 import ipb.pt.safeeat.repository.*;
-import ipb.pt.safeeat.utility.ForbiddenConstants;
-import ipb.pt.safeeat.utility.NotFoundConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
@@ -39,66 +38,66 @@ public class OrderService {
 
     public Order findById(String id) {
         Order order = orderRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ORDER_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ORDER_NOT_FOUND));
 
         Restaurant restaurant = order.getRestaurant();
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!user.isAdmin() && !restaurant.getOwner().equals(user))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_ORDER);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ORDER);
 
         return order;
     }
 
     public List<Order> findAllByUser(String id) {
         User user = userRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.USER_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.USER_NOT_FOUND));
 
         User current = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!current.isAdmin() && !current.equals(user))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_ORDER);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ORDER);
 
         return user.getOrders();
     }
 
     public List<Order> findAllByRestaurant(String id) {
         Restaurant restaurant = restaurantRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!user.isAdmin() && !restaurant.getOwner().equals(user))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_ORDER);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ORDER);
 
         return restaurant.getOrders();
     }
 
     public Order create(OrderDto orderDto) {
         Address address = addressRepository.findById(orderDto.getAddressId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ADDRESS_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ADDRESS_NOT_FOUND));
 
         Payment payment = paymentRepository.findById(orderDto.getPaymentId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.PAYMENT_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.PAYMENT_NOT_FOUND));
 
         Delivery delivery = deliveryRepository.findById(orderDto.getDeliveryId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.DELIVERY_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.DELIVERY_NOT_FOUND));
 
         Restaurant restaurant = restaurantRepository.findById(orderDto.getRestaurantId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
         User client = userRepository.findById(orderDto.getClientId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.USER_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.USER_NOT_FOUND));
 
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!client.equals(user))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_ORDER);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ORDER);
 
         List<Item> items = new ArrayList<>();
         for (String itemId : orderDto.getItemIds()) {
             items.add(itemRepository.findById(itemId).orElseThrow(
-                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ITEM_NOT_FOUND)));
+                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ITEM_NOT_FOUND)));
         }
 
         Order order = new Order();
@@ -129,26 +128,16 @@ public class OrderService {
         return created;
     }
 
-    @Transactional
-    public List<Order> createMany(List<OrderDto> orderDtos) {
-        List<Order> created = new ArrayList<>();
-        for (OrderDto orderDto : orderDtos) {
-            created.add(create(orderDto));
-        }
-
-        return created;
-    }
-
     public Order updateStatus(String id, String status) {
         Order old = orderRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ORDER_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ORDER_NOT_FOUND));
 
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Restaurant restaurant = restaurantRepository.findByOrders(old).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
         if (!restaurant.getOwner().equals(user))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_ORDER);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ORDER);
 
         old.setStatus(status);
         return orderRepository.save(old);
@@ -156,13 +145,13 @@ public class OrderService {
 
     public void delete(String id) {
         Order order = orderRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ORDER_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ORDER_NOT_FOUND));
 
         User user = userRepository.findById(order.getClient().getId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.USER_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.USER_NOT_FOUND));
 
         Restaurant restaurant = restaurantRepository.findById(order.getRestaurant().getId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
         user.getOrders().remove(order);
         userRepository.save(user);

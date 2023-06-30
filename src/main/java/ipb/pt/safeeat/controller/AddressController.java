@@ -10,8 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @Controller
 @CrossOrigin
 @RequestMapping("/addresses")
@@ -39,11 +37,6 @@ public class AddressController {
     @PostMapping
     public ResponseEntity<Object> create(@Valid @RequestBody AddressDto addressDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(addressService.create(addressDto));
-    }
-
-    @PostMapping("/many")
-    public ResponseEntity<Object> createMany(@Valid @RequestBody List<AddressDto> addressDtos) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(addressService.createMany(addressDtos));
     }
 
     @PutMapping

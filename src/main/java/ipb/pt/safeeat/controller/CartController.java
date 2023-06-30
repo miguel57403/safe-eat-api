@@ -31,13 +31,13 @@ public class CartController {
         return ResponseEntity.ok(cartService.findByUser(userId));
     }
 
-    @GetMapping("/isMineEmpty")
-    public ResponseEntity<Object> isMineEmpty() {
-        return ResponseEntity.ok(cartService.isMineEmpty());
+    @GetMapping("/mine/isEmpty")
+    public ResponseEntity<Object> isEmpty() {
+        return ResponseEntity.ok(cartService.isEmpty());
     }
 
-    @PutMapping("/emptyMine")
+    @PutMapping("/mine/empty")
     public ResponseEntity<Object> empty() {
-        return ResponseEntity.ok().body(cartService.emptyMine());
+        return ResponseEntity.ok().body(cartService.empty());
     }
 }

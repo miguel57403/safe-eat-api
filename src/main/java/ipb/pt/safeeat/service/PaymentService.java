@@ -1,21 +1,19 @@
 package ipb.pt.safeeat.service;
 
+import ipb.pt.safeeat.constant.ForbiddenConstant;
+import ipb.pt.safeeat.constant.NotFoundConstant;
 import ipb.pt.safeeat.dto.PaymentDto;
 import ipb.pt.safeeat.model.Payment;
 import ipb.pt.safeeat.model.User;
 import ipb.pt.safeeat.repository.PaymentRepository;
 import ipb.pt.safeeat.repository.UserRepository;
-import ipb.pt.safeeat.utility.ForbiddenConstants;
-import ipb.pt.safeeat.utility.NotFoundConstants;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -32,24 +30,24 @@ public class PaymentService {
 
     public Payment findById(String id) {
         Payment payment = paymentRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.PAYMENT_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.PAYMENT_NOT_FOUND));
 
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!user.isAdmin() && !user.getPayments().contains(payment))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_PAYMENT);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_PAYMENT);
 
         return payment;
     }
 
     public List<Payment> findAllByUser(String id) {
         User user = userRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.USER_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.USER_NOT_FOUND));
 
         User current = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!current.isAdmin() && !current.equals(user))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_PAYMENT);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_PAYMENT);
 
         return user.getPayments();
     }
@@ -67,24 +65,14 @@ public class PaymentService {
         return created;
     }
 
-    @Transactional
-    public List<Payment> createMany(List<PaymentDto> paymentDtos) {
-        List<Payment> created = new ArrayList<>();
-        for (PaymentDto paymentDto : paymentDtos) {
-            created.add(create(paymentDto));
-        }
-
-        return created;
-    }
-
     public Payment update(PaymentDto paymentDto) {
         Payment old = paymentRepository.findById(paymentDto.getId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.PAYMENT_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.PAYMENT_NOT_FOUND));
 
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!user.getPayments().contains(old))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_PAYMENT);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_PAYMENT);
 
         BeanUtils.copyProperties(paymentDto, old);
         return paymentRepository.save(old);
@@ -92,12 +80,12 @@ public class PaymentService {
 
     public void delete(String id) {
         Payment payment = paymentRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.PAYMENT_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.PAYMENT_NOT_FOUND));
 
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!user.getPayments().contains(payment))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_PAYMENT);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_PAYMENT);
 
         user.getPayments().remove(payment);
         userRepository.save(user);

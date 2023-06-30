@@ -14,8 +14,6 @@ public class UserDto {
     private String id;
     @NotEmpty(message = "Invalid password")
     private String password;
-    @NotEmpty(message = "Invalid image")
-    private String image;
     @NotEmpty(message = "Invalid name")
     private String name;
     @Email(message = "Invalid email")

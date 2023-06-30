@@ -6,7 +6,6 @@ import ipb.pt.safeeat.service.UserService;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -14,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.List;
 
 @Controller
 @CrossOrigin
@@ -42,17 +40,12 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
-    @PostMapping("/many")
-    public ResponseEntity<Object> createMany(@Valid @RequestBody List<UserDto> userDtos) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(userService.createMany(userDtos));
-    }
-
     @PutMapping
     public ResponseEntity<Object> update(@Valid @RequestBody UserDto userDto) {
         return ResponseEntity.ok().body(userService.update(userDto));
     }
 
-    @PutMapping("/image")
+    @PutMapping("/me/image")
     public ResponseEntity<Object> updateImage(@RequestParam("image") MultipartFile imageFile) throws IOException {
         return ResponseEntity.ok().body(userService.updateImage(imageFile));
     }

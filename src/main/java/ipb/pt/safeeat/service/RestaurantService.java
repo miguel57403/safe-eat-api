@@ -1,18 +1,17 @@
 package ipb.pt.safeeat.service;
 
+import ipb.pt.safeeat.constant.ForbiddenConstant;
+import ipb.pt.safeeat.constant.NotFoundConstant;
 import ipb.pt.safeeat.dto.RestaurantDto;
 import ipb.pt.safeeat.model.Category;
 import ipb.pt.safeeat.model.Restaurant;
 import ipb.pt.safeeat.model.User;
 import ipb.pt.safeeat.repository.*;
-import ipb.pt.safeeat.utility.ForbiddenConstants;
-import ipb.pt.safeeat.utility.NotFoundConstants;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
@@ -43,24 +42,24 @@ public class RestaurantService {
 
     public Restaurant findById(String id) {
         return restaurantRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
     }
 
     public List<Restaurant> findAllByProductCategory(String categoryId) {
         Category category = categoryRepository.findById(categoryId).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.CATEGORY_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CATEGORY_NOT_FOUND));
 
         return restaurantRepository.findAllByProductsCategory(category);
     }
 
     public List<Restaurant> findAllByOwner(String ownerId) {
         User owner = userRepository.findById(ownerId).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.USER_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.USER_NOT_FOUND));
 
         List<Restaurant> restaurants = new ArrayList<>();
         for (Restaurant restaurant : owner.getRestaurants()) {
             restaurants.add(restaurantRepository.findById(restaurant.getId()).orElseThrow(
-                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND)));
+                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND)));
         }
 
         return restaurants;
@@ -81,7 +80,7 @@ public class RestaurantService {
         User owner = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!restaurantDto.getOwnerId().equals(owner.getId()))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_RESTAURANT);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_RESTAURANT);
 
         Restaurant restaurant = new Restaurant();
         BeanUtils.copyProperties(restaurantDto, restaurant);
@@ -94,24 +93,14 @@ public class RestaurantService {
         return created;
     }
 
-    @Transactional
-    public List<Restaurant> createMany(List<RestaurantDto> restaurantDtos) {
-        List<Restaurant> created = new ArrayList<>();
-        for (RestaurantDto restaurantDto : restaurantDtos) {
-            created.add(create(restaurantDto));
-        }
-
-        return created;
-    }
-
     public Restaurant update(RestaurantDto restaurantDto) {
         Restaurant old = restaurantRepository.findById(restaurantDto.getId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!old.getOwner().getId().equals(user.getId()))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_RESTAURANT);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_RESTAURANT);
 
         BeanUtils.copyProperties(restaurantDto, old);
         return restaurantRepository.save(old);
@@ -119,12 +108,12 @@ public class RestaurantService {
 
     public void delete(String id) {
         Restaurant restaurant = restaurantRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTAURANT_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (restaurant.getOwner() != null && !restaurant.getOwner().getId().equals(user.getId()))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_RESTAURANT);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_RESTAURANT);
 
         productRepository.deleteAll(restaurant.getProducts());
         ingredientRepository.deleteAll(restaurant.getIngredients());

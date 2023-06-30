@@ -1,5 +1,7 @@
 package ipb.pt.safeeat.service;
 
+import ipb.pt.safeeat.constant.ForbiddenConstant;
+import ipb.pt.safeeat.constant.NotFoundConstant;
 import ipb.pt.safeeat.dto.NotificationDto;
 import ipb.pt.safeeat.model.Notification;
 import ipb.pt.safeeat.model.Order;
@@ -8,18 +10,14 @@ import ipb.pt.safeeat.model.User;
 import ipb.pt.safeeat.repository.NotificationRepository;
 import ipb.pt.safeeat.repository.OrderRepository;
 import ipb.pt.safeeat.repository.UserRepository;
-import ipb.pt.safeeat.utility.ForbiddenConstants;
-import ipb.pt.safeeat.utility.NotFoundConstants;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -38,40 +36,40 @@ public class NotificationService {
 
     public Notification findById(String id) {
         Notification notification = notificationRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.NOTIFICATION_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.NOTIFICATION_NOT_FOUND));
 
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!user.isAdmin() && !user.getNotifications().contains(notification))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_NOTIFICATION);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_NOTIFICATION);
 
         return notification;
     }
 
     public List<Notification> findAllByUser(String id) {
         User user = userRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.USER_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.USER_NOT_FOUND));
 
         User current = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!current.isAdmin() && !current.equals(user))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_NOTIFICATION);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_NOTIFICATION);
 
         return user.getNotifications();
     }
 
     public Notification create(NotificationDto notificationDto) {
         Order order = orderRepository.findById(notificationDto.getOrderId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.ORDER_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ORDER_NOT_FOUND));
 
         User client = userRepository.findById(order.getClient().getId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.USER_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.USER_NOT_FOUND));
 
         User owner = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Restaurant restaurant = order.getRestaurant();
 
         if (!owner.getRestaurants().contains(restaurant))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_NOTIFICATION);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_NOTIFICATION);
 
         Notification notification = new Notification();
         BeanUtils.copyProperties(notificationDto, notification);
@@ -87,24 +85,14 @@ public class NotificationService {
         return created;
     }
 
-    @Transactional
-    public List<Notification> createMany(List<NotificationDto> notificationDtos) {
-        List<Notification> created = new ArrayList<>();
-        for (NotificationDto notificationDto : notificationDtos) {
-            created.add(create(notificationDto));
-        }
-
-        return created;
-    }
-
     public Notification update(NotificationDto notificationDto) {
         Notification old = notificationRepository.findById(notificationDto.getId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.NOTIFICATION_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.NOTIFICATION_NOT_FOUND));
 
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!user.getNotifications().contains(old))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_NOTIFICATION);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_NOTIFICATION);
 
         BeanUtils.copyProperties(notificationDto, old);
         return notificationRepository.save(old);
@@ -112,12 +100,12 @@ public class NotificationService {
 
     public Notification view(String id) {
         Notification notification = notificationRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.NOTIFICATION_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.NOTIFICATION_NOT_FOUND));
 
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!user.getNotifications().contains(notification))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_NOTIFICATION);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_NOTIFICATION);
 
         notification.setIsViewed(true);
 
@@ -126,12 +114,12 @@ public class NotificationService {
 
     public void delete(String id) {
         Notification notification = notificationRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.NOTIFICATION_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.NOTIFICATION_NOT_FOUND));
 
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!user.getNotifications().contains(notification))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_NOTIFICATION);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_NOTIFICATION);
 
         user.getNotifications().remove(notification);
         userRepository.save(user);

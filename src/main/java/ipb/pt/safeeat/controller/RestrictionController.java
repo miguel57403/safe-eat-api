@@ -10,8 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @Controller
 @CrossOrigin
 @RequestMapping("/restrictions")
@@ -39,12 +37,6 @@ public class RestrictionController {
     @RolesAllowed("ADMIN")
     public ResponseEntity<Object> create(@Valid @RequestBody RestrictionDto restrictionDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(restrictionService.create(restrictionDto));
-    }
-
-    @PostMapping("/many")
-    @RolesAllowed("ADMIN")
-    public ResponseEntity<Object> createMany(@Valid @RequestBody List<RestrictionDto> restrictionDtos) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(restrictionService.createMany(restrictionDtos));
     }
 
     @PutMapping

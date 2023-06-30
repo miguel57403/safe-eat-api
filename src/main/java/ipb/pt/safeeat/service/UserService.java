@@ -1,19 +1,18 @@
 package ipb.pt.safeeat.service;
 
+import ipb.pt.safeeat.constant.ForbiddenConstant;
+import ipb.pt.safeeat.constant.NotFoundConstant;
 import ipb.pt.safeeat.dto.UserDto;
 import ipb.pt.safeeat.model.Cart;
 import ipb.pt.safeeat.model.Restriction;
 import ipb.pt.safeeat.model.User;
 import ipb.pt.safeeat.repository.*;
-import ipb.pt.safeeat.utility.ForbiddenConstants;
-import ipb.pt.safeeat.utility.NotFoundConstants;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -36,8 +35,6 @@ public class UserService {
     private PaymentRepository paymentRepository;
     @Autowired
     private AddressRepository addressRepository;
-
-
     @Autowired
     private AzureBlobService azureBlobService;
 
@@ -47,12 +44,12 @@ public class UserService {
 
     public User findById(String id) {
         User user = userRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.USER_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.USER_NOT_FOUND));
 
         User current = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!current.isAdmin() && !current.equals(user))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_USER);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_USER);
 
         return user;
     }
@@ -81,32 +78,21 @@ public class UserService {
         if (!userDto.getRestrictionIds().isEmpty()) {
             for (String restrictionId : userDto.getRestrictionIds()) {
                 restrictions.add(restrictionRepository.findById(restrictionId).orElseThrow(
-                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.RESTRICTION_NOT_FOUND)));
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTRICTION_NOT_FOUND)));
             }
         }
 
         return restrictions;
     }
 
-    // FIXME: Check why Transactional was not working
-    @Transactional
-    public List<User> createMany(List<UserDto> userDtos) {
-        List<User> created = new ArrayList<>();
-        for (UserDto userDto : userDtos) {
-            created.add(create(userDto));
-        }
-
-        return created;
-    }
-
     public User update(UserDto userDto) {
         User old = userRepository.findById(userDto.getId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.USER_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.USER_NOT_FOUND));
 
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!user.getId().equals(userDto.getId()))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_USER);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_USER);
 
         User byEmail = userRepository.findByEmail(userDto.getEmail()).orElse(null);
 
@@ -131,7 +117,6 @@ public class UserService {
         if (blobName == null)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Image file is null");
 
-
         if (user.getImage() != null && !user.getImage().isBlank()) {
             String containerUrl = azureBlobService.getContainerUrl() + "/";
             azureBlobService.deleteBlob(user.getImage().replace(containerUrl, ""));
@@ -148,12 +133,12 @@ public class UserService {
 
     public void delete(String id) {
         User user = userRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstants.USER_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.USER_NOT_FOUND));
 
         User current = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!current.isAdmin() && !current.equals(user))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstants.FORBIDDEN_USER);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_USER);
 
         if (!user.getRestaurants().isEmpty())
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot delete user with restaurants");

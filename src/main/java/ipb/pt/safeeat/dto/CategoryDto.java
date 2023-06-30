@@ -10,6 +10,4 @@ public class CategoryDto {
     private String id;
     @NotEmpty(message = "Invalid name")
     private String name;
-    @NotEmpty(message = "Invalid image")
-    private String image;
 }

@@ -1,6 +1,6 @@
-package ipb.pt.safeeat.utility;
+package ipb.pt.safeeat.constant;
 
-public class ForbiddenConstants {
+public class ForbiddenConstant {
     public static final String FORBIDDEN_ADDRESS = "Forbidden Address(s)";
     public static final String FORBIDDEN_ADVERTISEMENT = "Forbidden Advertisement(s)";
     public static final String FORBIDDEN_CART = "Forbidden Cart(s)";

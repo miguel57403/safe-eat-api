@@ -1,6 +1,6 @@
-package ipb.pt.safeeat.utility;
+package ipb.pt.safeeat.constant;
 
-public class NotFoundConstants {
+public class NotFoundConstant {
     public static final String RESTAURANT_NOT_FOUND = "Restaurant not found";
     public static final String ADDRESS_NOT_FOUND = "Address not found";
     public static final String ADVERTISEMENT_NOT_FOUND = "Advertisement not found";

@@ -10,8 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @Controller
 @CrossOrigin
 @RequestMapping("/payments")
@@ -39,11 +37,6 @@ public class PaymentController {
     @PostMapping
     public ResponseEntity<Object> create(@Valid @RequestBody PaymentDto paymentDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(paymentService.create(paymentDto));
-    }
-
-    @PostMapping("/many")
-    public ResponseEntity<Object> createMany(@Valid @RequestBody List<PaymentDto> paymentDtos) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(paymentService.createMany(paymentDtos));
     }
 
     @PutMapping

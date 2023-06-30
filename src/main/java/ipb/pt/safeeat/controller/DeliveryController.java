@@ -10,8 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @Controller
 @CrossOrigin
 @RequestMapping("/deliveries")
@@ -39,11 +37,6 @@ public class DeliveryController {
     @PostMapping("/restaurant/{restaurantId}")
     public ResponseEntity<Object> create(@Valid @RequestBody DeliveryDto deliveryDto, @PathVariable String restaurantId) {
         return ResponseEntity.status(HttpStatus.CREATED).body(deliveryService.create(deliveryDto, restaurantId));
-    }
-
-    @PostMapping("/many/restaurant/{restaurantId}")
-    public ResponseEntity<Object> createMany(@Valid @RequestBody List<DeliveryDto> deliveryDtos, @PathVariable String restaurantId) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(deliveryService.createMany(deliveryDtos, restaurantId));
     }
 
     @PutMapping

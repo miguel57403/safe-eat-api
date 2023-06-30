@@ -9,8 +9,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
+import java.io.IOException;
 
 @Controller
 @CrossOrigin
@@ -36,10 +37,10 @@ public class CategoryController {
         return ResponseEntity.status(HttpStatus.CREATED).body(categoryService.create(categoryDto));
     }
 
-    @PostMapping("/many")
+    @PutMapping("/{id}/image")
     @RolesAllowed("ADMIN")
-    public ResponseEntity<Object> createMany(@Valid @RequestBody List<CategoryDto> categoryDtos) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(categoryService.createMany(categoryDtos));
+    public ResponseEntity<Object> updateImage(@PathVariable String id, @RequestParam("image") MultipartFile imageFile) throws IOException {
+        return ResponseEntity.ok().body(categoryService.updateImage(id, imageFile));
     }
 
     @PutMapping
