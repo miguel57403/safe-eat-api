@@ -3,8 +3,10 @@ package ipb.pt.safeeat.service;
 import ipb.pt.safeeat.constant.ForbiddenConstant;
 import ipb.pt.safeeat.constant.NotFoundConstant;
 import ipb.pt.safeeat.model.Notification;
+import ipb.pt.safeeat.model.Restaurant;
 import ipb.pt.safeeat.model.User;
 import ipb.pt.safeeat.repository.NotificationRepository;
+import ipb.pt.safeeat.repository.RestaurantRepository;
 import ipb.pt.safeeat.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,9 +20,10 @@ import java.util.List;
 public class NotificationService {
     @Autowired
     private NotificationRepository notificationRepository;
-
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private RestaurantRepository restaurantRepository;
 
     public List<Notification> findAll() {
         return notificationRepository.findAll();
@@ -38,8 +41,8 @@ public class NotificationService {
         return notification;
     }
 
-    public List<Notification> findAllByUser(String id) {
-        User user = userRepository.findById(id).orElseThrow(
+    public List<Notification> findAllByUser(String userId) {
+        User user = userRepository.findById(userId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.USER_NOT_FOUND));
 
         User current = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -48,6 +51,18 @@ public class NotificationService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_NOTIFICATION);
 
         return user.getNotifications();
+    }
+
+    public List<Notification> findAllByRestaurant(String restaurantId) {
+        Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
+
+        User current = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (!current.isAdmin() && !current.equals(restaurant.getOwner()))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_NOTIFICATION);
+
+        return restaurant.getNotifications();
     }
 
     public Notification view(String id) {
