@@ -1,13 +1,14 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.model.Item;
+import ipb.pt.safeeat.component.RestrictionCheckerComponent;
 import ipb.pt.safeeat.constant.ForbiddenConstant;
 import ipb.pt.safeeat.constant.NotFoundConstant;
 import ipb.pt.safeeat.model.Cart;
+import ipb.pt.safeeat.model.Item;
 import ipb.pt.safeeat.model.User;
 import ipb.pt.safeeat.repository.CartRepository;
+import ipb.pt.safeeat.repository.ItemRepository;
 import ipb.pt.safeeat.repository.UserRepository;
-import ipb.pt.safeeat.component.RestrictionCheckerComponent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,6 +23,8 @@ public class CartService {
     private CartRepository cartRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private ItemRepository itemRepository;
     @Autowired
     private RestrictionCheckerComponent restrictionCheckerComponent;
 
@@ -70,6 +73,9 @@ public class CartService {
     public Cart empty() {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Cart cart = user.getCart();
+
+        List<Item> items = cart.getItems();
+        itemRepository.deleteAll(items);
 
         cart.getItems().clear();
         cart.setQuantity(0);

@@ -78,6 +78,11 @@ public class ProductSectionService {
                     () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.PRODUCT_SECTION_NOT_FOUND)));
         }
 
+        for(Product product : products) {
+            if(!restaurant.getProducts().contains(product))
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_PRODUCT_SECTION);
+        }
+
         ProductSection productSection = new ProductSection();
         BeanUtils.copyProperties(productSectionDto, productSection);
 

@@ -2,30 +2,22 @@ package ipb.pt.safeeat.service;
 
 import ipb.pt.safeeat.constant.ForbiddenConstant;
 import ipb.pt.safeeat.constant.NotFoundConstant;
-import ipb.pt.safeeat.dto.NotificationDto;
 import ipb.pt.safeeat.model.Notification;
-import ipb.pt.safeeat.model.Order;
-import ipb.pt.safeeat.model.Restaurant;
 import ipb.pt.safeeat.model.User;
 import ipb.pt.safeeat.repository.NotificationRepository;
-import ipb.pt.safeeat.repository.OrderRepository;
 import ipb.pt.safeeat.repository.UserRepository;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 public class NotificationService {
     @Autowired
     private NotificationRepository notificationRepository;
-    @Autowired
-    private OrderRepository orderRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -56,46 +48,6 @@ public class NotificationService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_NOTIFICATION);
 
         return user.getNotifications();
-    }
-
-    public Notification create(NotificationDto notificationDto) {
-        Order order = orderRepository.findById(notificationDto.getOrderId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ORDER_NOT_FOUND));
-
-        User client = userRepository.findById(order.getClient().getId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.USER_NOT_FOUND));
-
-        User owner = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Restaurant restaurant = order.getRestaurant();
-
-        if (!owner.getRestaurants().contains(restaurant))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_NOTIFICATION);
-
-        Notification notification = new Notification();
-        BeanUtils.copyProperties(notificationDto, notification);
-
-        notification.setOrder(order);
-        notification.setTime(LocalDateTime.now());
-
-        Notification created = notificationRepository.save(notification);
-
-        client.getNotifications().add(created);
-        userRepository.save(client);
-
-        return created;
-    }
-
-    public Notification update(NotificationDto notificationDto) {
-        Notification old = notificationRepository.findById(notificationDto.getId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.NOTIFICATION_NOT_FOUND));
-
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        if (!user.getNotifications().contains(old))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_NOTIFICATION);
-
-        BeanUtils.copyProperties(notificationDto, old);
-        return notificationRepository.save(old);
     }
 
     public Notification view(String id) {

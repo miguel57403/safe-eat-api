@@ -1,5 +1,6 @@
 package ipb.pt.safeeat.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
@@ -18,8 +19,10 @@ public class Product {
     private Double price;
     private String image;
     private Boolean isRestricted;
+    @JsonIgnore
     @DocumentReference
     private Category category;
+    @JsonIgnore
     @DocumentReference
     private List<Ingredient> ingredients;
 }

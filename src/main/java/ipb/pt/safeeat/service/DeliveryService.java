@@ -81,9 +81,10 @@ public class DeliveryService {
         Delivery delivery = deliveryRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.DELIVERY_NOT_FOUND));
 
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Restaurant restaurant = restaurantRepository.findByDeliveries(delivery).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
+
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!restaurant.getOwner().equals(user))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_DELIVERY);

@@ -1,11 +1,8 @@
 package ipb.pt.safeeat.controller;
 
-import ipb.pt.safeeat.dto.NotificationDto;
 import ipb.pt.safeeat.service.NotificationService;
 import jakarta.annotation.security.RolesAllowed;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -32,16 +29,6 @@ public class NotificationController {
     @GetMapping("/user/{userId}")
     public ResponseEntity<Object> findAllByUser(@PathVariable String userId) {
         return ResponseEntity.ok(notificationService.findAllByUser(userId));
-    }
-
-    @PostMapping
-    public ResponseEntity<Object> create(@Valid @RequestBody NotificationDto notificationDto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(notificationService.create(notificationDto));
-    }
-
-    @PutMapping
-    public ResponseEntity<Object> update(@Valid @RequestBody NotificationDto notificationDto) {
-        return ResponseEntity.ok().body(notificationService.update(notificationDto));
     }
 
     @PatchMapping("/{id}")

@@ -1,8 +1,9 @@
 package ipb.pt.safeeat.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
@@ -10,7 +11,8 @@ import org.springframework.data.mongodb.core.mapping.DocumentReference;
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @Document(collection = "restaurants")
 public class Restaurant {
@@ -19,8 +21,12 @@ public class Restaurant {
     private String name;
     private String logo;
     private String cover;
+    @DocumentReference
     private List<Delivery> deliveries = new ArrayList<>();
 
+    @JsonIgnore
+    @DocumentReference
+    private List<Notification> notifications = new ArrayList<>();
     @JsonIgnore
     @DocumentReference
     private List<Product> products = new ArrayList<>();
@@ -39,4 +45,11 @@ public class Restaurant {
     @JsonIgnore
     @DocumentReference
     private User owner;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Restaurant )) return false;
+        return id != null && id.equals(((Restaurant) o).getId());
+    }
 }

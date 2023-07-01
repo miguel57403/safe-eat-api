@@ -14,6 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class OrderService {
@@ -31,6 +32,10 @@ public class OrderService {
     private DeliveryRepository deliveryRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private NotificationRepository notificationRepository;
+    @Autowired
+    private FeedbackRepository feedbackRepository;
 
     public List<Order> findAll() {
         return orderRepository.findAll();
@@ -121,7 +126,7 @@ public class OrderService {
         double subtotal = order.getItems().stream().mapToDouble(Item::getSubtotal).sum();
         double total = subtotal + order.getDelivery().getPrice();
 
-        order.setStatus("Registered");
+        order.setStatus("REGISTERED");
         order.setTime(LocalDateTime.now());
         order.setSubtotal(subtotal);
         order.setTotal(total);
@@ -141,33 +146,63 @@ public class OrderService {
         Order old = orderRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ORDER_NOT_FOUND));
 
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Restaurant restaurant = restaurantRepository.findByOrders(old).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
+
+        User client = userRepository.findByOrders(old).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.USER_NOT_FOUND));
+
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!restaurant.getOwner().equals(user))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ORDER);
 
+        Notification notification = new Notification();
+
+        switch (status) {
+            case "PREPARING" -> notification.setContent("Your order is being prepared");
+            case "TRANSPORTING" -> notification.setContent("Your order is being transported");
+            case "DELIVERED" -> notification.setContent("Your order has been delivered");
+            case "CANCELLED" -> notification.setContent("Your order has been cancelled");
+            default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status");
+        }
+
         old.setStatus(status);
-        return orderRepository.save(old);
+        Order updated = orderRepository.save(old);
+
+        notification.setTime(LocalDateTime.now());
+        notification.setOrder(updated);
+        notification.setIsViewed(false);
+
+        Notification created = notificationRepository.save(notification);
+
+        client.getNotifications().add(created);
+        userRepository.save(client);
+
+        return updated;
     }
 
     public void delete(String id) {
         Order order = orderRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ORDER_NOT_FOUND));
 
-        User user = userRepository.findById(order.getClient().getId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.USER_NOT_FOUND));
+        Optional<User> user = userRepository.findByOrders(order);
+        Optional<Restaurant> restaurant = restaurantRepository.findByOrders(order);
+        Feedback feedback = order.getFeedback();
 
-        Restaurant restaurant = restaurantRepository.findById(order.getRestaurant().getId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
+        List<Notification> notifications = notificationRepository.findAllByOrder(order);
 
-        user.getOrders().remove(order);
-        userRepository.save(user);
+        user.ifPresent(value -> value.getOrders().remove(order));
+        restaurant.ifPresent(value -> value.getOrders().remove(order));
 
-        restaurant.getOrders().remove(order);
-        restaurantRepository.save(restaurant);
+        user.ifPresent(value -> userRepository.save(value));
+        restaurant.ifPresent(value -> restaurantRepository.save(value));
 
+        if (feedback != null) {
+            feedbackRepository.delete(feedback);
+        }
+
+        notificationRepository.deleteAll(notifications);
         orderRepository.deleteById(id);
     }
 }

@@ -1,7 +1,8 @@
 package ipb.pt.safeeat.model;
 
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
@@ -9,7 +10,8 @@ import org.springframework.data.mongodb.core.mapping.DocumentReference;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @Document(collection = "orders")
 public class Order {
@@ -30,4 +32,11 @@ public class Order {
     private Feedback feedback;
     @DocumentReference
     private User client;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Order )) return false;
+        return id != null && id.equals(((Order) o).getId());
+    }
 }

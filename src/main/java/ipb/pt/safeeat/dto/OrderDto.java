@@ -19,8 +19,4 @@ public class OrderDto {
     private String deliveryId;
     @NotEmpty(message = "Invalid itemsIds")
     private List<String> itemIds;
-    @NotNull(message = "Invalid restaurantId")
-    private String restaurantId;
-    @NotNull(message = "Invalid clientId")
-    private String clientId;
 }
