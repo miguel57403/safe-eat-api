@@ -135,6 +135,16 @@ public class OrderService {
 
         Order created = orderRepository.save(order);
 
+        Notification notification = new Notification();
+
+        notification.setTime(LocalDateTime.now());
+        notification.setContent("New order from " + client.getName());
+        notification.setOrder(created);
+        notification.setIsViewed(false);
+
+        Notification newNotification = notificationRepository.save(notification);
+
+        restaurant.getNotifications().add(newNotification);
         restaurant.getOrders().add(created);
         restaurantRepository.save(restaurant);
 
@@ -176,9 +186,9 @@ public class OrderService {
         notification.setOrder(updated);
         notification.setIsViewed(false);
 
-        Notification created = notificationRepository.save(notification);
+        Notification newNotification = notificationRepository.save(notification);
 
-        client.getNotifications().add(created);
+        client.getNotifications().add(newNotification);
         userRepository.save(client);
 
         return updated;
