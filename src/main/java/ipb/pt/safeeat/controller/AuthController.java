@@ -1,6 +1,7 @@
 package ipb.pt.safeeat.controller;
 
 import ipb.pt.safeeat.dto.LoginDto;
+import ipb.pt.safeeat.dto.LoginResponseDto;
 import ipb.pt.safeeat.dto.UserDto;
 import ipb.pt.safeeat.model.User;
 import ipb.pt.safeeat.service.TokenService;
@@ -41,6 +42,6 @@ public class AuthController {
         Authentication authentication = this.authenticationManager.authenticate(usernamePasswordAuthenticationToken);
 
         User user = (User) authentication.getPrincipal();
-        return ResponseEntity.ok("\"" + tokenService.generateToken(user) + "\"");
+        return ResponseEntity.ok().body(new LoginResponseDto(tokenService.generateToken(user)));
     }
 }
