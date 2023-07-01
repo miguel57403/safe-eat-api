@@ -148,6 +148,47 @@ public class OrderService {
         return created;
     }
 
+    public Order getOrderDraft(String deliveryId) {
+        User client = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Cart cart = client.getCart();
+        List<Item> items = cart.getItems();
+
+        if(items.isEmpty())
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cart is empty");
+
+        Restaurant restaurant = restaurantRepository.findByProducts(items.get(0).getProduct()).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
+
+        Delivery delivery = deliveryRepository.findById(deliveryId).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.DELIVERY_NOT_FOUND));
+
+        if (!items.stream().allMatch(item -> restaurant.getProducts().contains(item.getProduct())))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot order from different restaurants");
+
+        if (!restaurant.getDeliveries().contains(delivery))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Delivery method not available");
+
+        Order order = new Order();
+
+        order.setDelivery(delivery);
+        order.setRestaurant(restaurant);
+        order.setClient(client);
+        order.setItems(items);
+
+        double subtotal = order.getItems().stream().mapToDouble(Item::getSubtotal).sum();
+        double total = subtotal + order.getDelivery().getPrice();
+        Integer quantity = order.getItems().stream().mapToInt(Item::getQuantity).sum();
+
+        order.setStatus("DRAFT");
+        order.setTime(LocalDateTime.now());
+        order.setQuantity(quantity);
+        order.setSubtotal(subtotal);
+        order.setTotal(total);
+
+        return order;
+    }
+
     public Order updateStatus(String id, String status) {
         Order old = orderRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ORDER_NOT_FOUND));
