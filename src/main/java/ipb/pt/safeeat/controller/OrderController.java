@@ -29,9 +29,9 @@ public class OrderController {
         return ResponseEntity.ok(orderService.findById(id));
     }
 
-    @GetMapping("/draft/{deliveryId}")
-    public ResponseEntity<Object> findDraft(@PathVariable String deliveryId) {
-        return ResponseEntity.ok(orderService.getOrderDraft(deliveryId));
+    @GetMapping("/draft")
+    public ResponseEntity<Object> findDraft() {
+        return ResponseEntity.ok(orderService.getOrderDraft());
     }
 
     @GetMapping("/user/{userId}")

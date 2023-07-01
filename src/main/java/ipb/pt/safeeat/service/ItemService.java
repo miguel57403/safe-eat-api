@@ -98,7 +98,7 @@ public class ItemService {
         if (item.getQuantity() <= 0)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Quantity must be greater than 0");
 
-        double subtotal = product.getPrice() * item.getQuantity();
+        Double subtotal = product.getPrice() * item.getQuantity();
         item.setSubtotal(subtotal);
         item.setProduct(product);
     }

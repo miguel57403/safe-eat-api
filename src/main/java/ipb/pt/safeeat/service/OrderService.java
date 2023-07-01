@@ -2,6 +2,7 @@ package ipb.pt.safeeat.service;
 
 import ipb.pt.safeeat.constant.ForbiddenConstant;
 import ipb.pt.safeeat.constant.NotFoundConstant;
+import ipb.pt.safeeat.dto.OrderDraftDto;
 import ipb.pt.safeeat.dto.OrderDto;
 import ipb.pt.safeeat.model.*;
 import ipb.pt.safeeat.repository.*;
@@ -96,14 +97,11 @@ public class OrderService {
         Address address = addressRepository.findById(orderDto.getAddressId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ADDRESS_NOT_FOUND));
 
-        if (!items.stream().allMatch(item -> restaurant.getProducts().contains(item.getProduct())))
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot order from different restaurants");
-
         if (!restaurant.getDeliveries().contains(delivery))
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Delivery method not available");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Delivery option not available");
 
         if (!client.getPayments().contains(payment))
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Payment method not available");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Payment option not available");
 
         if (!client.getAddresses().contains(address))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Address not available");
@@ -117,8 +115,8 @@ public class OrderService {
         order.setClient(client);
         order.setItems(items);
 
-        double subtotal = order.getItems().stream().mapToDouble(Item::getSubtotal).sum();
-        double total = subtotal + order.getDelivery().getPrice();
+        Double subtotal = order.getItems().stream().mapToDouble(Item::getSubtotal).sum();
+        Double total = subtotal + order.getDelivery().getPrice();
         Integer quantity = order.getItems().stream().mapToInt(Item::getQuantity).sum();
 
         order.setStatus("REGISTERED");
@@ -148,7 +146,7 @@ public class OrderService {
         return created;
     }
 
-    public Order getOrderDraft(String deliveryId) {
+    public OrderDraftDto getOrderDraft() {
         User client = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         Cart cart = client.getCart();
@@ -160,33 +158,18 @@ public class OrderService {
         Restaurant restaurant = restaurantRepository.findByProducts(items.get(0).getProduct()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        Delivery delivery = deliveryRepository.findById(deliveryId).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.DELIVERY_NOT_FOUND));
+        Double subtotal = cart.getItems().stream().mapToDouble(Item::getSubtotal).sum();
+        Integer quantity = cart.getItems().stream().mapToInt(Item::getQuantity).sum();
 
-        if (!items.stream().allMatch(item -> restaurant.getProducts().contains(item.getProduct())))
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot order from different restaurants");
+        OrderDraftDto orderDraftDto = new OrderDraftDto();
 
-        if (!restaurant.getDeliveries().contains(delivery))
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Delivery method not available");
+        orderDraftDto.setAddresses(client.getAddresses());
+        orderDraftDto.setPayments(client.getPayments());
+        orderDraftDto.setDeliveries(restaurant.getDeliveries());
+        orderDraftDto.setSubtotal(subtotal);
+        orderDraftDto.setQuantity(quantity);
 
-        Order order = new Order();
-
-        order.setDelivery(delivery);
-        order.setRestaurant(restaurant);
-        order.setClient(client);
-        order.setItems(items);
-
-        double subtotal = order.getItems().stream().mapToDouble(Item::getSubtotal).sum();
-        double total = subtotal + order.getDelivery().getPrice();
-        Integer quantity = order.getItems().stream().mapToInt(Item::getQuantity).sum();
-
-        order.setStatus("DRAFT");
-        order.setTime(LocalDateTime.now());
-        order.setQuantity(quantity);
-        order.setSubtotal(subtotal);
-        order.setTotal(total);
-
-        return order;
+        return orderDraftDto;
     }
 
     public Order updateStatus(String id, String status) {
