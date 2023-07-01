@@ -41,6 +41,6 @@ public class AuthController {
         Authentication authentication = this.authenticationManager.authenticate(usernamePasswordAuthenticationToken);
 
         User user = (User) authentication.getPrincipal();
-        return ResponseEntity.ok(tokenService.generateToken(user));
+        return ResponseEntity.ok("\"" + tokenService.generateToken(user) + "\"");
     }
 }
