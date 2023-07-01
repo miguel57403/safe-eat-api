@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,8 +23,6 @@ public class OrderService {
     private AddressRepository addressRepository;
     @Autowired
     private PaymentRepository paymentRepository;
-    @Autowired
-    private ItemRepository itemRepository;
     @Autowired
     private RestaurantRepository restaurantRepository;
     @Autowired
@@ -79,14 +76,13 @@ public class OrderService {
     }
 
     public Order create(OrderDto orderDto) {
-        if (orderDto.getItemIds().isEmpty())
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No items in order");
+        User client = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        List<Item> items = new ArrayList<>();
-        for (String itemId : orderDto.getItemIds()) {
-            items.add(itemRepository.findById(itemId).orElseThrow(
-                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ITEM_NOT_FOUND)));
-        }
+        Cart cart = client.getCart();
+        List<Item> items = cart.getItems();
+
+        if(items.isEmpty())
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cart is empty");
 
         Restaurant restaurant = restaurantRepository.findByProducts(items.get(0).getProduct()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
@@ -99,8 +95,6 @@ public class OrderService {
 
         Address address = addressRepository.findById(orderDto.getAddressId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ADDRESS_NOT_FOUND));
-
-        User client = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!items.stream().allMatch(item -> restaurant.getProducts().contains(item.getProduct())))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot order from different restaurants");
@@ -175,7 +169,7 @@ public class OrderService {
             case "PREPARING" -> notification.setContent("Your order is being prepared");
             case "TRANSPORTING" -> notification.setContent("Your order is being transported");
             case "DELIVERED" -> notification.setContent("Your order has been delivered");
-            case "CANCELLED" -> notification.setContent("Your order has been cancelled");
+            case "CANCELED" -> notification.setContent("Your order has been cancelled");
             default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status");
         }
 
