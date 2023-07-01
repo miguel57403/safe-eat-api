@@ -20,9 +20,9 @@ public class Product {
     private String image;
     private Boolean isRestricted;
     @JsonIgnore
-    @DocumentReference
+    @DocumentReference(lazy = true)
     private Category category;
     @JsonIgnore
-    @DocumentReference
+    @DocumentReference(lazy = true)
     private List<Ingredient> ingredients;
 }

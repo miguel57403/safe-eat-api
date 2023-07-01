@@ -17,6 +17,6 @@ public class Notification {
     private String content;
     private LocalDateTime time;
     private Boolean isViewed;
-    @DocumentReference
+    @DocumentReference(lazy = true)
     private Order order;
 }

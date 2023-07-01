@@ -17,6 +17,6 @@ public class Ingredient {
     private String name;
     private String description;
     private Boolean isRestricted;
-    @DocumentReference
+    @DocumentReference(lazy = true)
     private List<Restriction> restrictions;
 }

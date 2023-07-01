@@ -32,25 +32,25 @@ public class User implements UserDetails {
     private String role;
 
     @JsonIgnore
-    @DocumentReference
+    @DocumentReference(lazy = true)
     private Cart cart;
     @JsonIgnore
-    @DocumentReference
+    @DocumentReference(lazy = true)
     private List<Restriction> restrictions = new ArrayList<>();
     @JsonIgnore
-    @DocumentReference
+    @DocumentReference(lazy = true)
     private List<Payment> payments = new ArrayList<>();
     @JsonIgnore
-    @DocumentReference
+    @DocumentReference(lazy = true)
     private List<Address> addresses = new ArrayList<>();
     @JsonIgnore
-    @DocumentReference
+    @DocumentReference(lazy = true)
     private List<Order> orders = new ArrayList<>();
     @JsonIgnore
-    @DocumentReference
+    @DocumentReference(lazy = true)
     private List<Notification> notifications = new ArrayList<>();
     @JsonIgnore
-    @DocumentReference
+    @DocumentReference(lazy = true)
     private List<Restaurant> restaurants = new ArrayList<>();
 
     @JsonIgnore

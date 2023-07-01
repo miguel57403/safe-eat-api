@@ -15,6 +15,6 @@ public class RestaurantSection {
     @Id
     private String id;
     private String name;
-    @DocumentReference
+    @DocumentReference(lazy = true)
     private List<Restaurant> restaurants;
 }

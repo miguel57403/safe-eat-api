@@ -17,6 +17,6 @@ public class Cart {
     private String id;
     private Integer quantity = 0;
     private Double subtotal = 0.0;
-    @DocumentReference
+    @DocumentReference(lazy = true)
     private List<Item> items = new ArrayList<>();
 }

@@ -26,11 +26,11 @@ public class Order {
     private Payment payment;
     private Delivery delivery;
     private List<Item> items;
-    @DocumentReference
+    @DocumentReference(lazy = true)
     private Restaurant restaurant;
-    @DocumentReference
+    @DocumentReference(lazy = true)
     private Feedback feedback;
-    @DocumentReference
+    @DocumentReference(lazy = true)
     private User client;
 
     @Override

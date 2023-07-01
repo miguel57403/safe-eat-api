@@ -21,29 +21,29 @@ public class Restaurant {
     private String name;
     private String logo;
     private String cover;
-    @DocumentReference
+    @DocumentReference(lazy = true)
     private List<Delivery> deliveries = new ArrayList<>();
 
     @JsonIgnore
-    @DocumentReference
+    @DocumentReference(lazy = true)
     private List<Notification> notifications = new ArrayList<>();
     @JsonIgnore
-    @DocumentReference
+    @DocumentReference(lazy = true)
     private List<Product> products = new ArrayList<>();
     @JsonIgnore
-    @DocumentReference
+    @DocumentReference(lazy = true)
     private List<ProductSection> productSections = new ArrayList<>();
     @JsonIgnore
-    @DocumentReference
+    @DocumentReference(lazy = true)
     private List<Advertisement> advertisements = new ArrayList<>();
     @JsonIgnore
-    @DocumentReference
+    @DocumentReference(lazy = true)
     private List<Ingredient> ingredients = new ArrayList<>();
     @JsonIgnore
-    @DocumentReference
+    @DocumentReference(lazy = true)
     private List<Order> orders = new ArrayList<>();
     @JsonIgnore
-    @DocumentReference
+    @DocumentReference(lazy = true)
     private User owner;
 
     @Override

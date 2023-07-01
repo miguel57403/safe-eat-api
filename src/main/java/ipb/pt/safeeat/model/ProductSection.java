@@ -15,6 +15,6 @@ public class ProductSection {
     @Id
     private String id;
     private String name;
-    @DocumentReference
+    @DocumentReference(lazy = true)
     private List<Product> products;
 }
