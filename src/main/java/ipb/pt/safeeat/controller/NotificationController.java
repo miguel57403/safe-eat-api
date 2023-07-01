@@ -31,7 +31,7 @@ public class NotificationController {
         return ResponseEntity.ok(notificationService.findAllByUser(userId));
     }
 
-    @GetMapping("/user/{restaurantId}")
+    @GetMapping("/restaurant/{restaurantId}")
     public ResponseEntity<Object> findAllByRestaurant(@PathVariable String restaurantId) {
         return ResponseEntity.ok(notificationService.findAllByRestaurant(restaurantId));
     }
