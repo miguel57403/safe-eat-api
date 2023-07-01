@@ -125,9 +125,11 @@ public class OrderService {
 
         double subtotal = order.getItems().stream().mapToDouble(Item::getSubtotal).sum();
         double total = subtotal + order.getDelivery().getPrice();
+        Integer quantity = order.getItems().stream().mapToInt(Item::getQuantity).sum();
 
         order.setStatus("REGISTERED");
         order.setTime(LocalDateTime.now());
+        order.setQuantity(quantity);
         order.setSubtotal(subtotal);
         order.setTotal(total);
 

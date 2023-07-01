@@ -89,6 +89,17 @@ public class RestaurantService {
         return restaurants;
     }
 
+    public Restaurant findByCart(){
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if(!user.getCart().getItems().isEmpty()){
+            return restaurantRepository.findByProducts(user.getCart().getItems().get(0).getProduct()).orElseThrow(
+                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
+        }
+
+        return null;
+    }
+
     public List<Restaurant> findAllByName(String name) {
         List<Restaurant> restaurants = new ArrayList<>();
         for (Restaurant restaurant : restaurantRepository.findAll()) {
