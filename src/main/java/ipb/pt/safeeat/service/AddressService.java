@@ -77,6 +77,19 @@ public class AddressService {
         return addressRepository.save(old);
     }
 
+    public Address select(String id) {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        List<Address> addresses = user.getAddresses();
+        addresses.forEach(address -> address.setIsSelected(address.getId().equals(id)));
+        List<Address> saved = addressRepository.saveAll(addresses);
+
+        return saved.stream()
+                .filter(address -> address.getId().equals(id))
+                .findFirst()
+                .orElse(null);
+    }
+
     public void delete(String id) {
         Address address = addressRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ADDRESS_NOT_FOUND));

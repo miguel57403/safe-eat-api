@@ -20,4 +20,5 @@ public class Address {
     private String complement;
     private String city;
     private String postalCode;
+    private Boolean isSelected = false;
 }

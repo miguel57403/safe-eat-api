@@ -78,6 +78,19 @@ public class PaymentService {
         return paymentRepository.save(old);
     }
 
+    public Payment select(String id) {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        List<Payment> addresses = user.getPayments();
+        addresses.forEach(address -> address.setIsSelected(address.getId().equals(id)));
+        List<Payment> saved = paymentRepository.saveAll(addresses);
+
+        return saved.stream()
+                .filter(address -> address.getId().equals(id))
+                .findFirst()
+                .orElse(null);
+    }
+
     public void delete(String id) {
         Payment payment = paymentRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.PAYMENT_NOT_FOUND));

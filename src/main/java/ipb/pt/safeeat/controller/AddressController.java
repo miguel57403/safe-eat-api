@@ -44,6 +44,11 @@ public class AddressController {
         return ResponseEntity.ok().body(addressService.update(addressDto));
     }
 
+    @PutMapping("select/{id}")
+    public ResponseEntity<Object> select(@PathVariable String id) {
+        return ResponseEntity.ok().body(addressService.select(id));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Object> delete(@PathVariable String id) {
         addressService.delete(id);

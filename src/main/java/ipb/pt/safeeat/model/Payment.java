@@ -16,7 +16,8 @@ public class Payment {
     private String id;
     private String type;
     private String name;
-    private Integer number;
     private String expirationDate;
+    private Integer number;
     private Integer cvv;
+    private Boolean isSelected = false;
 }

@@ -44,6 +44,11 @@ public class PaymentController {
         return ResponseEntity.ok().body(paymentService.update(paymentDto));
     }
 
+    @PutMapping("select/{id}")
+    public ResponseEntity<Object> select(@PathVariable String id) {
+        return ResponseEntity.ok().body(paymentService.select(id));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Object> delete(@PathVariable String id) {
         paymentService.delete(id);
