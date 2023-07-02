@@ -27,9 +27,6 @@ public class Restaurant {
 
     @JsonIgnore
     @DocumentReference(lazy = true)
-    private List<Notification> notifications = new ArrayList<>();
-    @JsonIgnore
-    @DocumentReference(lazy = true)
     private List<Product> products = new ArrayList<>();
     @JsonIgnore
     @DocumentReference(lazy = true)

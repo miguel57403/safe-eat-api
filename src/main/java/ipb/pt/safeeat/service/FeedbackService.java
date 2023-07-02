@@ -87,11 +87,10 @@ public class FeedbackService {
 
         notification.setContent("Feedback received from " + user.getName());
         notification.setTime(LocalDateTime.now());
-        notification.setOrder(updated);
+        notification.setOrderId(updated.getId());
         notification.setIsViewed(false);
 
-        Notification saved = notificationRepository.save(notification);
-        restaurant.getNotifications().add(saved);
+        notificationRepository.save(notification);
         restaurantRepository.save(restaurant);
 
         return created;
@@ -125,7 +124,7 @@ public class FeedbackService {
         if (!user.getOrders().contains(order))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_FEEDBACK);
 
-        List<Notification> notifications = notificationRepository.findAllByOrder(order);
+        List<Notification> notifications = notificationRepository.findAllByOrderId(order.getId());
         notificationRepository.deleteAll(notifications);
 
         order.setFeedback(null);

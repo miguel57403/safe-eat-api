@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class NotificationService {
@@ -54,6 +53,7 @@ public class NotificationService {
         return user.getNotifications();
     }
 
+    // TODO: arrumar isso
     public List<Notification> findAllByRestaurant(String restaurantId) {
         Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
@@ -63,36 +63,37 @@ public class NotificationService {
         if (!current.isAdmin() && !current.equals(restaurant.getOwner()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_NOTIFICATION);
 
-        return restaurant.getNotifications();
+        return null;
     }
 
+    // TODO:
     public Notification view(String id) {
         Notification notification = notificationRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.NOTIFICATION_NOT_FOUND));
 
-        Optional<Restaurant> restaurant = restaurantRepository.findByNotifications(notification);
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        if (!user.getNotifications().contains(notification) && restaurant.isEmpty())
+        if (!notification.getRestaurant().getOwner().equals(user) && !user.getNotifications().contains(notification))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_NOTIFICATION);
 
         notification.setIsViewed(true);
+        notificationRepository.save(notification);
 
-        return notificationRepository.save(notification);
+        return notification;
     }
 
     public void delete(String id) {
+        System.out.println("deleting");
         Notification notification = notificationRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.NOTIFICATION_NOT_FOUND));
 
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        if (!user.getNotifications().contains(notification))
+        if (!notification.getRestaurant().getOwner().equals(user) && !user.getNotifications().contains(notification))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_NOTIFICATION);
 
         user.getNotifications().remove(notification);
         userRepository.save(user);
-
         notificationRepository.deleteById(id);
     }
 }

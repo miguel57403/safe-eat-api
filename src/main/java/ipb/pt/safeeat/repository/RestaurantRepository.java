@@ -19,6 +19,4 @@ public interface RestaurantRepository extends MongoRepository<Restaurant, String
     Optional<Restaurant> findByProducts(Product product);
 
     Optional<Restaurant> findByOrders(Order order);
-
-    Optional<Restaurant> findByNotifications(Notification notification);
 }

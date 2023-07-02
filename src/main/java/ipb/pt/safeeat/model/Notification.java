@@ -20,6 +20,7 @@ public class Notification {
     private String content;
     private LocalDateTime time;
     private Boolean isViewed;
-    @DocumentReference(lazy = true)
-    private Order order;
+    @DocumentReference
+    private Restaurant restaurant;
+    private String orderId;
 }

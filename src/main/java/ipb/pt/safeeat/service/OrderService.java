@@ -131,12 +131,12 @@ public class OrderService {
 
         notification.setTime(LocalDateTime.now());
         notification.setContent("New order from " + client.getName());
-        notification.setOrder(created);
+        notification.setRestaurant(restaurant);
+        notification.setOrderId(order.getId());
         notification.setIsViewed(false);
 
-        Notification newNotification = notificationRepository.save(notification);
+        notificationRepository.save(notification);
 
-        restaurant.getNotifications().add(newNotification);
         restaurant.getOrders().add(created);
         restaurantRepository.save(restaurant);
 
@@ -201,7 +201,8 @@ public class OrderService {
         Order updated = orderRepository.save(old);
 
         notification.setTime(LocalDateTime.now());
-        notification.setOrder(updated);
+        notification.setOrderId(updated.getId());
+        notification.setRestaurant(restaurant);
         notification.setIsViewed(false);
 
         Notification newNotification = notificationRepository.save(notification);
@@ -220,7 +221,7 @@ public class OrderService {
         Optional<Restaurant> restaurant = restaurantRepository.findByOrders(order);
         Feedback feedback = order.getFeedback();
 
-        List<Notification> notifications = notificationRepository.findAllByOrder(order);
+        List<Notification> notifications = notificationRepository.findAllByOrderId(order.getId());
 
         user.ifPresent(value -> value.getOrders().remove(order));
         restaurant.ifPresent(value -> value.getOrders().remove(order));
