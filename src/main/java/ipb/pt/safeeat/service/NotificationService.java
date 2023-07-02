@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class NotificationService {
@@ -69,9 +70,10 @@ public class NotificationService {
         Notification notification = notificationRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.NOTIFICATION_NOT_FOUND));
 
+        Optional<Restaurant> restaurant = restaurantRepository.findByNotifications(notification);
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        if (!user.getNotifications().contains(notification))
+        if (!user.getNotifications().contains(notification) && restaurant.isEmpty())
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_NOTIFICATION);
 
         notification.setIsViewed(true);

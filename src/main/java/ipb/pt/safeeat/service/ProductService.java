@@ -119,9 +119,6 @@ public class ProductService {
         if (!restaurant.getOwner().equals(user))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_PRODUCT);
 
-        if (!restaurant.getProducts().contains(old))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_PRODUCT);
-
         BeanUtils.copyProperties(productDto, old);
         Product updated = productRepository.save(old);
 
@@ -166,9 +163,6 @@ public class ProductService {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!restaurant.getOwner().equals(user))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_PRODUCT);
-
-        if (!restaurant.getProducts().contains(product))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_PRODUCT);
 
         if (product.getImage() != null && !product.getImage().isBlank()) {

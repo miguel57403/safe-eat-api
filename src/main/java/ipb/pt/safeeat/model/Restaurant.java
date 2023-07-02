@@ -1,9 +1,9 @@
 package ipb.pt.safeeat.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Getter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
@@ -11,12 +11,13 @@ import org.springframework.data.mongodb.core.mapping.DocumentReference;
 import java.util.ArrayList;
 import java.util.List;
 
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @Document(collection = "restaurants")
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Restaurant {
     @Id
+    @EqualsAndHashCode.Include
     private String id;
     private String name;
     private String logo;
@@ -45,11 +46,4 @@ public class Restaurant {
     @JsonIgnore
     @DocumentReference(lazy = true)
     private User owner;
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Restaurant )) return false;
-        return id != null && id.equals(((Restaurant) o).getId());
-    }
 }

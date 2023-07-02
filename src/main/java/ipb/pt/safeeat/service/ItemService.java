@@ -110,7 +110,9 @@ public class ItemService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ITEM_NOT_FOUND));
 
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Cart cart = user.getCart();
+
+        Cart cart = cartRepository.findById(user.getCart().getId()).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CART_NOT_FOUND));
 
         if (!cart.getItems().contains(old))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ITEM);

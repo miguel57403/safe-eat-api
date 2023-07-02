@@ -1,5 +1,6 @@
 package ipb.pt.safeeat.model;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -14,8 +15,10 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @Document(collection = "orders")
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Order {
     @Id
+    @EqualsAndHashCode.Include
     private String id;
     private String status;
     private LocalDateTime time;
@@ -32,11 +35,4 @@ public class Order {
     private Feedback feedback;
     @DocumentReference(lazy = true)
     private User client;
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Order )) return false;
-        return id != null && id.equals(((Order) o).getId());
-    }
 }

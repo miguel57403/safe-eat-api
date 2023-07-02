@@ -91,13 +91,9 @@ public class UserService {
         User updating = userRepository.findById(user.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.USER_NOT_FOUND));
 
-        Optional.ofNullable(userDto.getPassword()).filter(it -> !it.isEmpty()).ifPresent(password -> {
-            updating.setPassword(passwordEncoder.encode(password));
-        });
-
-        Optional.ofNullable(userDto.getName()).filter(it -> !it.isEmpty()).ifPresent(name -> {
-            updating.setName(name);
-        });
+        Optional.ofNullable(userDto.getPassword()).filter(it -> !it.isEmpty()).map(passwordEncoder::encode).ifPresent(updating::setPassword);
+        Optional.ofNullable(userDto.getName()).filter(it -> !it.isEmpty()).ifPresent(updating::setName);
+        Optional.ofNullable(userDto.getCellphone()).filter(it -> !it.isEmpty()).ifPresent(updating::setCellphone);
 
         Optional.ofNullable(userDto.getEmail()).filter(it -> !it.isEmpty()).ifPresent(email -> {
             userRepository.findByEmail(email).ifPresent(byEmail -> {

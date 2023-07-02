@@ -1,9 +1,7 @@
 package ipb.pt.safeeat.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
@@ -15,12 +13,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @Document(collection = "users")
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class User implements UserDetails {
     @Id
+    @EqualsAndHashCode.Include
     private String id;
     @JsonIgnore
     private String password;
@@ -63,7 +62,6 @@ public class User implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(role));
     }
-
     @JsonIgnore
     @Override
     public String getUsername() {
@@ -88,12 +86,5 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof User)) return false;
-        return id != null && id.equals(((User) o).getId());
     }
 }
