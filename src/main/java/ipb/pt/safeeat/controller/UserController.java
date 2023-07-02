@@ -1,6 +1,6 @@
 package ipb.pt.safeeat.controller;
 
-import ipb.pt.safeeat.dto.UserDto;
+import ipb.pt.safeeat.dto.UserUpdateDto;
 import ipb.pt.safeeat.model.User;
 import ipb.pt.safeeat.service.UserService;
 import jakarta.annotation.security.RolesAllowed;
@@ -41,7 +41,7 @@ public class UserController {
     }
 
     @PutMapping
-    public ResponseEntity<Object> update(@Valid @RequestBody UserDto userDto) {
+    public ResponseEntity<Object> update(@Valid @RequestBody UserUpdateDto userDto) {
         return ResponseEntity.ok().body(userService.update(userDto));
     }
 

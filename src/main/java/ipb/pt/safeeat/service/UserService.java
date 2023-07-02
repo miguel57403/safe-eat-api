@@ -3,6 +3,7 @@ package ipb.pt.safeeat.service;
 import ipb.pt.safeeat.constant.ForbiddenConstant;
 import ipb.pt.safeeat.constant.NotFoundConstant;
 import ipb.pt.safeeat.dto.UserDto;
+import ipb.pt.safeeat.dto.UserUpdateDto;
 import ipb.pt.safeeat.model.Cart;
 import ipb.pt.safeeat.model.Restriction;
 import ipb.pt.safeeat.model.User;
@@ -20,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserService {
@@ -58,7 +60,7 @@ public class UserService {
         if (userRepository.findByEmail(userDto.getEmail()).isPresent())
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email already in use");
 
-        List<Restriction> restrictions = getRestrictions(userDto);
+        List<Restriction> restrictions = getRestrictions(userDto.getRestrictionIds());
 
         User user = new User();
         BeanUtils.copyProperties(userDto, user);
@@ -73,39 +75,45 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    private List<Restriction> getRestrictions(UserDto userDto) {
+    private List<Restriction> getRestrictions(List<String> restrictionIds) {
         List<Restriction> restrictions = new ArrayList<>();
-        if (!userDto.getRestrictionIds().isEmpty()) {
-            for (String restrictionId : userDto.getRestrictionIds()) {
+        if (!restrictionIds.isEmpty()) {
+            for (String restrictionId : restrictionIds) {
                 restrictions.add(restrictionRepository.findById(restrictionId).orElseThrow(
                         () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTRICTION_NOT_FOUND)));
             }
         }
-
         return restrictions;
     }
 
-    public User update(UserDto userDto) {
-        User old = userRepository.findById(userDto.getId()).orElseThrow(
+    public User update(UserUpdateDto userDto) {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User updating = userRepository.findById(user.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.USER_NOT_FOUND));
 
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Optional.ofNullable(userDto.getPassword()).filter(it -> !it.isEmpty()).ifPresent(password -> {
+            updating.setPassword(passwordEncoder.encode(password));
+        });
 
-        if (!user.getId().equals(userDto.getId()))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_USER);
+        Optional.ofNullable(userDto.getName()).filter(it -> !it.isEmpty()).ifPresent(name -> {
+            updating.setName(name);
+        });
 
-        User byEmail = userRepository.findByEmail(userDto.getEmail()).orElse(null);
+        Optional.ofNullable(userDto.getEmail()).filter(it -> !it.isEmpty()).ifPresent(email -> {
+            userRepository.findByEmail(email).ifPresent(byEmail -> {
+                if (!byEmail.getId().equals(updating.getId()))
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email already in use");
+            });
 
-        if (byEmail != null && !byEmail.getId().equals(old.getId()))
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email already in use");
+            updating.setEmail(email);
+        });
 
-        List<Restriction> restrictions = getRestrictions(userDto);
+        Optional.ofNullable(userDto.getRestrictionIds()).ifPresent(restrictionsIds -> {
+            List<Restriction> restrictions = getRestrictions(restrictionsIds);
+            updating.setRestrictions(restrictions);
+        });
 
-        BeanUtils.copyProperties(userDto, old);
-        old.setPassword(passwordEncoder.encode(userDto.getPassword()));
-        old.setRestrictions(restrictions);
-
-        return userRepository.save(old);
+        return userRepository.save(updating);
     }
 
     public User updateImage(MultipartFile imageFile) throws IOException {
