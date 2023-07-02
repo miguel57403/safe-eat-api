@@ -31,8 +31,10 @@ public class RestrictionService {
     private RestrictionCheckerComponent restrictionCheckerComponent;
 
     public List<Restriction> findAll() {
+        // TODO: Split this method?
+        Object user = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         List<Restriction> restrictions = restrictionRepository.findAll();
-        restrictionCheckerComponent.checkRestrictionList(restrictions);
+        if (user != "anonymousUser") restrictionCheckerComponent.checkRestrictionList(restrictions);
         return restrictions;
     }
 
