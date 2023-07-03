@@ -64,7 +64,7 @@ public class CartService {
     }
 
     public Cart findMe() {
-        return findByUser(getAuthenticatedUser().getId());
+        return findById(getAuthenticatedUser().getCartId());
     }
 
     public Boolean isEmpty() {
