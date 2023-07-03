@@ -34,6 +34,11 @@ public class AddressController {
         return ResponseEntity.ok(addressService.findAllByUser(userId));
     }
 
+    @GetMapping("/user/me")
+    public ResponseEntity<Object> findMe() {
+        return ResponseEntity.ok(addressService.findMe());
+    }
+
     @PostMapping
     public ResponseEntity<Object> create(@Valid @RequestBody AddressDto addressDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(addressService.create(addressDto));

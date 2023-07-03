@@ -50,6 +50,10 @@ public class AddressService {
         return addressRepository.findAllByUserId(user.getId());
     }
 
+    public List<Address> findMe() {
+        return addressRepository.findAllByUserId(getAuthenticatedUser().getId());
+    }
+
     public Address create(AddressDto addressDto) {
         User user = getAuthenticatedUser();
 
