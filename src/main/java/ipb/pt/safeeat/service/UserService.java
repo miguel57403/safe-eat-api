@@ -81,9 +81,6 @@ public class UserService {
         User old = userRepository.findById(getAuthenticatedUser().getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.USER_NOT_FOUND));
 
-        if(!old.equals(getAuthenticatedUser()))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_USER);
-
         Optional.ofNullable(userDto.getPassword()).filter(it -> !it.isEmpty()).map(passwordEncoder::encode).ifPresent(old::setPassword);
         Optional.ofNullable(userDto.getName()).filter(it -> !it.isEmpty()).ifPresent(old::setName);
         Optional.ofNullable(userDto.getCellphone()).filter(it -> !it.isEmpty()).ifPresent(old::setCellphone);
@@ -97,14 +94,14 @@ public class UserService {
             old.setEmail(email);
         });
 
-        if (!userDto.getRestrictionIds().isEmpty()) {
-            for (String restrictionId : userDto.getRestrictionIds()) {
-                restrictionRepository.findById(restrictionId).orElseThrow(
-                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTRICTION_NOT_FOUND));
+        Optional.ofNullable(userDto.getRestrictionIds()).ifPresent(restrictionIds -> {
+            for (String id : restrictionIds) {
+                restrictionRepository.findById(id).orElseThrow(
+                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTRICTION_NOT_FOUND));
             }
-        }
+            old.setRestrictionIds(restrictionIds);
+        });
 
-        old.setRestrictionIds(old.getRestrictionIds());
         return userRepository.save(old);
     }
 

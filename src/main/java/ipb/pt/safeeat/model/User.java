@@ -31,7 +31,6 @@ public class User implements UserDetails {
     @JsonIgnore
     private String role;
     private String cartId;
-    @JsonIgnore
     private List<String> restrictionIds = new ArrayList<>();
 
     @JsonIgnore

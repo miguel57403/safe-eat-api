@@ -40,7 +40,7 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
-    @PutMapping
+    @PutMapping("/me")
     public ResponseEntity<Object> update(@Valid @RequestBody UserUpdateDto userDto) {
         return ResponseEntity.ok().body(userService.update(userDto));
     }

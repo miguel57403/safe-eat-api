@@ -1,6 +1,7 @@
 package ipb.pt.safeeat.dto;
 
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -14,5 +15,5 @@ public class UserUpdateDto {
     @Email(message = "Invalid email")
     private String email;
     private String cellphone;
-    private List<String> restrictionIds;
+    private List<@NotEmpty String> restrictionIds;
 }
