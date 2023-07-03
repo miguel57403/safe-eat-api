@@ -57,9 +57,12 @@ public class AddressService {
     public Address create(AddressDto addressDto) {
         User user = getAuthenticatedUser();
 
+        List<Address> addresses = addressRepository.findAllByUserId(user.getId());
+
         Address address = new Address();
         BeanUtils.copyProperties(addressDto, address);
         address.setUserId(user.getId());
+        address.setIsSelected(addresses.isEmpty());
 
         return addressRepository.save(address);
     }
