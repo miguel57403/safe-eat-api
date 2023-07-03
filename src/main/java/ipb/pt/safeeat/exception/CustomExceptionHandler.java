@@ -32,4 +32,10 @@ public class CustomExceptionHandler {
         ExceptionList errorResponse = new ExceptionList("Validation failed", errors);
         return ResponseEntity.badRequest().body(errorResponse);
     }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<InternalServerError> handleException(Exception ex) {
+        InternalServerError errorResponse = new InternalServerError(ex.getMessage(), ex.getClass().getName());
+        return ResponseEntity.status(500).body(errorResponse);
+    }
 }
