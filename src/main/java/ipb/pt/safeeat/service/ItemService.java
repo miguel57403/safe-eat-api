@@ -81,29 +81,31 @@ public class ItemService {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ITEM);
         }
 
+        cart.getItems().stream().filter(it -> it.getProduct().getId().equals(itemDto.getProductId())).findFirst().ifPresent(
+                (_item) -> {
+                    throw new ResponseStatusException(HttpStatus.FORBIDDEN, "the product has already been added to the cart");
+                });
+
         Item item = new Item();
         BeanUtils.copyProperties(itemDto, item);
-        calculateValues(product, item);
+        calculateItemValues(product, item);
         Item created = itemRepository.save(item);
 
-        updateCartValues(cart, created);
+        updateCartValues(cart);
 
         restrictionCheckerComponent.checkItem(created);
         return created;
     }
 
-    private void updateCartValues(Cart cart, Item created) {
-        cart.getItems().add(created);
-
+    private void updateCartValues(Cart cart) {
         Double subtotal = cart.getItems().stream().mapToDouble(Item::getSubtotal).sum();
         Integer quantity = cart.getItems().stream().mapToInt(Item::getQuantity).sum();
 
         cart.setSubtotal(subtotal);
         cart.setQuantity(quantity);
-        cartRepository.save(cart);
     }
 
-    private static void calculateValues(Product product, Item item) {
+    private static void calculateItemValues(Product product, Item item) {
         if (item.getQuantity() <= 0)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Quantity must be greater than 0");
 
@@ -113,23 +115,27 @@ public class ItemService {
     }
 
     public Item update(ItemDto itemDto) {
-        Item old = itemRepository.findById(itemDto.getId()).orElseThrow(
+        Item item = itemRepository.findById(itemDto.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ITEM_NOT_FOUND));
 
         Cart cart = cartRepository.findById(getAuthenticatedUser().getCartId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CART_NOT_FOUND));
 
-        if (!cart.getItems().contains(old))
+        if (!cart.getItems().contains(item))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ITEM);
 
-        if (!old.getProduct().getId().equals(itemDto.getProductId()))
+        if (!item.getProduct().getId().equals(itemDto.getProductId()))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product cannot be changed");
 
+        Item old = cart.getItems().stream().filter(it -> it.getId().equals(item.getId())).findFirst().orElseThrow(
+                () -> new RuntimeException("Unreachable"));
+
         BeanUtils.copyProperties(itemDto, old);
-        calculateValues(old.getProduct(), old);
+        calculateItemValues(old.getProduct(), old);
         Item updated = itemRepository.save(old);
 
-        updateCartValues(cart, updated);
+        updateCartValues(cart);
+        cartRepository.save(cart);
 
         restrictionCheckerComponent.checkItem(updated);
         return updated;
@@ -146,6 +152,7 @@ public class ItemService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ITEM);
 
         cart.getItems().remove(item);
+        updateCartValues(cart);
         cartRepository.save(cart);
 
         itemRepository.deleteById(id);
