@@ -83,15 +83,24 @@ public class ItemService {
 
         Item item = new Item();
         BeanUtils.copyProperties(itemDto, item);
-
         calculateValues(product, item);
         Item created = itemRepository.save(item);
 
-        cart.getItems().add(created);
-        cartRepository.save(cart);
+        updateCartValues(cart, created);
 
         restrictionCheckerComponent.checkItem(created);
         return created;
+    }
+
+    private void updateCartValues(Cart cart, Item created) {
+        cart.getItems().add(created);
+
+        Double subtotal = cart.getItems().stream().mapToDouble(Item::getSubtotal).sum();
+        Integer quantity = cart.getItems().stream().mapToInt(Item::getQuantity).sum();
+
+        cart.setSubtotal(subtotal);
+        cart.setQuantity(quantity);
+        cartRepository.save(cart);
     }
 
     private static void calculateValues(Product product, Item item) {
@@ -119,6 +128,8 @@ public class ItemService {
         BeanUtils.copyProperties(itemDto, old);
         calculateValues(old.getProduct(), old);
         Item updated = itemRepository.save(old);
+
+        updateCartValues(cart, updated);
 
         restrictionCheckerComponent.checkItem(updated);
         return updated;
