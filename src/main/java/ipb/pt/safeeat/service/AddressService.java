@@ -78,17 +78,22 @@ public class AddressService {
     }
 
     public Address select(String id) {
-        List<Address> userAddresses = addressRepository.findAllByUserId(getAuthenticatedUser().getId());
+        User user = getAuthenticatedUser();
 
-        Address selectedAddress = userAddresses.stream()
-                .filter(address -> address.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ADDRESS_NOT_FOUND));
+        List<Address> userAddresses = addressRepository.findAllByUserId(user.getId());
 
-        selectedAddress.setIsSelected(true);
-        addressRepository.save(selectedAddress);
+        Address old = addressRepository.findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ADDRESS_NOT_FOUND));
 
-        return selectedAddress;
+        if(!old.getUserId().equals(user.getId()))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ADDRESS);
+
+        for (Address address : userAddresses) {
+            address.setIsSelected(address.getId().equals(id));
+        }
+
+        addressRepository.saveAll(userAddresses);
+        return old;
     }
 
     public void delete(String id) {
