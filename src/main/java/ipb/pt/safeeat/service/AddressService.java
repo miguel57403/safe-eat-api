@@ -31,7 +31,10 @@ public class AddressService {
         Address address = addressRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ADDRESS_NOT_FOUND));
 
-        if (!getAuthenticatedUser().isAdmin() && !getAuthenticatedUser().getAddresses().contains(address))
+        User user = getAuthenticatedUser();
+        List<Address> userAddresses = addressRepository.findAllByUserId(user.getId());
+
+        if (!user.isAdmin() && !userAddresses.contains(address))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ADDRESS);
 
         return address;
@@ -44,7 +47,7 @@ public class AddressService {
         if (!getAuthenticatedUser().isAdmin() && !getAuthenticatedUser().equals(user))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ADDRESS);
 
-        return user.getAddresses();
+        return addressRepository.findAllByUserId(user.getId());
     }
 
     public Address create(AddressDto addressDto) {
@@ -52,19 +55,18 @@ public class AddressService {
 
         Address address = new Address();
         BeanUtils.copyProperties(addressDto, address);
-        Address created = addressRepository.save(address);
+        address.setUserId(user.getId());
 
-        user.getAddresses().add(created);
-        userRepository.save(user);
-
-        return created;
+        return addressRepository.save(address);
     }
 
     public Address update(AddressDto addressDto) {
         Address old = addressRepository.findById(addressDto.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ADDRESS_NOT_FOUND));
 
-        if (!getAuthenticatedUser().getAddresses().contains(old))
+        List<Address> userAddresses = addressRepository.findAllByUserId(getAuthenticatedUser().getId());
+
+        if (!userAddresses.contains(old))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ADDRESS);
 
         BeanUtils.copyProperties(addressDto, old);
@@ -72,10 +74,9 @@ public class AddressService {
     }
 
     public Address select(String id) {
-        User user = getAuthenticatedUser();
-        List<Address> addresses = user.getAddresses();
+        List<Address> userAddresses = addressRepository.findAllByUserId(getAuthenticatedUser().getId());
 
-        Address selectedAddress = addresses.stream()
+        Address selectedAddress = userAddresses.stream()
                 .filter(address -> address.getId().equals(id))
                 .findFirst()
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ADDRESS_NOT_FOUND));
@@ -90,14 +91,11 @@ public class AddressService {
         Address address = addressRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ADDRESS_NOT_FOUND));
 
-        User user = getAuthenticatedUser();
+        List<Address> userAddresses = addressRepository.findAllByUserId(getAuthenticatedUser().getId());
 
-        if (!user.getAddresses().contains(address))
+        if (!userAddresses.contains(address))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ADDRESS);
 
-        user.getAddresses().remove(address);
-
-        userRepository.save(user);
         addressRepository.deleteById(id);
     }
 

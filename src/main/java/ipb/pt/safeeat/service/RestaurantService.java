@@ -3,10 +3,7 @@ package ipb.pt.safeeat.service;
 import ipb.pt.safeeat.constant.ForbiddenConstant;
 import ipb.pt.safeeat.constant.NotFoundConstant;
 import ipb.pt.safeeat.dto.RestaurantDto;
-import ipb.pt.safeeat.model.Category;
-import ipb.pt.safeeat.model.Product;
-import ipb.pt.safeeat.model.Restaurant;
-import ipb.pt.safeeat.model.User;
+import ipb.pt.safeeat.model.*;
 import ipb.pt.safeeat.repository.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +38,8 @@ public class RestaurantService {
     private DeliveryRepository deliveryRepository;
     @Autowired
     private AzureBlobService azureBlobService;
+    @Autowired
+    private CartRepository cartRepository;
 
     public List<Restaurant> findAll() {
         return restaurantRepository.findAll();
@@ -56,7 +55,7 @@ public class RestaurantService {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CATEGORY_NOT_FOUND));
 
-        List<Product> products = productRepository.findAllByCategory(category);
+        List<Product> products = productRepository.findAllByCategoryId(category.getId());
         Set<String> restaurantIds = products.stream()
                 .map(Product::getRestaurantId)
                 .collect(Collectors.toSet());
@@ -68,14 +67,17 @@ public class RestaurantService {
         User owner = userRepository.findById(ownerId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.USER_NOT_FOUND));
 
-        return restaurantRepository.findAllByOwner(owner);
+        return restaurantRepository.findAllByOwnerId(owner.getId());
     }
 
     public Restaurant findByCart() {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = getAuthenticatedUser();
 
-        if (!user.getCart().getItems().isEmpty()) {
-            return restaurantRepository.findById(user.getCart().getItems().get(0).getProduct().getRestaurantId()).orElseThrow(
+        Cart cart = cartRepository.findById(user.getCartId()).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CART_NOT_FOUND));
+
+        if (!cart.getItems().isEmpty()) {
+            return restaurantRepository.findById(cart.getItems().get(0).getProduct().getRestaurantId()).orElseThrow(
                     () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
         }
 
@@ -90,7 +92,7 @@ public class RestaurantService {
         User owner = getAuthenticatedUser();
         Restaurant restaurant = new Restaurant();
         BeanUtils.copyProperties(restaurantDto, restaurant);
-        restaurant.setOwner(owner);
+        restaurant.setOwnerId(owner.getId());
 
         return restaurantRepository.save(restaurant);
     }
@@ -99,7 +101,7 @@ public class RestaurantService {
         Restaurant old = restaurantRepository.findById(restaurantDto.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        if (!old.getOwner().getId().equals(getAuthenticatedUser().getId()))
+        if (!old.getOwnerId().equals(getAuthenticatedUser().getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_RESTAURANT);
 
         BeanUtils.copyProperties(restaurantDto, old);
@@ -110,7 +112,7 @@ public class RestaurantService {
         Restaurant restaurant = restaurantRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CATEGORY_NOT_FOUND));
 
-        if (!restaurant.getOwner().equals(getAuthenticatedUser()))
+        if (!restaurant.getOwnerId().equals(getAuthenticatedUser().getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_RESTAURANT);
 
         InputStream imageStream = imageFile.getInputStream();
@@ -137,7 +139,7 @@ public class RestaurantService {
         Restaurant restaurant = restaurantRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CATEGORY_NOT_FOUND));
 
-        if (!restaurant.getOwner().equals(getAuthenticatedUser()))
+        if (!restaurant.getOwnerId().equals(getAuthenticatedUser().getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_RESTAURANT);
 
         InputStream imageStream = imageFile.getInputStream();
@@ -164,7 +166,7 @@ public class RestaurantService {
         Restaurant restaurant = restaurantRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        if (!restaurant.getOwner().equals(getAuthenticatedUser()))
+        if (!restaurant.getOwnerId().equals(getAuthenticatedUser().getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_RESTAURANT);
 
         if (restaurant.getLogo() != null && !restaurant.getLogo().isBlank()) {
@@ -180,8 +182,11 @@ public class RestaurantService {
         productRepository.deleteAllByRestaurantId(restaurant.getId());
         advertisementRepository.deleteAllByRestaurantId(restaurant.getId());
 
-        ingredientRepository.deleteAll(restaurant.getIngredients());
-        productSectionRepository.deleteAll(restaurant.getProductSections());
+        List<Ingredient> ingredients = ingredientRepository.findAllByRestaurantId(restaurant.getId());
+        List<ProductSection> productSections = productSectionRepository.findAllByRestaurantId(restaurant.getId());
+
+        ingredientRepository.deleteAll(ingredients);
+        productSectionRepository.deleteAll(productSections);
         deliveryRepository.deleteAll(restaurant.getDeliveries());
 
         restaurantRepository.deleteById(id);
@@ -191,3 +196,4 @@ public class RestaurantService {
         return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 }
+

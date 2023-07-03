@@ -1,5 +1,6 @@
 package ipb.pt.safeeat.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -20,4 +21,6 @@ public class Payment {
     private Integer number;
     private Integer cvv;
     private Boolean isSelected = false;
+    @JsonIgnore
+    private String userId;
 }

@@ -18,6 +18,6 @@ public class RestaurantSection {
     @EqualsAndHashCode.Include
     private String id;
     private String name;
-    @DocumentReference(lazy = true)
+    @DocumentReference
     private List<Restaurant> restaurants;
 }

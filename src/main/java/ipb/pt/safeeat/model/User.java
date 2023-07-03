@@ -1,10 +1,11 @@
 package ipb.pt.safeeat.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.*;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.DocumentReference;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -29,24 +30,10 @@ public class User implements UserDetails {
     private String cellphone;
     @JsonIgnore
     private String role;
-
     @JsonIgnore
-    @DocumentReference(lazy = true)
-    private Cart cart;
+    private String cartId;
     @JsonIgnore
-    @DocumentReference(lazy = true)
-    private List<Restriction> restrictions = new ArrayList<>();
-    @JsonIgnore
-    @DocumentReference(lazy = true)
-    private List<Payment> payments = new ArrayList<>();
-    @JsonIgnore
-    @DocumentReference(lazy = true)
-    private List<Address> addresses = new ArrayList<>();
-
-    @JsonIgnore
-    public Boolean isAdmin() {
-        return role.equals("ADMIN");
-    }
+    private List<String> restrictionIds = new ArrayList<>();
 
     @JsonIgnore
     @Override
@@ -77,5 +64,10 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    @JsonIgnore
+    public Boolean isAdmin() {
+        return role.equals("ADMIN");
     }
 }

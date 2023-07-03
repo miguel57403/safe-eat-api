@@ -36,7 +36,7 @@ public class CartService {
         Cart cart = cartRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CART_NOT_FOUND));
 
-        if (!getAuthenticatedUser().isAdmin() && !getAuthenticatedUser().getCart().equals(cart))
+        if (!getAuthenticatedUser().isAdmin() && !getAuthenticatedUser().getCartId().equals(cart.getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_CART);
 
         for (Item item : cart.getItems()) {
@@ -53,19 +53,26 @@ public class CartService {
         if (!getAuthenticatedUser().isAdmin() && !getAuthenticatedUser().equals(user))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_CART);
 
-        for (Item item : user.getCart().getItems()) {
+        Cart cart = cartRepository.findById(user.getCartId()).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_CART));
+
+        for (Item item : cart.getItems()) {
             restrictionCheckerComponent.checkProduct(item.getProduct());
         }
 
-        return user.getCart();
+        return cart;
     }
 
     public Boolean isEmpty() {
-        return getAuthenticatedUser().getCart().getItems().size() == 0;
+        Cart cart = cartRepository.findById(getAuthenticatedUser().getCartId()).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CART_NOT_FOUND));
+
+        return cart.getItems().size() == 0;
     }
 
     public Cart empty() {
-        Cart cart = getAuthenticatedUser().getCart();
+        Cart cart = cartRepository.findById(getAuthenticatedUser().getCartId()).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CART_NOT_FOUND));
 
         List<Item> items = cart.getItems();
         itemRepository.deleteAll(items);

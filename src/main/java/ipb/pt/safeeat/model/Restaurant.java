@@ -6,7 +6,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,16 +21,7 @@ public class Restaurant {
     private String name;
     private String logo;
     private String cover;
-    @DocumentReference(lazy = true)
     private List<Delivery> deliveries = new ArrayList<>();
-
     @JsonIgnore
-    @DocumentReference(lazy = true)
-    private List<ProductSection> productSections = new ArrayList<>();
-    @JsonIgnore
-    @DocumentReference(lazy = true)
-    private List<Ingredient> ingredients = new ArrayList<>();
-    @JsonIgnore
-    @DocumentReference(lazy = true)
-    private User owner;
+    private String ownerId;
 }

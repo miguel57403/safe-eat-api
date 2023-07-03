@@ -46,7 +46,7 @@ public class OrderService {
 
         User user = getAuthenticatedUser();
 
-        if (!user.isAdmin() && order.getClient().equals(user) && order.getRestaurant().getOwner().equals(user))
+        if (!user.isAdmin() && order.getClient().equals(user) && order.getRestaurant().getOwnerId().equals(user.getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ORDER);
 
         return order;
@@ -66,7 +66,7 @@ public class OrderService {
         Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        if (!getAuthenticatedUser().isAdmin() && !restaurant.getOwner().equals(getAuthenticatedUser()))
+        if (!getAuthenticatedUser().isAdmin() && !restaurant.getOwnerId().equals(getAuthenticatedUser().getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ORDER);
 
         return orderRepository.findAllByRestaurant(restaurant);
@@ -75,7 +75,7 @@ public class OrderService {
     public Order create(OrderDto orderDto) {
         User client = getAuthenticatedUser();
 
-        Cart cart = cartRepository.findById(getAuthenticatedUser().getCart().getId()).orElseThrow(
+        Cart cart = cartRepository.findById(getAuthenticatedUser().getCartId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CART_NOT_FOUND));
 
         List<Item> items = cart.getItems();
@@ -98,10 +98,10 @@ public class OrderService {
         if (!restaurant.getDeliveries().contains(delivery))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Delivery option not available");
 
-        if (!client.getPayments().contains(payment))
+        if (!payment.getUserId().equals(client.getId()))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Payment option not available");
 
-        if (!client.getAddresses().contains(address))
+        if (!address.getUserId().equals(client.getId()))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Address not available");
 
         Order order = new Order();
@@ -140,7 +140,7 @@ public class OrderService {
     public OrderDraftDto getOrderDraft() {
         User client = getAuthenticatedUser();
 
-        Cart cart = cartRepository.findById(getAuthenticatedUser().getCart().getId()).orElseThrow(
+        Cart cart = cartRepository.findById(getAuthenticatedUser().getCartId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CART_NOT_FOUND));
 
         List<Item> items = cart.getItems();
@@ -154,9 +154,12 @@ public class OrderService {
         Double subtotal = cart.getItems().stream().mapToDouble(Item::getSubtotal).sum();
         Integer quantity = cart.getItems().stream().mapToInt(Item::getQuantity).sum();
 
+        List<Address> addresses = addressRepository.findAllByUserId(client.getId());
+        List<Payment> payments = paymentRepository.findAllByUserId(client.getId());
+
         OrderDraftDto orderDraftDto = new OrderDraftDto();
-        orderDraftDto.setAddresses(client.getAddresses());
-        orderDraftDto.setPayments(client.getPayments());
+        orderDraftDto.setAddresses(addresses);
+        orderDraftDto.setPayments(payments);
         orderDraftDto.setDeliveries(restaurant.getDeliveries());
         orderDraftDto.setSubtotal(subtotal);
         orderDraftDto.setQuantity(quantity);
@@ -168,7 +171,7 @@ public class OrderService {
         Order old = orderRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ORDER_NOT_FOUND));
 
-        if (!old.getRestaurant().getOwner().equals(getAuthenticatedUser()))
+        if (!old.getRestaurant().getOwnerId().equals(getAuthenticatedUser().getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ORDER);
 
         old.setStatus(status);
@@ -199,7 +202,8 @@ public class OrderService {
         Order order = orderRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ORDER_NOT_FOUND));
 
-        Feedback feedback = order.getFeedback();
+        Feedback feedback = feedbackRepository.findById(order.getFeedbackId()).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.FEEDBACK_NOT_FOUND));
 
         if (feedback != null) {
             feedbackRepository.delete(feedback);

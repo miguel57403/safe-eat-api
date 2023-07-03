@@ -4,7 +4,9 @@ import ipb.pt.safeeat.component.RestrictionCheckerComponent;
 import ipb.pt.safeeat.constant.ForbiddenConstant;
 import ipb.pt.safeeat.constant.NotFoundConstant;
 import ipb.pt.safeeat.dto.ProductDto;
-import ipb.pt.safeeat.model.*;
+import ipb.pt.safeeat.model.Product;
+import ipb.pt.safeeat.model.Restaurant;
+import ipb.pt.safeeat.model.User;
 import ipb.pt.safeeat.repository.CategoryRepository;
 import ipb.pt.safeeat.repository.IngredientRepository;
 import ipb.pt.safeeat.repository.ProductRepository;
@@ -19,7 +21,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -67,23 +68,20 @@ public class ProductService {
         Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        Category category = categoryRepository.findById(productDto.getCategoryId()).orElseThrow(
+        categoryRepository.findById(productDto.getCategoryId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CATEGORY_NOT_FOUND));
 
-        List<Ingredient> ingredients = new ArrayList<>();
         for (String ingredientId : productDto.getIngredientIds()) {
-            ingredients.add(ingredientRepository.findById(ingredientId).orElseThrow(
-                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.INGREDIENT_NOT_FOUND)));
+            ingredientRepository.findById(ingredientId).orElseThrow(
+                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.INGREDIENT_NOT_FOUND));
         }
 
-        if (!restaurant.getOwner().equals(getAuthenticatedUser()))
+        if (!restaurant.getOwnerId().equals(getAuthenticatedUser().getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_PRODUCT);
 
         Product product = new Product();
         BeanUtils.copyProperties(productDto, product);
         product.setRestaurantId(restaurantId);
-        product.setIngredients(ingredients);
-        product.setCategory(category);
 
         Product created = productRepository.save(product);
 
@@ -98,7 +96,7 @@ public class ProductService {
         Restaurant restaurant = restaurantRepository.findById(old.getRestaurantId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        if (!restaurant.getOwner().equals(getAuthenticatedUser()))
+        if (!restaurant.getOwnerId().equals(getAuthenticatedUser().getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_PRODUCT);
 
         BeanUtils.copyProperties(productDto, old);
@@ -142,7 +140,7 @@ public class ProductService {
         Restaurant restaurant = restaurantRepository.findById(product.getRestaurantId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        if (!restaurant.getOwner().equals(getAuthenticatedUser()))
+        if (!restaurant.getOwnerId().equals(getAuthenticatedUser().getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_PRODUCT);
 
         if (product.getImage() != null && !product.getImage().isBlank()) {

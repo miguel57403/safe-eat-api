@@ -1,6 +1,5 @@
 package ipb.pt.safeeat.repository;
 
-import ipb.pt.safeeat.model.Feedback;
 import ipb.pt.safeeat.model.Order;
 import ipb.pt.safeeat.model.Restaurant;
 import ipb.pt.safeeat.model.User;
@@ -12,7 +11,7 @@ import java.util.Optional;
 
 @Repository
 public interface OrderRepository extends MongoRepository<Order, String> {
-    Optional<Order> findByFeedback(Feedback feedback);
+    Optional<Order> findByFeedbackId(String feedbackId);
 
     List<Order> findAllByClient(User client);
 

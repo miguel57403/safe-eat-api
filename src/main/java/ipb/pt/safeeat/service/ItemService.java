@@ -41,7 +41,11 @@ public class ItemService {
         Item item = itemRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ITEM_NOT_FOUND));
 
-        if (!getAuthenticatedUser().isAdmin() && !getAuthenticatedUser().getCart().getItems().contains(item))
+        User user = getAuthenticatedUser();
+        Cart cart = cartRepository.findById(user.getCartId()).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CART_NOT_FOUND));
+
+        if (!user.isAdmin() && !cart.getItems().contains(item))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ITEM);
 
         restrictionCheckerComponent.checkItem(item);
@@ -52,7 +56,7 @@ public class ItemService {
         Cart cart = cartRepository.findById(cartId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CART_NOT_FOUND));
 
-        if (!getAuthenticatedUser().isAdmin() && !getAuthenticatedUser().getCart().equals(cart))
+        if (!getAuthenticatedUser().isAdmin() && !getAuthenticatedUser().getCartId().equals(cart.getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ITEM);
 
         restrictionCheckerComponent.checkItemList(cart.getItems());
@@ -66,7 +70,7 @@ public class ItemService {
         Restaurant restaurant = restaurantRepository.findById(product.getRestaurantId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        Cart cart = cartRepository.findById(getAuthenticatedUser().getCart().getId()).orElseThrow(
+        Cart cart = cartRepository.findById(getAuthenticatedUser().getCartId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CART_NOT_FOUND));
 
         if (!cart.getItems().isEmpty()) {
@@ -103,7 +107,7 @@ public class ItemService {
         Item old = itemRepository.findById(itemDto.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ITEM_NOT_FOUND));
 
-        Cart cart = cartRepository.findById(getAuthenticatedUser().getCart().getId()).orElseThrow(
+        Cart cart = cartRepository.findById(getAuthenticatedUser().getCartId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CART_NOT_FOUND));
 
         if (!cart.getItems().contains(old))
@@ -124,7 +128,7 @@ public class ItemService {
         Item item = itemRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ITEM_NOT_FOUND));
 
-        Cart cart = cartRepository.findById(getAuthenticatedUser().getCart().getId()).orElseThrow(
+        Cart cart = cartRepository.findById(getAuthenticatedUser().getCartId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CART_NOT_FOUND));
 
         if (!cart.getItems().contains(item))

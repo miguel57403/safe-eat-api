@@ -20,9 +20,8 @@ import java.util.List;
 public class PaymentService {
     @Autowired
     private PaymentRepository paymentRepository;
-
     @Autowired
-    UserRepository userRepository;
+    private UserRepository userRepository;
 
     public List<Payment> findAll() {
         return paymentRepository.findAll();
@@ -32,7 +31,7 @@ public class PaymentService {
         Payment payment = paymentRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.PAYMENT_NOT_FOUND));
 
-        if (!getAuthenticatedUser().isAdmin() && !getAuthenticatedUser().getPayments().contains(payment))
+        if (!getAuthenticatedUser().isAdmin() && !payment.getUserId().equals(getAuthenticatedUser().getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_PAYMENT);
 
         return payment;
@@ -45,7 +44,7 @@ public class PaymentService {
         if (!getAuthenticatedUser().isAdmin() && !getAuthenticatedUser().equals(user))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_PAYMENT);
 
-        return user.getPayments();
+        return paymentRepository.findAllByUserId(user.getId());
     }
 
     public Payment create(PaymentDto paymentDto) {
@@ -55,7 +54,7 @@ public class PaymentService {
         BeanUtils.copyProperties(paymentDto, payment);
         Payment created = paymentRepository.save(payment);
 
-        user.getPayments().add(created);
+        payment.setUserId(user.getId());
         userRepository.save(user);
 
         return created;
@@ -65,7 +64,7 @@ public class PaymentService {
         Payment old = paymentRepository.findById(paymentDto.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.PAYMENT_NOT_FOUND));
 
-        if (!getAuthenticatedUser().getPayments().contains(old))
+        if (!old.getUserId().equals(getAuthenticatedUser().getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_PAYMENT);
 
         BeanUtils.copyProperties(paymentDto, old);
@@ -73,9 +72,9 @@ public class PaymentService {
     }
 
     public Payment select(String id) {
-        List<Payment> addresses = getAuthenticatedUser().getPayments();
-        addresses.forEach(address -> address.setIsSelected(address.getId().equals(id)));
-        List<Payment> saved = paymentRepository.saveAll(addresses);
+        List<Payment> payment = paymentRepository.findAllByUserId(getAuthenticatedUser().getId());
+        payment.forEach(address -> address.setIsSelected(address.getId().equals(id)));
+        List<Payment> saved = paymentRepository.saveAll(payment);
 
         return saved.stream()
                 .filter(address -> address.getId().equals(id))
@@ -89,11 +88,8 @@ public class PaymentService {
 
         User user = getAuthenticatedUser();
 
-        if (!user.getPayments().contains(payment))
+        if (!payment.getUserId().equals(user.getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_PAYMENT);
-
-        user.getPayments().remove(payment);
-        userRepository.save(user);
 
         paymentRepository.deleteById(id);
     }

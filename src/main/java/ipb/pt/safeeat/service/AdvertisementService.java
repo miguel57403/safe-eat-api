@@ -40,7 +40,7 @@ public class AdvertisementService {
         Restaurant restaurant = restaurantRepository.findById(advertisement.getRestaurantId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        if (!getAuthenticatedUser().isAdmin() && !restaurant.getOwner().equals(getAuthenticatedUser()))
+        if (!getAuthenticatedUser().isAdmin() && !restaurant.getOwnerId().equals(getAuthenticatedUser().getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ADVERTISEMENT);
 
         return advertisement;
@@ -50,7 +50,7 @@ public class AdvertisementService {
         Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        if (!getAuthenticatedUser().isAdmin() && !restaurant.getOwner().equals(getAuthenticatedUser()))
+        if (!getAuthenticatedUser().isAdmin() && !restaurant.getOwnerId().equals(getAuthenticatedUser().getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ADVERTISEMENT);
 
         return advertisementRepository.findAllByRestaurantId(restaurant.getId());
@@ -60,7 +60,7 @@ public class AdvertisementService {
         Restaurant restaurant = restaurantRepository.findById(advertisementDto.getRestaurantId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        if (!restaurant.getOwner().equals(getAuthenticatedUser()))
+        if (!restaurant.getOwnerId().equals(getAuthenticatedUser().getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ADVERTISEMENT);
 
         Advertisement advertisement = new Advertisement();
@@ -76,7 +76,7 @@ public class AdvertisementService {
         Restaurant restaurant = restaurantRepository.findById(old.getRestaurantId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        if (!restaurant.getOwner().equals(getAuthenticatedUser()))
+        if (!restaurant.getOwnerId().equals(getAuthenticatedUser().getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ADVERTISEMENT);
 
         if (!advertisementRepository.findAllByRestaurantId(restaurant.getId()).contains(old))
@@ -119,7 +119,7 @@ public class AdvertisementService {
         Restaurant restaurant = restaurantRepository.findById(advertisement.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        if (!restaurant.getOwner().equals(getAuthenticatedUser()))
+        if (!restaurant.getOwnerId().equals(getAuthenticatedUser().getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ADVERTISEMENT);
 
         if (!advertisementRepository.findAllByRestaurantId(restaurant.getId()).contains(advertisement))

@@ -6,7 +6,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
 import java.util.List;
 
@@ -21,8 +20,8 @@ public class Ingredient {
     private String name;
     private String description;
     private Boolean isRestricted;
-    @DocumentReference(lazy = true)
-    private List<Restriction> restrictions;
+    @JsonIgnore
+    private List<String> restrictionIds;
     @JsonIgnore
     private String restaurantId;
 }

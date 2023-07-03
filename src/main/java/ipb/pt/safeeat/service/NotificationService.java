@@ -35,7 +35,7 @@ public class NotificationService {
 
         User user = getAuthenticatedUser();
 
-        if (!user.isAdmin() && notification.getClient().equals(user) && notification.getRestaurant().getOwner().equals(user))
+        if (!user.isAdmin() && notification.getClient().equals(user) && notification.getRestaurant().getOwnerId().equals(user.getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_NOTIFICATION);
 
         return notification;
@@ -55,7 +55,7 @@ public class NotificationService {
         Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        if (!getAuthenticatedUser().isAdmin() && !getAuthenticatedUser().equals(restaurant.getOwner()))
+        if (!getAuthenticatedUser().isAdmin() && !getAuthenticatedUser().getId().equals(restaurant.getOwnerId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_NOTIFICATION);
 
         return notificationRepository.findAllByRestaurantAndReceiver(restaurant, "RESTAURANT");
@@ -67,7 +67,7 @@ public class NotificationService {
 
         User user = getAuthenticatedUser();
 
-        if (!notification.getRestaurant().getOwner().equals(user) && !notification.getClient().equals(user))
+        if (!notification.getRestaurant().getOwnerId().equals(user.getId()) && !notification.getClient().equals(user))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_NOTIFICATION);
 
         notification.setIsViewed(true);
@@ -82,7 +82,7 @@ public class NotificationService {
 
         User user = getAuthenticatedUser();
 
-        if (!notification.getRestaurant().getOwner().equals(user) && !notification.getClient().equals(user))
+        if (!notification.getRestaurant().getOwnerId().equals(user.getId()) && !notification.getClient().equals(user))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_NOTIFICATION);
 
         notificationRepository.deleteById(id);

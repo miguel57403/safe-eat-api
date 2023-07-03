@@ -5,7 +5,6 @@ import ipb.pt.safeeat.constant.NotFoundConstant;
 import ipb.pt.safeeat.dto.UserDto;
 import ipb.pt.safeeat.dto.UserUpdateDto;
 import ipb.pt.safeeat.model.Cart;
-import ipb.pt.safeeat.model.Restriction;
 import ipb.pt.safeeat.model.User;
 import ipb.pt.safeeat.repository.*;
 import org.springframework.beans.BeanUtils;
@@ -19,7 +18,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -60,31 +58,23 @@ public class UserService {
         if (userRepository.findByEmail(userDto.getEmail()).isPresent())
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email already in use");
 
-        List<Restriction> restrictions = getRestrictions(userDto.getRestrictionIds());
+        if (!userDto.getRestrictionIds().isEmpty()) {
+            for (String restrictionId : userDto.getRestrictionIds()) {
+                restrictionRepository.findById(restrictionId).orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTRICTION_NOT_FOUND));
+            }
+        }
 
         User user = new User();
         BeanUtils.copyProperties(userDto, user);
 
         user.setRole("USER");
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setRestrictions(restrictions);
 
         Cart cart = cartRepository.save(new Cart());
-        user.setCart(cart);
+        user.setCartId(cart.getId());
 
         return userRepository.save(user);
-    }
-
-    private List<Restriction> getRestrictions(List<String> restrictionIds) {
-        List<Restriction> restrictions = new ArrayList<>();
-        if (!restrictionIds.isEmpty()) {
-            for (String restrictionId : restrictionIds) {
-                restrictions.add(restrictionRepository.findById(restrictionId).orElseThrow(
-                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTRICTION_NOT_FOUND)));
-            }
-        }
-
-        return restrictions;
     }
 
     public User update(UserUpdateDto userDto) {
@@ -107,11 +97,14 @@ public class UserService {
             old.setEmail(email);
         });
 
-        Optional.ofNullable(userDto.getRestrictionIds()).ifPresent(restrictionsIds -> {
-            List<Restriction> restrictions = getRestrictions(restrictionsIds);
-            old.setRestrictions(restrictions);
-        });
+        if (!userDto.getRestrictionIds().isEmpty()) {
+            for (String restrictionId : userDto.getRestrictionIds()) {
+                restrictionRepository.findById(restrictionId).orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTRICTION_NOT_FOUND));
+            }
+        }
 
+        old.setRestrictionIds(old.getRestrictionIds());
         return userRepository.save(old);
     }
 
@@ -145,7 +138,7 @@ public class UserService {
         if (!getAuthenticatedUser().isAdmin() && !getAuthenticatedUser().equals(user))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_USER);
 
-        if (!restaurantRepository.findAllByOwner(user).isEmpty())
+        if (!restaurantRepository.findAllByOwnerId(user.getId()).isEmpty())
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot delete user with restaurants");
 
         if (user.getImage() != null && !user.getImage().isBlank()) {
@@ -153,9 +146,9 @@ public class UserService {
             azureBlobService.deleteBlob(user.getImage().replace(containerUrl, ""));
         }
 
-        paymentRepository.deleteAll(user.getPayments());
-        addressRepository.deleteAll(user.getAddresses());
-        cartRepository.delete(user.getCart());
+        paymentRepository.deleteAllByUserId(user.getId());
+        addressRepository.deleteAllByUserId(user.getId());
+        cartRepository.deleteById(user.getCartId());
 
         userRepository.deleteById(id);
     }

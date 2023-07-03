@@ -54,7 +54,7 @@ public class ProductSectionService {
         Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        List<ProductSection> productSections = restaurant.getProductSections();
+        List<ProductSection> productSections = productSectionRepository.findAllByRestaurantId(restaurant.getId());
 
         for (ProductSection productSection : productSections) {
             restrictionCheckerComponent.checkProductList(productSection.getProducts());
@@ -67,7 +67,7 @@ public class ProductSectionService {
         Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        if (!restaurant.getOwner().getId().equals(getAuthenticatedUser().getId()))
+        if (!restaurant.getOwnerId().equals(getAuthenticatedUser().getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_RESTAURANT);
 
         List<Product> products = new ArrayList<>();
@@ -85,10 +85,8 @@ public class ProductSectionService {
         BeanUtils.copyProperties(productSectionDto, productSection);
 
         productSection.setProducts(products);
+        productSection.setRestaurantId(restaurantId);
         ProductSection created = productSectionRepository.save(productSection);
-
-        restaurant.getProductSections().add(created);
-        restaurantRepository.save(restaurant);
 
         restrictionCheckerComponent.checkProductList(created.getProducts());
         return created;
@@ -98,13 +96,13 @@ public class ProductSectionService {
         ProductSection old = productSectionRepository.findById(productSectionDto.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.PRODUCT_SECTION_NOT_FOUND));
 
-        Restaurant restaurant = restaurantRepository.findByProductSections(old).orElseThrow(
+        Restaurant restaurant = restaurantRepository.findById(old.getRestaurantId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        if (!restaurant.getOwner().equals(getAuthenticatedUser()))
+        if (!restaurant.getOwnerId().equals(getAuthenticatedUser().getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_PRODUCT_SECTION);
 
-        if (!restaurant.getProductSections().contains(old))
+        if (!restaurant.getId().equals(old.getRestaurantId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_PRODUCT_SECTION);
 
         BeanUtils.copyProperties(productSectionDto, old);
@@ -118,14 +116,11 @@ public class ProductSectionService {
         ProductSection productSection = productSectionRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.PRODUCT_SECTION_NOT_FOUND));
 
-        Restaurant restaurant = restaurantRepository.findByProductSections(productSection).orElseThrow(
+        Restaurant restaurant = restaurantRepository.findById(productSection.getRestaurantId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        if (!restaurant.getOwner().equals(getAuthenticatedUser()))
+        if (!restaurant.getOwnerId().equals(getAuthenticatedUser().getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_PRODUCT_SECTION);
-
-        restaurant.getProductSections().remove(productSection);
-        restaurantRepository.save(restaurant);
 
         productSectionRepository.deleteById(id);
     }

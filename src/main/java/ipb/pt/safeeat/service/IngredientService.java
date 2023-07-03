@@ -16,7 +16,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -52,10 +51,10 @@ public class IngredientService {
         Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        if (!getAuthenticatedUser().isAdmin() && !restaurant.getOwner().equals(getAuthenticatedUser()))
+        if (!getAuthenticatedUser().isAdmin() && !restaurant.getOwnerId().equals(getAuthenticatedUser().getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_INGREDIENT);
 
-        List<Ingredient> ingredients = restaurant.getIngredients();
+        List<Ingredient> ingredients = ingredientRepository.findAllByRestaurantId(restaurantId);
         restrictionCheckerComponent.checkIngredientList(ingredients);
 
         return ingredients;
@@ -65,7 +64,7 @@ public class IngredientService {
         Product product = productRepository.findById(productId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.PRODUCT_NOT_FOUND));
 
-        List<Ingredient> ingredients = product.getIngredients();
+        List<Ingredient> ingredients = ingredientRepository.findAllById(product.getIngredientIds());
         restrictionCheckerComponent.checkIngredientList(ingredients);
 
         return ingredients;
@@ -75,24 +74,21 @@ public class IngredientService {
         Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        if (!restaurant.getOwner().equals(getAuthenticatedUser()))
+        if (!restaurant.getOwnerId().equals(getAuthenticatedUser().getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_INGREDIENT);
 
-        List<Restriction> restrictions = new ArrayList<>();
         if (ingredientDto.getRestrictionIds() != null && !ingredientDto.getRestrictionIds().isEmpty()) {
             for (String restrictionId : ingredientDto.getRestrictionIds()) {
-                restrictions.add(restrictionRepository.findById(restrictionId).orElseThrow(
-                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTRICTION_NOT_FOUND)));
+                restrictionRepository.findById(restrictionId).orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTRICTION_NOT_FOUND));
             }
         }
 
         Ingredient ingredient = new Ingredient();
         BeanUtils.copyProperties(ingredientDto, ingredient);
-        ingredient.setRestrictions(restrictions);
 
         Ingredient created = ingredientRepository.save(ingredient);
 
-        restaurant.getIngredients().add(created);
         restaurantRepository.save(restaurant);
         restrictionCheckerComponent.checkIngredient(ingredient);
 
@@ -103,25 +99,23 @@ public class IngredientService {
         Ingredient old = ingredientRepository.findById(ingredientDto.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.INGREDIENT_NOT_FOUND));
 
-        Restaurant restaurant = restaurantRepository.findByIngredients(old).orElseThrow(
+        Restaurant restaurant = restaurantRepository.findById(old.getRestaurantId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        List<Restriction> restrictions = new ArrayList<>();
         if (ingredientDto.getRestrictionIds() != null && !ingredientDto.getRestrictionIds().isEmpty()) {
             for (String restrictionId : ingredientDto.getRestrictionIds()) {
-                restrictions.add(restrictionRepository.findById(restrictionId).orElseThrow(
-                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTRICTION_NOT_FOUND)));
+                restrictionRepository.findById(restrictionId).orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTRICTION_NOT_FOUND));
             }
         }
 
-        if (!restaurant.getOwner().equals(getAuthenticatedUser()))
+        if (!restaurant.getOwnerId().equals(getAuthenticatedUser().getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_INGREDIENT);
 
-        if (!restaurant.getIngredients().contains(old))
+        if (!restaurant.getId().equals(old.getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_INGREDIENT);
 
         BeanUtils.copyProperties(ingredientDto, old);
-        old.setRestrictions(restrictions);
         Ingredient updated = ingredientRepository.save(old);
         restrictionCheckerComponent.checkIngredient(updated);
 
@@ -132,23 +126,20 @@ public class IngredientService {
         Ingredient ingredient = ingredientRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.INGREDIENT_NOT_FOUND));
 
-        Restaurant restaurant = restaurantRepository.findByIngredients(ingredient).orElseThrow(
+        Restaurant restaurant = restaurantRepository.findById(ingredient.getRestaurantId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        if (!restaurant.getOwner().equals(getAuthenticatedUser()))
+        if (!restaurant.getOwnerId().equals(getAuthenticatedUser().getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_INGREDIENT);
 
-        if (!restaurant.getIngredients().contains(ingredient))
+        if (!restaurant.getId().equals(ingredient.getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_INGREDIENT);
-
-        restaurant.getIngredients().remove(ingredient);
-        restaurantRepository.save(restaurant);
 
         List<Product> products = productRepository.findAllByRestaurantId(restaurant.getId());
 
         for (Product product : products) {
-            if (product.getIngredients().contains(ingredient)) {
-                product.getIngredients().remove(ingredient);
+            if (product.getIngredientIds().contains(ingredient.getId())) {
+                product.getIngredientIds().remove(ingredient.getId());
                 productRepository.save(product);
             }
         }

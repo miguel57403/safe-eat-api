@@ -29,10 +29,9 @@ public class Order {
     private Payment payment;
     private Delivery delivery;
     private List<Item> items;
+    private String feedbackId;
     @DocumentReference
     private Restaurant restaurant;
-    @DocumentReference
-    private Feedback feedback;
     @DocumentReference
     private User client;
 }

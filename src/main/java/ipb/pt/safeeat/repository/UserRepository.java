@@ -1,6 +1,5 @@
 package ipb.pt.safeeat.repository;
 
-import ipb.pt.safeeat.model.Restriction;
 import ipb.pt.safeeat.model.User;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
@@ -12,5 +11,5 @@ import java.util.Optional;
 public interface UserRepository extends MongoRepository<User, String> {
     Optional<User> findByEmail(String email);
 
-    List<User> findByRestrictions(Restriction restriction);
+    List<User> findByRestrictionIds(String restrictionId);
 }

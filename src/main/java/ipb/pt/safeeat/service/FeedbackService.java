@@ -37,12 +37,12 @@ public class FeedbackService {
         Feedback feedback = feedbackRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.FEEDBACK_NOT_FOUND));
 
-        Order order = orderRepository.findByFeedback(feedback).orElseThrow(
+        Order order = orderRepository.findByFeedbackId(feedback.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ORDER_NOT_FOUND));
 
         User user = getAuthenticatedUser();
 
-        if (!user.isAdmin() && !order.getRestaurant().getOwner().equals(user) && !order.getClient().equals(user))
+        if (!user.isAdmin() && !order.getRestaurant().getOwnerId().equals(user.getId()) && !order.getClient().equals(user))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_FEEDBACK);
 
         return feedback;
@@ -54,10 +54,11 @@ public class FeedbackService {
 
         User user = getAuthenticatedUser();
 
-        if (!user.isAdmin() && !order.getRestaurant().getOwner().equals(user) && !order.getClient().equals(user))
+        if (!user.isAdmin() && !order.getRestaurant().getOwnerId().equals(user.getId()) && !order.getClient().equals(user))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_FEEDBACK);
 
-        return order.getFeedback();
+        return feedbackRepository.findById(order.getId()).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.FEEDBACK_NOT_FOUND));
     }
 
     public Feedback create(FeedbackDto feedbackDto, String orderId) {
@@ -72,7 +73,7 @@ public class FeedbackService {
 
         Feedback created = feedbackRepository.save(feedback);
 
-        order.setFeedback(created);
+        order.setFeedbackId(created.getId());
         Order updated = orderRepository.save(order);
 
         Notification notification = new Notification();
@@ -92,7 +93,7 @@ public class FeedbackService {
         Feedback old = feedbackRepository.findById(feedbackDto.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.FEEDBACK_NOT_FOUND));
 
-        Order order = orderRepository.findByFeedback(old).orElseThrow(
+        Order order = orderRepository.findByFeedbackId(old.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ORDER_NOT_FOUND));
 
         if (!order.getClient().equals(getAuthenticatedUser()))
@@ -106,13 +107,13 @@ public class FeedbackService {
         Feedback feedback = feedbackRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.FEEDBACK_NOT_FOUND));
 
-        Order order = orderRepository.findByFeedback(feedback).orElseThrow(
+        Order order = orderRepository.findByFeedbackId(feedback.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ORDER_NOT_FOUND));
 
         if (!order.getClient().equals(getAuthenticatedUser()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_FEEDBACK);
 
-        order.setFeedback(null);
+        order.setFeedbackId(null);
         orderRepository.save(order);
 
         feedbackRepository.deleteById(id);

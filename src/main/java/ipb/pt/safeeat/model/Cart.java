@@ -5,7 +5,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +19,6 @@ public class Cart {
     private String id;
     private Integer quantity = 0;
     private Double subtotal = 0.0;
-    @DocumentReference(lazy = true)
+    // TODO: remove items persistence
     private List<Item> items = new ArrayList<>();
 }

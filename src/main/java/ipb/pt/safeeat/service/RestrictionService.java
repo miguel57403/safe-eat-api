@@ -53,7 +53,7 @@ public class RestrictionService {
         if (!getAuthenticatedUser().isAdmin() && !getAuthenticatedUser().equals(user))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_RESTRICTION);
 
-        List<Restriction> restrictions = user.getRestrictions();
+        List<Restriction> restrictions = restrictionRepository.findAllById(user.getRestrictionIds());
         restrictionCheckerComponent.checkRestrictionList(restrictions);
         return restrictions;
     }
@@ -82,16 +82,16 @@ public class RestrictionService {
         Restriction restriction = restrictionRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        List<User> users = userRepository.findByRestrictions(restriction);
+        List<User> users = userRepository.findByRestrictionIds(restriction.getId());
 
         for (User user : users) {
-            user.getRestrictions().remove(restriction);
+            user.getRestrictionIds().remove(restriction.getId());
             userRepository.save(user);
         }
 
-        List<Ingredient> ingredients = ingredientRepository.findByRestrictions(restriction);
+        List<Ingredient> ingredients = ingredientRepository.findAllByRestrictionIds(restriction.getId());
         for (Ingredient ingredient : ingredients) {
-            ingredient.getRestrictions().remove(restriction);
+            ingredient.getRestrictionIds().remove(restriction.getId());
             ingredientRepository.save(ingredient);
         }
 

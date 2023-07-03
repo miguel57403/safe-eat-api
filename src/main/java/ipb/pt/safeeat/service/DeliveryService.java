@@ -44,7 +44,7 @@ public class DeliveryService {
         Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        if (!restaurant.getOwner().equals(getAuthenticatedUser()))
+        if (!restaurant.getOwnerId().equals(getAuthenticatedUser().getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_DELIVERY);
 
         Delivery delivery = new Delivery();
@@ -61,10 +61,10 @@ public class DeliveryService {
         Delivery old = deliveryRepository.findById(deliveryDto.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.DELIVERY_NOT_FOUND));
 
-        Restaurant restaurant = restaurantRepository.findByDeliveries(old).orElseThrow(
+        Restaurant restaurant = restaurantRepository.findAllByDeliveries(old).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        if (!restaurant.getOwner().equals(getAuthenticatedUser()))
+        if (!restaurant.getOwnerId().equals(getAuthenticatedUser().getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_DELIVERY);
 
         if (!restaurant.getDeliveries().contains(old))
@@ -78,10 +78,10 @@ public class DeliveryService {
         Delivery delivery = deliveryRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.DELIVERY_NOT_FOUND));
 
-        Restaurant restaurant = restaurantRepository.findByDeliveries(delivery).orElseThrow(
+        Restaurant restaurant = restaurantRepository.findAllByDeliveries(delivery).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        if (!restaurant.getOwner().equals(getAuthenticatedUser()))
+        if (!restaurant.getOwnerId().equals(getAuthenticatedUser().getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_DELIVERY);
 
         if (!restaurant.getDeliveries().contains(delivery))
