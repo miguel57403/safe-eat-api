@@ -13,8 +13,8 @@ public class DeliveryDto {
     private String name;
     @NotNull(message = "Invalid price")
     private Double price;
-    @NotEmpty(message = "Invalid startTime")
-    private String startTime;
-    @NotEmpty(message = "Invalid endTime")
-    private String endTime;
+    @NotEmpty(message = "Invalid minimum time")
+    private String minimumTime;
+    @NotEmpty(message = "Invalid maximum time")
+    private String maximumTime;
 }

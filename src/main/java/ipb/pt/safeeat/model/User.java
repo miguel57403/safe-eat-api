@@ -30,7 +30,6 @@ public class User implements UserDetails {
     private String cellphone;
     @JsonIgnore
     private String role;
-    @JsonIgnore
     private String cartId;
     @JsonIgnore
     private List<String> restrictionIds = new ArrayList<>();

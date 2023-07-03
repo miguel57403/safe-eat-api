@@ -16,6 +16,8 @@ public class  Delivery {
     private String id;
     private String name;
     private Double price;
-    private String startTime;
-    private String endTime;
+    private String minimumTime;
+    private String maximumTime;
+    // Computado
+    private Boolean isSelected;
 }

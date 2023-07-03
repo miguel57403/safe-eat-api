@@ -19,6 +19,5 @@ public class Cart {
     private String id;
     private Integer quantity = 0;
     private Double subtotal = 0.0;
-    // TODO: remove items persistence
     private List<Item> items = new ArrayList<>();
 }
