@@ -31,6 +31,11 @@ public class CartController {
         return ResponseEntity.ok(cartService.findByUser(userId));
     }
 
+    @GetMapping("/user/me")
+    public ResponseEntity<Object> findMe() {
+        return ResponseEntity.ok(cartService.findMe());
+    }
+
     @GetMapping("/isEmpty")
     public ResponseEntity<Object> isEmpty() {
         return ResponseEntity.ok(cartService.isEmpty());

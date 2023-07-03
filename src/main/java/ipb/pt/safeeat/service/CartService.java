@@ -63,6 +63,10 @@ public class CartService {
         return cart;
     }
 
+    public Cart findMe() {
+        return findByUser(getAuthenticatedUser().getId());
+    }
+
     public Boolean isEmpty() {
         Cart cart = cartRepository.findById(getAuthenticatedUser().getCartId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CART_NOT_FOUND));
