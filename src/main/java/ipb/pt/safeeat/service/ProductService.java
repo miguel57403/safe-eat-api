@@ -4,13 +4,11 @@ import ipb.pt.safeeat.component.RestrictionCheckerComponent;
 import ipb.pt.safeeat.constant.ForbiddenConstant;
 import ipb.pt.safeeat.constant.NotFoundConstant;
 import ipb.pt.safeeat.dto.ProductDto;
+import ipb.pt.safeeat.model.Item;
 import ipb.pt.safeeat.model.Product;
 import ipb.pt.safeeat.model.Restaurant;
 import ipb.pt.safeeat.model.User;
-import ipb.pt.safeeat.repository.CategoryRepository;
-import ipb.pt.safeeat.repository.IngredientRepository;
-import ipb.pt.safeeat.repository.ProductRepository;
-import ipb.pt.safeeat.repository.RestaurantRepository;
+import ipb.pt.safeeat.repository.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -37,6 +35,8 @@ public class ProductService {
     private RestrictionCheckerComponent restrictionCheckerComponent;
     @Autowired
     private AzureBlobService azureBlobService;
+    @Autowired
+    private ItemRepository itemRepository;
 
     public List<Product> findAll() {
         List<Product> products = productRepository.findAll();
@@ -140,7 +140,10 @@ public class ProductService {
         Restaurant restaurant = restaurantRepository.findById(product.getRestaurantId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-//        List
+        List<Item> items = itemRepository.findAllByProduct(product);
+
+        if(!items.isEmpty())
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ("The product cannot be deleted while someone is buying it"));
 
         if (!restaurant.getOwnerId().equals(getAuthenticatedUser().getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_PRODUCT);
