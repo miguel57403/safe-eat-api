@@ -42,7 +42,7 @@ public class RestaurantController {
 
     @GetMapping("/cart")
     public ResponseEntity<Object> findByCart() {
-        return ResponseEntity.ok(restaurantService.findByCart());
+        return ResponseEntity.ok().body(restaurantService.findByCart());
     }
 
     @GetMapping("/name/{name}")

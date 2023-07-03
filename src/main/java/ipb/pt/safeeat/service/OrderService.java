@@ -163,7 +163,7 @@ public class OrderService {
         orderDraftDto.setDeliveries(restaurant.getDeliveries());
         orderDraftDto.setSubtotal(subtotal);
         orderDraftDto.setQuantity(quantity);
-
+        orderDraftDto.setItems(items);
         return orderDraftDto;
     }
 

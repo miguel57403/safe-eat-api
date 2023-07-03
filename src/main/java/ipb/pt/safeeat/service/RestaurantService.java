@@ -110,7 +110,7 @@ public class RestaurantService {
 
     public Restaurant updateLogo(String id, MultipartFile imageFile) throws IOException {
         Restaurant restaurant = restaurantRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CATEGORY_NOT_FOUND));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
         if (!restaurant.getOwnerId().equals(getAuthenticatedUser().getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_RESTAURANT);
