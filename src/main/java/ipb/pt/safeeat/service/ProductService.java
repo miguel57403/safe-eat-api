@@ -51,25 +51,14 @@ public class ProductService {
         return product;
     }
 
-    public List<Product> findAllByRestaurant(String id) {
-        Restaurant restaurant = restaurantRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
-
-        restrictionCheckerComponent.checkProductList(restaurant.getProducts());
-        return restaurant.getProducts();
+    public List<Product> findAllByRestaurant(String restaurantId) {
+        List<Product> products = productRepository.findAllByRestaurantId(restaurantId);
+        restrictionCheckerComponent.checkProductList(products);
+        return products;
     }
 
-    public List<Product> findAllByRestaurantAndName(String id, String name) {
-        Restaurant restaurant = restaurantRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
-
-        List<Product> products = new ArrayList<>();
-        for (Product product : restaurant.getProducts()) {
-            if (product.getName().toLowerCase().contains(name.toLowerCase())) {
-                products.add(product);
-            }
-        }
-
+    public List<Product> findAllByRestaurantAndName(String restaurantId, String name) {
+        List<Product> products = productRepository.findAllByRestaurantIdAndName(restaurantId, name);
         restrictionCheckerComponent.checkProductList(products);
         return products;
     }
@@ -87,21 +76,16 @@ public class ProductService {
                     () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.INGREDIENT_NOT_FOUND)));
         }
 
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        if (!restaurant.getOwner().equals(user))
+        if (!restaurant.getOwner().equals(getAuthenticatedUser()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_PRODUCT);
 
         Product product = new Product();
         BeanUtils.copyProperties(productDto, product);
-
+        product.setRestaurantId(restaurantId);
         product.setIngredients(ingredients);
         product.setCategory(category);
 
         Product created = productRepository.save(product);
-
-        restaurant.getProducts().add(created);
-        restaurantRepository.save(restaurant);
 
         restrictionCheckerComponent.checkProduct(created);
         return created;
@@ -111,12 +95,10 @@ public class ProductService {
         Product old = productRepository.findById(productDto.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.PRODUCT_NOT_FOUND));
 
-        Restaurant restaurant = restaurantRepository.findByProducts(old).orElseThrow(
+        Restaurant restaurant = restaurantRepository.findById(old.getRestaurantId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        if (!restaurant.getOwner().equals(user))
+        if (!restaurant.getOwner().equals(getAuthenticatedUser()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_PRODUCT);
 
         BeanUtils.copyProperties(productDto, old);
@@ -157,12 +139,10 @@ public class ProductService {
         Product product = productRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.PRODUCT_NOT_FOUND));
 
-        Restaurant restaurant = restaurantRepository.findByProducts(product).orElseThrow(
+        Restaurant restaurant = restaurantRepository.findById(product.getRestaurantId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        if (!restaurant.getOwner().equals(user))
+        if (!restaurant.getOwner().equals(getAuthenticatedUser()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_PRODUCT);
 
         if (product.getImage() != null && !product.getImage().isBlank()) {
@@ -171,9 +151,10 @@ public class ProductService {
             azureBlobService.deleteBlob(name);
         }
 
-        restaurant.getProducts().remove(product);
-        restaurantRepository.save(restaurant);
-
         productRepository.deleteById(id);
+    }
+
+    private User getAuthenticatedUser() {
+        return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 }

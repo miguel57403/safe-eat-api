@@ -27,19 +27,10 @@ public class Restaurant {
 
     @JsonIgnore
     @DocumentReference(lazy = true)
-    private List<Product> products = new ArrayList<>();
-    @JsonIgnore
-    @DocumentReference(lazy = true)
     private List<ProductSection> productSections = new ArrayList<>();
     @JsonIgnore
     @DocumentReference(lazy = true)
-    private List<Advertisement> advertisements = new ArrayList<>();
-    @JsonIgnore
-    @DocumentReference(lazy = true)
     private List<Ingredient> ingredients = new ArrayList<>();
-    @JsonIgnore
-    @DocumentReference(lazy = true)
-    private List<Order> orders = new ArrayList<>();
     @JsonIgnore
     @DocumentReference(lazy = true)
     private User owner;

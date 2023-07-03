@@ -10,6 +10,4 @@ public class RestaurantDto {
     private String id;
     @NotEmpty(message = "Invalid name")
     private String name;
-    @NotEmpty(message = "Invalid ownerId")
-    private String ownerId;
 }

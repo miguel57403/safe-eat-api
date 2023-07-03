@@ -17,6 +17,6 @@ public class Item {
     private String id;
     private Integer quantity;
     private Double subtotal;
-    @DocumentReference(lazy = true)
+    @DocumentReference
     private Product product;
 }

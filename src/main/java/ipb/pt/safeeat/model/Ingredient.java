@@ -1,5 +1,6 @@
 package ipb.pt.safeeat.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -22,4 +23,6 @@ public class Ingredient {
     private Boolean isRestricted;
     @DocumentReference(lazy = true)
     private List<Restriction> restrictions;
+    @JsonIgnore
+    private String restaurantId;
 }

@@ -1,5 +1,6 @@
 package ipb.pt.safeeat.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -20,4 +21,6 @@ public class ProductSection {
     private String name;
     @DocumentReference(lazy = true)
     private List<Product> products;
+    @JsonIgnore
+    private String restaurantId;
 }

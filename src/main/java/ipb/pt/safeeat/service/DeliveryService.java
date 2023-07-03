@@ -44,9 +44,7 @@ public class DeliveryService {
         Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        if (!restaurant.getOwner().equals(user))
+        if (!restaurant.getOwner().equals(getAuthenticatedUser()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_DELIVERY);
 
         Delivery delivery = new Delivery();
@@ -63,11 +61,10 @@ public class DeliveryService {
         Delivery old = deliveryRepository.findById(deliveryDto.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.DELIVERY_NOT_FOUND));
 
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Restaurant restaurant = restaurantRepository.findByDeliveries(old).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        if (!restaurant.getOwner().equals(user))
+        if (!restaurant.getOwner().equals(getAuthenticatedUser()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_DELIVERY);
 
         if (!restaurant.getDeliveries().contains(old))
@@ -84,9 +81,7 @@ public class DeliveryService {
         Restaurant restaurant = restaurantRepository.findByDeliveries(delivery).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        if (!restaurant.getOwner().equals(user))
+        if (!restaurant.getOwner().equals(getAuthenticatedUser()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_DELIVERY);
 
         if (!restaurant.getDeliveries().contains(delivery))
@@ -96,5 +91,9 @@ public class DeliveryService {
         restaurantRepository.save(restaurant);
 
         deliveryRepository.deleteById(id);
+    }
+
+    private User getAuthenticatedUser() {
+        return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 }

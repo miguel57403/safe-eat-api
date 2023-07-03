@@ -33,9 +33,9 @@ public class NotificationService {
         Notification notification = notificationRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.NOTIFICATION_NOT_FOUND));
 
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = getAuthenticatedUser();
 
-        if (!user.isAdmin() && !user.getNotifications().contains(notification))
+        if (!user.isAdmin() && notification.getClient().equals(user) && notification.getRestaurant().getOwner().equals(user))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_NOTIFICATION);
 
         return notification;
@@ -45,35 +45,29 @@ public class NotificationService {
         User user = userRepository.findById(userId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.USER_NOT_FOUND));
 
-        User current = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        if (!current.isAdmin() && !current.equals(user))
+        if (!getAuthenticatedUser().isAdmin() && !getAuthenticatedUser().equals(user))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_NOTIFICATION);
 
-        return user.getNotifications();
+        return notificationRepository.findAllByClientAndReceiver(user, "USER");
     }
 
-    // TODO: arrumar isso
     public List<Notification> findAllByRestaurant(String restaurantId) {
         Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        User current = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        if (!current.isAdmin() && !current.equals(restaurant.getOwner()))
+        if (!getAuthenticatedUser().isAdmin() && !getAuthenticatedUser().equals(restaurant.getOwner()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_NOTIFICATION);
 
-        return null;
+        return notificationRepository.findAllByRestaurantAndReceiver(restaurant, "RESTAURANT");
     }
 
-    // TODO:
     public Notification view(String id) {
         Notification notification = notificationRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.NOTIFICATION_NOT_FOUND));
 
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = getAuthenticatedUser();
 
-        if (!notification.getRestaurant().getOwner().equals(user) && !user.getNotifications().contains(notification))
+        if (!notification.getRestaurant().getOwner().equals(user) && !notification.getClient().equals(user))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_NOTIFICATION);
 
         notification.setIsViewed(true);
@@ -83,17 +77,18 @@ public class NotificationService {
     }
 
     public void delete(String id) {
-        System.out.println("deleting");
         Notification notification = notificationRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.NOTIFICATION_NOT_FOUND));
 
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = getAuthenticatedUser();
 
-        if (!notification.getRestaurant().getOwner().equals(user) && !user.getNotifications().contains(notification))
+        if (!notification.getRestaurant().getOwner().equals(user) && !notification.getClient().equals(user))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_NOTIFICATION);
 
-        user.getNotifications().remove(notification);
-        userRepository.save(user);
         notificationRepository.deleteById(id);
+    }
+
+    private User getAuthenticatedUser() {
+        return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 }

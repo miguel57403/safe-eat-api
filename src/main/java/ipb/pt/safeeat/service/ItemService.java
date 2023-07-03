@@ -41,9 +41,7 @@ public class ItemService {
         Item item = itemRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ITEM_NOT_FOUND));
 
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        if (!user.isAdmin() && !user.getCart().getItems().contains(item))
+        if (!getAuthenticatedUser().isAdmin() && !getAuthenticatedUser().getCart().getItems().contains(item))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ITEM);
 
         restrictionCheckerComponent.checkItem(item);
@@ -54,9 +52,7 @@ public class ItemService {
         Cart cart = cartRepository.findById(cartId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CART_NOT_FOUND));
 
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        if (!user.isAdmin() && !user.getCart().equals(cart))
+        if (!getAuthenticatedUser().isAdmin() && !getAuthenticatedUser().getCart().equals(cart))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ITEM);
 
         restrictionCheckerComponent.checkItemList(cart.getItems());
@@ -64,23 +60,21 @@ public class ItemService {
     }
 
     public Item create(ItemDto itemDto) {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        Cart cart = cartRepository.findById(user.getCart().getId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CART_NOT_FOUND));
-
         Product product = productRepository.findById(itemDto.getProductId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.PRODUCT_NOT_FOUND));
 
-        Restaurant restaurant = restaurantRepository.findByProducts(product).orElseThrow(
+        Restaurant restaurant = restaurantRepository.findById(product.getRestaurantId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
+        Cart cart = cartRepository.findById(getAuthenticatedUser().getCart().getId()).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CART_NOT_FOUND));
+
         if (!cart.getItems().isEmpty()) {
-            Restaurant current = restaurantRepository.findByProducts(cart.getItems().get(0).getProduct()).orElseThrow(
+            Restaurant current = restaurantRepository.findById(cart.getItems().get(0).getProduct().getRestaurantId()).orElseThrow(
                     () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
             if (!current.equals(restaurant))
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cart must contain items from the same restaurant");
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ITEM);
         }
 
         Item item = new Item();
@@ -109,9 +103,7 @@ public class ItemService {
         Item old = itemRepository.findById(itemDto.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ITEM_NOT_FOUND));
 
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        Cart cart = cartRepository.findById(user.getCart().getId()).orElseThrow(
+        Cart cart = cartRepository.findById(getAuthenticatedUser().getCart().getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CART_NOT_FOUND));
 
         if (!cart.getItems().contains(old))
@@ -132,8 +124,8 @@ public class ItemService {
         Item item = itemRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ITEM_NOT_FOUND));
 
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Cart cart = user.getCart();
+        Cart cart = cartRepository.findById(getAuthenticatedUser().getCart().getId()).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CART_NOT_FOUND));
 
         if (!cart.getItems().contains(item))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ITEM);
@@ -142,5 +134,9 @@ public class ItemService {
         cartRepository.save(cart);
 
         itemRepository.deleteById(id);
+    }
+
+    private User getAuthenticatedUser() {
+        return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 }

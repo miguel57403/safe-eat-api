@@ -1,10 +1,10 @@
-package ipb.pt.safeeat.exceptions;
+package ipb.pt.safeeat.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class ErrorMessage {
+public class ExceptionMessage {
     private String message;
 }

@@ -37,12 +37,10 @@ public class AdvertisementService {
         Advertisement advertisement = advertisementRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ADVERTISEMENT_NOT_FOUND));
 
-        Restaurant restaurant = restaurantRepository.findByAdvertisements(advertisement).orElseThrow(
+        Restaurant restaurant = restaurantRepository.findById(advertisement.getRestaurantId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        if (!user.isAdmin() && !restaurant.getOwner().equals(user))
+        if (!getAuthenticatedUser().isAdmin() && !restaurant.getOwner().equals(getAuthenticatedUser()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ADVERTISEMENT);
 
         return advertisement;
@@ -52,46 +50,36 @@ public class AdvertisementService {
         Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        if (!user.isAdmin() && !restaurant.getOwner().equals(user))
+        if (!getAuthenticatedUser().isAdmin() && !restaurant.getOwner().equals(getAuthenticatedUser()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ADVERTISEMENT);
 
-        return restaurant.getAdvertisements();
+        return advertisementRepository.findAllByRestaurantId(restaurant.getId());
     }
 
     public Advertisement create(AdvertisementDto advertisementDto) {
         Restaurant restaurant = restaurantRepository.findById(advertisementDto.getRestaurantId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        if (!restaurant.getOwner().equals(user))
+        if (!restaurant.getOwner().equals(getAuthenticatedUser()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ADVERTISEMENT);
 
         Advertisement advertisement = new Advertisement();
         BeanUtils.copyProperties(advertisementDto, advertisement);
-        Advertisement created = advertisementRepository.save(advertisement);
 
-        restaurant.getAdvertisements().add(created);
-        restaurantRepository.save(restaurant);
-
-        return created;
+        return advertisementRepository.save(advertisement);
     }
 
     public Advertisement update(AdvertisementDto advertisementDto) {
         Advertisement old = advertisementRepository.findById(advertisementDto.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ADVERTISEMENT_NOT_FOUND));
 
-        Restaurant restaurant = restaurantRepository.findByAdvertisements(old).orElseThrow(
+        Restaurant restaurant = restaurantRepository.findById(old.getRestaurantId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        if (!restaurant.getOwner().equals(user))
+        if (!restaurant.getOwner().equals(getAuthenticatedUser()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ADVERTISEMENT);
 
-        if (!restaurant.getAdvertisements().contains(old))
+        if (!advertisementRepository.findAllByRestaurantId(restaurant.getId()).contains(old))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ADVERTISEMENT);
 
         BeanUtils.copyProperties(advertisementDto, old);
@@ -128,15 +116,13 @@ public class AdvertisementService {
         Advertisement advertisement = advertisementRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ADVERTISEMENT_NOT_FOUND));
 
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        Restaurant restaurant = restaurantRepository.findByAdvertisements(advertisement).orElseThrow(
+        Restaurant restaurant = restaurantRepository.findById(advertisement.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        if (!restaurant.getOwner().equals(user))
+        if (!restaurant.getOwner().equals(getAuthenticatedUser()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ADVERTISEMENT);
 
-        if (!restaurant.getAdvertisements().contains(advertisement))
+        if (!advertisementRepository.findAllByRestaurantId(restaurant.getId()).contains(advertisement))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ADVERTISEMENT);
 
         if (advertisement.getImage() != null && !advertisement.getImage().isBlank()) {
@@ -144,9 +130,10 @@ public class AdvertisementService {
             azureBlobService.deleteBlob(advertisement.getImage().replace(containerUrl, ""));
         }
 
-        restaurant.getAdvertisements().remove(advertisement);
-        restaurantRepository.save(restaurant);
-
         advertisementRepository.deleteById(id);
+    }
+
+    private User getAuthenticatedUser() {
+        return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 }

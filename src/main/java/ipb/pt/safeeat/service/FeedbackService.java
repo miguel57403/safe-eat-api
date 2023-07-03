@@ -1,13 +1,15 @@
 package ipb.pt.safeeat.service;
 
+import ipb.pt.safeeat.constant.ForbiddenConstant;
+import ipb.pt.safeeat.constant.NotFoundConstant;
 import ipb.pt.safeeat.dto.FeedbackDto;
-import ipb.pt.safeeat.model.*;
+import ipb.pt.safeeat.model.Feedback;
+import ipb.pt.safeeat.model.Notification;
+import ipb.pt.safeeat.model.Order;
+import ipb.pt.safeeat.model.User;
 import ipb.pt.safeeat.repository.FeedbackRepository;
 import ipb.pt.safeeat.repository.NotificationRepository;
 import ipb.pt.safeeat.repository.OrderRepository;
-import ipb.pt.safeeat.repository.RestaurantRepository;
-import ipb.pt.safeeat.constant.ForbiddenConstant;
-import ipb.pt.safeeat.constant.NotFoundConstant;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,8 +27,6 @@ public class FeedbackService {
     @Autowired
     private OrderRepository orderRepository;
     @Autowired
-    private RestaurantRepository restaurantRepository;
-    @Autowired
     private NotificationRepository notificationRepository;
 
     public List<Feedback> findAll() {
@@ -40,12 +40,9 @@ public class FeedbackService {
         Order order = orderRepository.findByFeedback(feedback).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ORDER_NOT_FOUND));
 
-        Restaurant restaurant = restaurantRepository.findByOrders(order).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
+        User user = getAuthenticatedUser();
 
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        if (!user.isAdmin() && !restaurant.getOwner().equals(user) && !order.getClient().equals(user))
+        if (!user.isAdmin() && !order.getRestaurant().getOwner().equals(user) && !order.getClient().equals(user))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_FEEDBACK);
 
         return feedback;
@@ -55,9 +52,9 @@ public class FeedbackService {
         Order order = orderRepository.findById(orderId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ORDER_NOT_FOUND));
 
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = getAuthenticatedUser();
 
-        if (!user.isAdmin() && !user.getOrders().contains(order))
+        if (!user.isAdmin() && !order.getRestaurant().getOwner().equals(user) && !order.getClient().equals(user))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_FEEDBACK);
 
         return order.getFeedback();
@@ -67,12 +64,7 @@ public class FeedbackService {
         Order order = orderRepository.findById(orderId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ORDER_NOT_FOUND));
 
-        Restaurant restaurant = restaurantRepository.findByOrders(order).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
-
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        if (!user.getOrders().contains(order))
+        if (!order.getClient().equals(getAuthenticatedUser()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_FEEDBACK);
 
         Feedback feedback = new Feedback();
@@ -84,14 +76,14 @@ public class FeedbackService {
         Order updated = orderRepository.save(order);
 
         Notification notification = new Notification();
-
-        notification.setContent("Feedback received from " + user.getName());
+        notification.setContent("Feedback received from " + getAuthenticatedUser().getName());
         notification.setTime(LocalDateTime.now());
+        notification.setClient(order.getClient());
+        notification.setRestaurant(order.getRestaurant());
         notification.setOrderId(updated.getId());
+        notification.setReceiver("RESTAURANT");
         notification.setIsViewed(false);
-
         notificationRepository.save(notification);
-        restaurantRepository.save(restaurant);
 
         return created;
     }
@@ -103,9 +95,7 @@ public class FeedbackService {
         Order order = orderRepository.findByFeedback(old).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ORDER_NOT_FOUND));
 
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        if (!user.getOrders().contains(order))
+        if (!order.getClient().equals(getAuthenticatedUser()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_FEEDBACK);
 
         BeanUtils.copyProperties(feedbackDto, old);
@@ -119,17 +109,16 @@ public class FeedbackService {
         Order order = orderRepository.findByFeedback(feedback).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ORDER_NOT_FOUND));
 
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        if (!user.getOrders().contains(order))
+        if (!order.getClient().equals(getAuthenticatedUser()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_FEEDBACK);
-
-        List<Notification> notifications = notificationRepository.findAllByOrderId(order.getId());
-        notificationRepository.deleteAll(notifications);
 
         order.setFeedback(null);
         orderRepository.save(order);
 
         feedbackRepository.deleteById(id);
+    }
+
+    private User getAuthenticatedUser() {
+        return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 }

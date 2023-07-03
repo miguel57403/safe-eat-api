@@ -36,9 +36,7 @@ public class CartService {
         Cart cart = cartRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CART_NOT_FOUND));
 
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        if (!user.isAdmin() && !user.getCart().equals(cart))
+        if (!getAuthenticatedUser().isAdmin() && !getAuthenticatedUser().getCart().equals(cart))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_CART);
 
         for (Item item : cart.getItems()) {
@@ -52,9 +50,7 @@ public class CartService {
         User user = userRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.USER_NOT_FOUND));
 
-        User current = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        if (!current.isAdmin() && !current.equals(user))
+        if (!getAuthenticatedUser().isAdmin() && !getAuthenticatedUser().equals(user))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_CART);
 
         for (Item item : user.getCart().getItems()) {
@@ -65,14 +61,11 @@ public class CartService {
     }
 
     public Boolean isEmpty() {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Cart cart = user.getCart();
-        return cart.getItems().size() == 0;
+        return getAuthenticatedUser().getCart().getItems().size() == 0;
     }
 
     public Cart empty() {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Cart cart = user.getCart();
+        Cart cart = getAuthenticatedUser().getCart();
 
         List<Item> items = cart.getItems();
         itemRepository.deleteAll(items);
@@ -82,5 +75,9 @@ public class CartService {
         cart.setSubtotal(0.0);
 
         return cartRepository.save(cart);
+    }
+
+    private User getAuthenticatedUser() {
+        return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 }

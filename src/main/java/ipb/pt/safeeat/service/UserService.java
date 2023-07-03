@@ -39,6 +39,8 @@ public class UserService {
     private AddressRepository addressRepository;
     @Autowired
     private AzureBlobService azureBlobService;
+    @Autowired
+    private RestaurantRepository restaurantRepository;
 
     public List<User> findAll() {
         return userRepository.findAll();
@@ -48,9 +50,7 @@ public class UserService {
         User user = userRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.USER_NOT_FOUND));
 
-        User current = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        if (!current.isAdmin() && !current.equals(user))
+        if (!getAuthenticatedUser().isAdmin() && !getAuthenticatedUser().equals(user))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_USER);
 
         return user;
@@ -83,37 +83,40 @@ public class UserService {
                         () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTRICTION_NOT_FOUND)));
             }
         }
+
         return restrictions;
     }
 
     public User update(UserUpdateDto userDto) {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        User updating = userRepository.findById(user.getId()).orElseThrow(
+        User old = userRepository.findById(getAuthenticatedUser().getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.USER_NOT_FOUND));
 
-        Optional.ofNullable(userDto.getPassword()).filter(it -> !it.isEmpty()).map(passwordEncoder::encode).ifPresent(updating::setPassword);
-        Optional.ofNullable(userDto.getName()).filter(it -> !it.isEmpty()).ifPresent(updating::setName);
-        Optional.ofNullable(userDto.getCellphone()).filter(it -> !it.isEmpty()).ifPresent(updating::setCellphone);
+        if(!old.equals(getAuthenticatedUser()))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_USER);
+
+        Optional.ofNullable(userDto.getPassword()).filter(it -> !it.isEmpty()).map(passwordEncoder::encode).ifPresent(old::setPassword);
+        Optional.ofNullable(userDto.getName()).filter(it -> !it.isEmpty()).ifPresent(old::setName);
+        Optional.ofNullable(userDto.getCellphone()).filter(it -> !it.isEmpty()).ifPresent(old::setCellphone);
 
         Optional.ofNullable(userDto.getEmail()).filter(it -> !it.isEmpty()).ifPresent(email -> {
             userRepository.findByEmail(email).ifPresent(byEmail -> {
-                if (!byEmail.getId().equals(updating.getId()))
+                if (!byEmail.getId().equals(old.getId()))
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email already in use");
             });
 
-            updating.setEmail(email);
+            old.setEmail(email);
         });
 
         Optional.ofNullable(userDto.getRestrictionIds()).ifPresent(restrictionsIds -> {
             List<Restriction> restrictions = getRestrictions(restrictionsIds);
-            updating.setRestrictions(restrictions);
+            old.setRestrictions(restrictions);
         });
 
-        return userRepository.save(updating);
+        return userRepository.save(old);
     }
 
     public User updateImage(MultipartFile imageFile) throws IOException {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = getAuthenticatedUser();
 
         InputStream imageStream = imageFile.getInputStream();
         String blobName = imageFile.getOriginalFilename();
@@ -139,12 +142,10 @@ public class UserService {
         User user = userRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.USER_NOT_FOUND));
 
-        User current = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        if (!current.isAdmin() && !current.equals(user))
+        if (!getAuthenticatedUser().isAdmin() && !getAuthenticatedUser().equals(user))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_USER);
 
-        if (!user.getRestaurants().isEmpty())
+        if (!restaurantRepository.findAllByOwner(user).isEmpty())
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot delete user with restaurants");
 
         if (user.getImage() != null && !user.getImage().isBlank()) {
@@ -157,5 +158,9 @@ public class UserService {
         cartRepository.delete(user.getCart());
 
         userRepository.deleteById(id);
+    }
+
+    private User getAuthenticatedUser() {
+        return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 }

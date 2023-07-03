@@ -50,9 +50,7 @@ public class RestrictionService {
         User user = userRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.USER_NOT_FOUND));
 
-        User current = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        if (!current.isAdmin() && !current.equals(user))
+        if (!getAuthenticatedUser().isAdmin() && !getAuthenticatedUser().equals(user))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_RESTRICTION);
 
         List<Restriction> restrictions = user.getRestrictions();
@@ -98,5 +96,9 @@ public class RestrictionService {
         }
 
         restrictionRepository.deleteById(id);
+    }
+
+    private User getAuthenticatedUser() {
+        return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 }

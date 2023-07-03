@@ -14,7 +14,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class OrderService {
@@ -34,6 +33,8 @@ public class OrderService {
     private NotificationRepository notificationRepository;
     @Autowired
     private FeedbackRepository feedbackRepository;
+    @Autowired
+    private CartRepository cartRepository;
 
     public List<Order> findAll() {
         return orderRepository.findAll();
@@ -43,10 +44,9 @@ public class OrderService {
         Order order = orderRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ORDER_NOT_FOUND));
 
-        Restaurant restaurant = order.getRestaurant();
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = getAuthenticatedUser();
 
-        if (!user.isAdmin() && !restaurant.getOwner().equals(user))
+        if (!user.isAdmin() && order.getClient().equals(user) && order.getRestaurant().getOwner().equals(user))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ORDER);
 
         return order;
@@ -56,36 +56,34 @@ public class OrderService {
         User user = userRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.USER_NOT_FOUND));
 
-        User current = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        if (!current.isAdmin() && !current.equals(user))
+        if (!getAuthenticatedUser().isAdmin() && !getAuthenticatedUser().equals(user))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ORDER);
 
-        return user.getOrders();
+        return orderRepository.findAllByClient(user);
     }
 
-    public List<Order> findAllByRestaurant(String id) {
-        Restaurant restaurant = restaurantRepository.findById(id).orElseThrow(
+    public List<Order> findAllByRestaurant(String restaurantId) {
+        Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        if (!user.isAdmin() && !restaurant.getOwner().equals(user))
+        if (!getAuthenticatedUser().isAdmin() && !restaurant.getOwner().equals(getAuthenticatedUser()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ORDER);
 
-        return restaurant.getOrders();
+        return orderRepository.findAllByRestaurant(restaurant);
     }
 
     public Order create(OrderDto orderDto) {
-        User client = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User client = getAuthenticatedUser();
 
-        Cart cart = client.getCart();
+        Cart cart = cartRepository.findById(getAuthenticatedUser().getCart().getId()).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CART_NOT_FOUND));
+
         List<Item> items = cart.getItems();
 
-        if(items.isEmpty())
+        if (items.isEmpty())
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cart is empty");
 
-        Restaurant restaurant = restaurantRepository.findByProducts(items.get(0).getProduct()).orElseThrow(
+        Restaurant restaurant = restaurantRepository.findById(items.get(0).getProduct().getRestaurantId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
         Delivery delivery = deliveryRepository.findById(orderDto.getDeliveryId()).orElseThrow(
@@ -107,7 +105,6 @@ public class OrderService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Address not available");
 
         Order order = new Order();
-
         order.setAddress(address);
         order.setPayment(payment);
         order.setDelivery(delivery);
@@ -128,41 +125,36 @@ public class OrderService {
         Order created = orderRepository.save(order);
 
         Notification notification = new Notification();
-
-        notification.setTime(LocalDateTime.now());
         notification.setContent("New order from " + client.getName());
+        notification.setTime(LocalDateTime.now());
+        notification.setClient(client);
         notification.setRestaurant(restaurant);
         notification.setOrderId(order.getId());
+        notification.setReceiver("RESTAURANT");
         notification.setIsViewed(false);
-
         notificationRepository.save(notification);
-
-        restaurant.getOrders().add(created);
-        restaurantRepository.save(restaurant);
-
-        client.getOrders().add(created);
-        userRepository.save(client);
 
         return created;
     }
 
     public OrderDraftDto getOrderDraft() {
-        User client = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User client = getAuthenticatedUser();
 
-        Cart cart = client.getCart();
+        Cart cart = cartRepository.findById(getAuthenticatedUser().getCart().getId()).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CART_NOT_FOUND));
+
         List<Item> items = cart.getItems();
 
-        if(items.isEmpty())
+        if (items.isEmpty())
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cart is empty");
 
-        Restaurant restaurant = restaurantRepository.findByProducts(items.get(0).getProduct()).orElseThrow(
+        Restaurant restaurant = restaurantRepository.findById(items.get(0).getProduct().getRestaurantId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
         Double subtotal = cart.getItems().stream().mapToDouble(Item::getSubtotal).sum();
         Integer quantity = cart.getItems().stream().mapToInt(Item::getQuantity).sum();
 
         OrderDraftDto orderDraftDto = new OrderDraftDto();
-
         orderDraftDto.setAddresses(client.getAddresses());
         orderDraftDto.setPayments(client.getPayments());
         orderDraftDto.setDeliveries(restaurant.getDeliveries());
@@ -176,16 +168,11 @@ public class OrderService {
         Order old = orderRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ORDER_NOT_FOUND));
 
-        Restaurant restaurant = restaurantRepository.findByOrders(old).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
-
-        User client = userRepository.findByOrders(old).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.USER_NOT_FOUND));
-
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        if (!restaurant.getOwner().equals(user))
+        if (!old.getRestaurant().getOwner().equals(getAuthenticatedUser()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ORDER);
+
+        old.setStatus(status);
+        Order updated = orderRepository.save(old);
 
         Notification notification = new Notification();
 
@@ -197,18 +184,13 @@ public class OrderService {
             default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status");
         }
 
-        old.setStatus(status);
-        Order updated = orderRepository.save(old);
-
         notification.setTime(LocalDateTime.now());
+        notification.setClient(old.getClient());
+        notification.setRestaurant(old.getRestaurant());
         notification.setOrderId(updated.getId());
-        notification.setRestaurant(restaurant);
+        notification.setReceiver("USER");
         notification.setIsViewed(false);
-
-        Notification newNotification = notificationRepository.save(notification);
-
-        client.getNotifications().add(newNotification);
-        userRepository.save(client);
+        notificationRepository.save(notification);
 
         return updated;
     }
@@ -217,23 +199,16 @@ public class OrderService {
         Order order = orderRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ORDER_NOT_FOUND));
 
-        Optional<User> user = userRepository.findByOrders(order);
-        Optional<Restaurant> restaurant = restaurantRepository.findByOrders(order);
         Feedback feedback = order.getFeedback();
-
-        List<Notification> notifications = notificationRepository.findAllByOrderId(order.getId());
-
-        user.ifPresent(value -> value.getOrders().remove(order));
-        restaurant.ifPresent(value -> value.getOrders().remove(order));
-
-        user.ifPresent(value -> userRepository.save(value));
-        restaurant.ifPresent(value -> restaurantRepository.save(value));
 
         if (feedback != null) {
             feedbackRepository.delete(feedback);
         }
 
-        notificationRepository.deleteAll(notifications);
         orderRepository.deleteById(id);
+    }
+
+    private User getAuthenticatedUser() {
+        return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 }

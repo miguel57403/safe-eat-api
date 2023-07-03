@@ -22,6 +22,7 @@ public class Product {
     private Double price;
     private String image;
     private Boolean isRestricted;
+    private String restaurantId;
     @JsonIgnore
     @DocumentReference(lazy = true)
     private Category category;

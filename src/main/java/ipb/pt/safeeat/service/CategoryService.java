@@ -3,7 +3,6 @@ package ipb.pt.safeeat.service;
 import ipb.pt.safeeat.constant.NotFoundConstant;
 import ipb.pt.safeeat.dto.CategoryDto;
 import ipb.pt.safeeat.model.Category;
-import ipb.pt.safeeat.model.Product;
 import ipb.pt.safeeat.repository.CategoryRepository;
 import ipb.pt.safeeat.repository.ProductRepository;
 import org.springframework.beans.BeanUtils;
@@ -77,9 +76,7 @@ public class CategoryService {
         Category category = categoryRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CATEGORY_NOT_FOUND));
 
-        List<Product> products = productRepository.findAllByCategory(category);
-
-        if (products.size() > 0)
+        if (productRepository.findAllByCategory(category).size() > 0)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot delete category with products");
 
         if (category.getImage() != null && !category.getImage().isBlank()) {

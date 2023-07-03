@@ -67,9 +67,7 @@ public class ProductSectionService {
         Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        if (!restaurant.getOwner().getId().equals(user.getId()))
+        if (!restaurant.getOwner().getId().equals(getAuthenticatedUser().getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_RESTAURANT);
 
         List<Product> products = new ArrayList<>();
@@ -79,7 +77,7 @@ public class ProductSectionService {
         }
 
         for(Product product : products) {
-            if(!restaurant.getProducts().contains(product))
+            if(!productRepository.findAllByRestaurantId(restaurantId).contains(product))
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_PRODUCT_SECTION);
         }
 
@@ -103,9 +101,7 @@ public class ProductSectionService {
         Restaurant restaurant = restaurantRepository.findByProductSections(old).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        if (!restaurant.getOwner().equals(user))
+        if (!restaurant.getOwner().equals(getAuthenticatedUser()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_PRODUCT_SECTION);
 
         if (!restaurant.getProductSections().contains(old))
@@ -125,14 +121,16 @@ public class ProductSectionService {
         Restaurant restaurant = restaurantRepository.findByProductSections(productSection).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        if (!restaurant.getOwner().equals(user))
+        if (!restaurant.getOwner().equals(getAuthenticatedUser()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_PRODUCT_SECTION);
 
         restaurant.getProductSections().remove(productSection);
         restaurantRepository.save(restaurant);
 
         productSectionRepository.deleteById(id);
+    }
+
+    private User getAuthenticatedUser() {
+        return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 }

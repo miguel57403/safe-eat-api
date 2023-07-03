@@ -52,9 +52,7 @@ public class IngredientService {
         Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        if (!user.isAdmin() && !restaurant.getOwner().equals(user))
+        if (!getAuthenticatedUser().isAdmin() && !restaurant.getOwner().equals(getAuthenticatedUser()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_INGREDIENT);
 
         List<Ingredient> ingredients = restaurant.getIngredients();
@@ -77,9 +75,7 @@ public class IngredientService {
         Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        if (!restaurant.getOwner().equals(user))
+        if (!restaurant.getOwner().equals(getAuthenticatedUser()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_INGREDIENT);
 
         List<Restriction> restrictions = new ArrayList<>();
@@ -118,9 +114,7 @@ public class IngredientService {
             }
         }
 
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        if (!restaurant.getOwner().equals(user))
+        if (!restaurant.getOwner().equals(getAuthenticatedUser()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_INGREDIENT);
 
         if (!restaurant.getIngredients().contains(old))
@@ -141,9 +135,7 @@ public class IngredientService {
         Restaurant restaurant = restaurantRepository.findByIngredients(ingredient).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        if (!restaurant.getOwner().equals(user))
+        if (!restaurant.getOwner().equals(getAuthenticatedUser()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_INGREDIENT);
 
         if (!restaurant.getIngredients().contains(ingredient))
@@ -152,7 +144,9 @@ public class IngredientService {
         restaurant.getIngredients().remove(ingredient);
         restaurantRepository.save(restaurant);
 
-        for (Product product : restaurant.getProducts()) {
+        List<Product> products = productRepository.findAllByRestaurantId(restaurant.getId());
+
+        for (Product product : products) {
             if (product.getIngredients().contains(ingredient)) {
                 product.getIngredients().remove(ingredient);
                 productRepository.save(product);
@@ -160,5 +154,9 @@ public class IngredientService {
         }
 
         ingredientRepository.deleteById(id);
+    }
+
+    private User getAuthenticatedUser() {
+        return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 }

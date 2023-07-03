@@ -29,10 +29,10 @@ public class Order {
     private Payment payment;
     private Delivery delivery;
     private List<Item> items;
-    @DocumentReference(lazy = true)
+    @DocumentReference
     private Restaurant restaurant;
-    @DocumentReference(lazy = true)
+    @DocumentReference
     private Feedback feedback;
-    @DocumentReference(lazy = true)
+    @DocumentReference
     private User client;
 }

@@ -18,9 +18,12 @@ public class Notification {
     @EqualsAndHashCode.Include
     private String id;
     private String content;
-    private LocalDateTime time;
+    private String orderId;
+    private String receiver;
     private Boolean isViewed;
+    private LocalDateTime time;
     @DocumentReference
     private Restaurant restaurant;
-    private String orderId;
+    @DocumentReference
+    private User client;
 }

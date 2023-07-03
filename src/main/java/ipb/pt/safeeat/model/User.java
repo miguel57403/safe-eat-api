@@ -42,15 +42,6 @@ public class User implements UserDetails {
     @JsonIgnore
     @DocumentReference(lazy = true)
     private List<Address> addresses = new ArrayList<>();
-    @JsonIgnore
-    @DocumentReference(lazy = true)
-    private List<Order> orders = new ArrayList<>();
-    @JsonIgnore
-    @DocumentReference(lazy = true)
-    private List<Notification> notifications = new ArrayList<>();
-    @JsonIgnore
-    @DocumentReference(lazy = true)
-    private List<Restaurant> restaurants = new ArrayList<>();
 
     @JsonIgnore
     public Boolean isAdmin() {

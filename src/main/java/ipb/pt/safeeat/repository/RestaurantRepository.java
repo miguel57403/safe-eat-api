@@ -4,11 +4,11 @@ import ipb.pt.safeeat.model.*;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface RestaurantRepository extends MongoRepository<Restaurant, String> {
-    Optional<Restaurant> findByAdvertisements(Advertisement advertisement);
 
     Optional<Restaurant> findByDeliveries(Delivery delivery);
 
@@ -16,7 +16,7 @@ public interface RestaurantRepository extends MongoRepository<Restaurant, String
 
     Optional<Restaurant> findByProductSections(ProductSection productSection);
 
-    Optional<Restaurant> findByProducts(Product product);
+    List<Restaurant> findAllByOwner(User owner);
 
-    Optional<Restaurant> findByOrders(Order order);
+    List<Restaurant> findAllByName(String name);
 }

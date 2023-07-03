@@ -1,4 +1,4 @@
-package ipb.pt.safeeat.exceptions;
+package ipb.pt.safeeat.exception;
 
 import java.util.List;
 
@@ -7,7 +7,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class ErrorList {
+public class ExceptionList {
     private String message;
     private List<String> errors;
 }

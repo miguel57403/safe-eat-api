@@ -18,9 +18,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class RestaurantService {
@@ -52,48 +51,31 @@ public class RestaurantService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
     }
 
+    // TODO: try to do this creating and calling a repository query
     public List<Restaurant> findAllByProductCategory(String categoryId) {
-        Category category = categoryRepository.findById(categoryId).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CATEGORY_NOT_FOUND));
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CATEGORY_NOT_FOUND));
 
-        // FIXME: implement a query to find all restaurants that have a product that has a category with the given id
-        List<Restaurant> restaurants = restaurantRepository.findAll();
-        Iterator<Restaurant> iterator = restaurants.iterator();
-        while (iterator.hasNext()) {
-            Restaurant restaurant = iterator.next();
-            boolean foundCategory = false;
-            for (Product product : restaurant.getProducts()) {
-                if (product.getCategory().equals(category)) {
-                    foundCategory = true;
-                    break;
-                }
-            }
-            if (!foundCategory) {
-                iterator.remove();
-            }
-        }
+        List<Product> products = productRepository.findAllByCategory(category);
+        Set<String> restaurantIds = products.stream()
+                .map(Product::getRestaurantId)
+                .collect(Collectors.toSet());
 
-        return restaurants;
+        return restaurantRepository.findAllById(restaurantIds);
     }
 
     public List<Restaurant> findAllByOwner(String ownerId) {
         User owner = userRepository.findById(ownerId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.USER_NOT_FOUND));
 
-        List<Restaurant> restaurants = new ArrayList<>();
-        for (Restaurant restaurant : owner.getRestaurants()) {
-            restaurants.add(restaurantRepository.findById(restaurant.getId()).orElseThrow(
-                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND)));
-        }
-
-        return restaurants;
+        return restaurantRepository.findAllByOwner(owner);
     }
 
-    public Restaurant findByCart(){
+    public Restaurant findByCart() {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        if(!user.getCart().getItems().isEmpty()){
-            return restaurantRepository.findByProducts(user.getCart().getItems().get(0).getProduct()).orElseThrow(
+        if (!user.getCart().getItems().isEmpty()) {
+            return restaurantRepository.findById(user.getCart().getItems().get(0).getProduct().getRestaurantId()).orElseThrow(
                     () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
         }
 
@@ -101,41 +83,23 @@ public class RestaurantService {
     }
 
     public List<Restaurant> findAllByName(String name) {
-        List<Restaurant> restaurants = new ArrayList<>();
-        for (Restaurant restaurant : restaurantRepository.findAll()) {
-            if (restaurant.getName().toLowerCase().contains(name.toLowerCase())) {
-                restaurants.add(restaurant);
-            }
-        }
-
-        return restaurants;
+        return restaurantRepository.findAllByName(name);
     }
 
     public Restaurant create(RestaurantDto restaurantDto) {
-        User owner = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        if (!restaurantDto.getOwnerId().equals(owner.getId()))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_RESTAURANT);
-
+        User owner = getAuthenticatedUser();
         Restaurant restaurant = new Restaurant();
         BeanUtils.copyProperties(restaurantDto, restaurant);
-
         restaurant.setOwner(owner);
-        Restaurant created = restaurantRepository.save(restaurant);
 
-        owner.getRestaurants().add(created);
-        userRepository.save(owner);
-
-        return created;
+        return restaurantRepository.save(restaurant);
     }
 
     public Restaurant update(RestaurantDto restaurantDto) {
         Restaurant old = restaurantRepository.findById(restaurantDto.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        if (!old.getOwner().getId().equals(user.getId()))
+        if (!old.getOwner().getId().equals(getAuthenticatedUser().getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_RESTAURANT);
 
         BeanUtils.copyProperties(restaurantDto, old);
@@ -145,6 +109,9 @@ public class RestaurantService {
     public Restaurant updateLogo(String id, MultipartFile imageFile) throws IOException {
         Restaurant restaurant = restaurantRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CATEGORY_NOT_FOUND));
+
+        if (!restaurant.getOwner().equals(getAuthenticatedUser()))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_RESTAURANT);
 
         InputStream imageStream = imageFile.getInputStream();
         String blobName = imageFile.getOriginalFilename();
@@ -170,6 +137,9 @@ public class RestaurantService {
         Restaurant restaurant = restaurantRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CATEGORY_NOT_FOUND));
 
+        if (!restaurant.getOwner().equals(getAuthenticatedUser()))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_RESTAURANT);
+
         InputStream imageStream = imageFile.getInputStream();
         String blobName = imageFile.getOriginalFilename();
 
@@ -194,9 +164,7 @@ public class RestaurantService {
         Restaurant restaurant = restaurantRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        if (restaurant.getOwner() != null && !restaurant.getOwner().getId().equals(user.getId()))
+        if (!restaurant.getOwner().equals(getAuthenticatedUser()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_RESTAURANT);
 
         if (restaurant.getLogo() != null && !restaurant.getLogo().isBlank()) {
@@ -209,15 +177,17 @@ public class RestaurantService {
             azureBlobService.deleteBlob(restaurant.getCover().replace(containerUrl, ""));
         }
 
-        productRepository.deleteAll(restaurant.getProducts());
+        productRepository.deleteAllByRestaurantId(restaurant.getId());
+        advertisementRepository.deleteAllByRestaurantId(restaurant.getId());
+
         ingredientRepository.deleteAll(restaurant.getIngredients());
         productSectionRepository.deleteAll(restaurant.getProductSections());
-        advertisementRepository.deleteAll(restaurant.getAdvertisements());
         deliveryRepository.deleteAll(restaurant.getDeliveries());
 
-        user.getRestaurants().remove(restaurant);
-        userRepository.save(user);
-
         restaurantRepository.deleteById(id);
+    }
+
+    private User getAuthenticatedUser() {
+        return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 }
