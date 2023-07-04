@@ -1,5 +1,6 @@
 package ipb.pt.safeeat.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -20,4 +21,6 @@ public class Cart {
     private Integer quantity = 0;
     private Double subtotal = 0.0;
     private List<Item> items = new ArrayList<>();
+    @JsonIgnore
+    private String selectedDelivery;
 }

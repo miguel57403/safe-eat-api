@@ -1,6 +1,6 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.component.RestrictionCheckerComponent;
+import ipb.pt.safeeat.component.RestrictionChecker;
 import ipb.pt.safeeat.constant.ForbiddenConstant;
 import ipb.pt.safeeat.constant.NotFoundConstant;
 import ipb.pt.safeeat.dto.IngredientDto;
@@ -29,11 +29,11 @@ public class IngredientService {
     @Autowired
     private ProductRepository productRepository;
     @Autowired
-    private RestrictionCheckerComponent restrictionCheckerComponent;
+    private RestrictionChecker restrictionChecker;
 
     public List<Ingredient> findAll() {
         List<Ingredient> ingredients = ingredientRepository.findAll();
-        restrictionCheckerComponent.checkIngredientList(ingredients);
+        restrictionChecker.checkIngredientList(ingredients);
 
         return ingredients;
     }
@@ -42,7 +42,7 @@ public class IngredientService {
         Ingredient ingredient = ingredientRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.INGREDIENT_NOT_FOUND));
 
-        restrictionCheckerComponent.checkIngredient(ingredient);
+        restrictionChecker.checkIngredient(ingredient);
 
         return ingredient;
     }
@@ -55,7 +55,7 @@ public class IngredientService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_INGREDIENT);
 
         List<Ingredient> ingredients = ingredientRepository.findAllByRestaurantId(restaurantId);
-        restrictionCheckerComponent.checkIngredientList(ingredients);
+        restrictionChecker.checkIngredientList(ingredients);
 
         return ingredients;
     }
@@ -65,7 +65,7 @@ public class IngredientService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.PRODUCT_NOT_FOUND));
 
         List<Ingredient> ingredients = ingredientRepository.findAllById(product.getIngredientIds());
-        restrictionCheckerComponent.checkIngredientList(ingredients);
+        restrictionChecker.checkIngredientList(ingredients);
 
         return ingredients;
     }
@@ -90,7 +90,7 @@ public class IngredientService {
         Ingredient created = ingredientRepository.save(ingredient);
 
         restaurantRepository.save(restaurant);
-        restrictionCheckerComponent.checkIngredient(ingredient);
+        restrictionChecker.checkIngredient(ingredient);
 
         return created;
     }
@@ -117,7 +117,7 @@ public class IngredientService {
 
         BeanUtils.copyProperties(ingredientDto, old);
         Ingredient updated = ingredientRepository.save(old);
-        restrictionCheckerComponent.checkIngredient(updated);
+        restrictionChecker.checkIngredient(updated);
 
         return updated;
     }

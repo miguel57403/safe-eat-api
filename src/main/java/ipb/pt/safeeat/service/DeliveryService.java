@@ -3,9 +3,11 @@ package ipb.pt.safeeat.service;
 import ipb.pt.safeeat.constant.ForbiddenConstant;
 import ipb.pt.safeeat.constant.NotFoundConstant;
 import ipb.pt.safeeat.dto.DeliveryDto;
+import ipb.pt.safeeat.model.Cart;
 import ipb.pt.safeeat.model.Delivery;
 import ipb.pt.safeeat.model.Restaurant;
 import ipb.pt.safeeat.model.User;
+import ipb.pt.safeeat.repository.CartRepository;
 import ipb.pt.safeeat.repository.DeliveryRepository;
 import ipb.pt.safeeat.repository.RestaurantRepository;
 import org.springframework.beans.BeanUtils;
@@ -23,6 +25,8 @@ public class DeliveryService {
     private DeliveryRepository deliveryRepository;
     @Autowired
     private RestaurantRepository restaurantRepository;
+    @Autowired
+    private CartRepository cartRepository;
 
     public List<Delivery> findAll() {
         return deliveryRepository.findAll();
@@ -55,6 +59,29 @@ public class DeliveryService {
         restaurantRepository.save(restaurant);
 
         return created;
+    }
+
+    public Delivery select(String id) {
+        Delivery delivery = deliveryRepository.findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.DELIVERY_NOT_FOUND));
+
+        Cart cart = cartRepository.findById(getAuthenticatedUser().getCartId()).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CART_NOT_FOUND));
+
+        if (cart.getItems().isEmpty())
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Cannot select a delivery in an empty cart");
+
+        Restaurant restaurant = restaurantRepository.findById(cart.getItems().get(0).getId()).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
+
+        if (!restaurant.getDeliveries().contains(delivery))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_DELIVERY);
+
+        cart.setSelectedDelivery(delivery.getId());
+        cartRepository.save(cart);
+
+        delivery.setIsSelected(true);
+        return delivery;
     }
 
     public Delivery update(DeliveryDto deliveryDto) {

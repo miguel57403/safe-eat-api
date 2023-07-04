@@ -39,6 +39,11 @@ public class DeliveryController {
         return ResponseEntity.status(HttpStatus.CREATED).body(deliveryService.create(deliveryDto, restaurantId));
     }
 
+    @PutMapping("select/{id}")
+    public ResponseEntity<Object> select(@PathVariable String id) {
+        return ResponseEntity.ok().body(deliveryService.select(id));
+    }
+
     @PutMapping
     public ResponseEntity<Object> update(@Valid @RequestBody DeliveryDto deliveryDto) {
         return ResponseEntity.ok().body(deliveryService.update(deliveryDto));

@@ -1,6 +1,6 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.component.RestrictionCheckerComponent;
+import ipb.pt.safeeat.component.RestrictionChecker;
 import ipb.pt.safeeat.constant.ForbiddenConstant;
 import ipb.pt.safeeat.constant.NotFoundConstant;
 import ipb.pt.safeeat.dto.RestrictionDto;
@@ -28,13 +28,13 @@ public class RestrictionService {
     @Autowired
     private IngredientRepository ingredientRepository;
     @Autowired
-    private RestrictionCheckerComponent restrictionCheckerComponent;
+    private RestrictionChecker restrictionChecker;
 
     public List<Restriction> findAll() {
         // TODO: Split this method?
         Object user = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         List<Restriction> restrictions = restrictionRepository.findAll();
-        if (user != "anonymousUser") restrictionCheckerComponent.checkRestrictionList(restrictions);
+        if (user != "anonymousUser") restrictionChecker.checkRestrictionList(restrictions);
         return restrictions;
     }
 
@@ -42,7 +42,7 @@ public class RestrictionService {
         Restriction restriction = restrictionRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        restrictionCheckerComponent.checkRestriction(restriction);
+        restrictionChecker.checkRestriction(restriction);
         return restriction;
     }
 
@@ -54,7 +54,7 @@ public class RestrictionService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_RESTRICTION);
 
         List<Restriction> restrictions = restrictionRepository.findAllById(user.getRestrictionIds());
-        restrictionCheckerComponent.checkRestrictionList(restrictions);
+        restrictionChecker.checkRestrictionList(restrictions);
         return restrictions;
     }
 
@@ -66,7 +66,7 @@ public class RestrictionService {
         BeanUtils.copyProperties(restrictionDto, restriction);
         Restriction created = restrictionRepository.save(restriction);
 
-        restrictionCheckerComponent.checkRestriction(created);
+        restrictionChecker.checkRestriction(created);
         return created;
     }
 
@@ -77,7 +77,7 @@ public class RestrictionService {
         BeanUtils.copyProperties(restrictionDto, old);
         Restriction updated = restrictionRepository.save(old);
 
-        restrictionCheckerComponent.checkRestriction(updated);
+        restrictionChecker.checkRestriction(updated);
         return updated;
     }
 

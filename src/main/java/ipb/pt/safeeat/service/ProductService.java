@@ -1,6 +1,6 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.component.RestrictionCheckerComponent;
+import ipb.pt.safeeat.component.RestrictionChecker;
 import ipb.pt.safeeat.constant.ForbiddenConstant;
 import ipb.pt.safeeat.constant.NotFoundConstant;
 import ipb.pt.safeeat.dto.ProductDto;
@@ -32,7 +32,7 @@ public class ProductService {
     @Autowired
     private RestaurantRepository restaurantRepository;
     @Autowired
-    private RestrictionCheckerComponent restrictionCheckerComponent;
+    private RestrictionChecker restrictionChecker;
     @Autowired
     private AzureBlobService azureBlobService;
     @Autowired
@@ -40,7 +40,7 @@ public class ProductService {
 
     public List<Product> findAll() {
         List<Product> products = productRepository.findAll();
-        restrictionCheckerComponent.checkProductList(products);
+        restrictionChecker.checkProductList(products);
         return products;
     }
 
@@ -48,19 +48,19 @@ public class ProductService {
         Product product = productRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.PRODUCT_NOT_FOUND));
 
-        restrictionCheckerComponent.checkProduct(product);
+        restrictionChecker.checkProduct(product);
         return product;
     }
 
     public List<Product> findAllByRestaurant(String restaurantId) {
         List<Product> products = productRepository.findAllByRestaurantId(restaurantId);
-        restrictionCheckerComponent.checkProductList(products);
+        restrictionChecker.checkProductList(products);
         return products;
     }
 
     public List<Product> findAllByRestaurantAndName(String restaurantId, String name) {
         List<Product> products = productRepository.findAllByRestaurantIdAndName(restaurantId, name);
-        restrictionCheckerComponent.checkProductList(products);
+        restrictionChecker.checkProductList(products);
         return products;
     }
 
@@ -85,7 +85,7 @@ public class ProductService {
 
         Product created = productRepository.save(product);
 
-        restrictionCheckerComponent.checkProduct(created);
+        restrictionChecker.checkProduct(created);
         return created;
     }
 
@@ -102,7 +102,7 @@ public class ProductService {
         BeanUtils.copyProperties(productDto, old);
         Product updated = productRepository.save(old);
 
-        restrictionCheckerComponent.checkProduct(updated);
+        restrictionChecker.checkProduct(updated);
         return updated;
     }
 
@@ -129,7 +129,7 @@ public class ProductService {
         product.setImage(newBlobName);
         Product updated = productRepository.save(product);
 
-        restrictionCheckerComponent.checkProduct(updated);
+        restrictionChecker.checkProduct(updated);
         return updated;
     }
 

@@ -54,9 +54,13 @@ public class PaymentService {
     public Payment create(PaymentDto paymentDto) {
         User user = getAuthenticatedUser();
 
+        List<Payment> payments = paymentRepository.findAllByUserId(user.getId());
+
         Payment payment = new Payment();
         BeanUtils.copyProperties(paymentDto, payment);
         payment.setUserId(user.getId());
+        payment.setIsSelected(payments.isEmpty());
+
         return paymentRepository.save(payment);
     }
 

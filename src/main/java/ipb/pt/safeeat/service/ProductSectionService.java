@@ -1,6 +1,6 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.component.RestrictionCheckerComponent;
+import ipb.pt.safeeat.component.RestrictionChecker;
 import ipb.pt.safeeat.constant.ForbiddenConstant;
 import ipb.pt.safeeat.constant.NotFoundConstant;
 import ipb.pt.safeeat.dto.ProductSectionDto;
@@ -30,13 +30,13 @@ public class ProductSectionService {
     @Autowired
     private RestaurantRepository restaurantRepository;
     @Autowired
-    private RestrictionCheckerComponent restrictionCheckerComponent;
+    private RestrictionChecker restrictionChecker;
 
     public List<ProductSection> findAll() {
         List<ProductSection> productSections = productSectionRepository.findAll();
 
         for (ProductSection productSection : productSections) {
-            restrictionCheckerComponent.checkProductList(productSection.getProducts());
+            restrictionChecker.checkProductList(productSection.getProducts());
         }
 
         return productSections;
@@ -46,7 +46,7 @@ public class ProductSectionService {
         ProductSection productSection = productSectionRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.PRODUCT_SECTION_NOT_FOUND));
 
-        restrictionCheckerComponent.checkProductList(productSection.getProducts());
+        restrictionChecker.checkProductList(productSection.getProducts());
         return productSection;
     }
 
@@ -57,7 +57,7 @@ public class ProductSectionService {
         List<ProductSection> productSections = productSectionRepository.findAllByRestaurantId(restaurant.getId());
 
         for (ProductSection productSection : productSections) {
-            restrictionCheckerComponent.checkProductList(productSection.getProducts());
+            restrictionChecker.checkProductList(productSection.getProducts());
         }
 
         return productSections;
@@ -88,7 +88,7 @@ public class ProductSectionService {
         productSection.setRestaurantId(restaurantId);
         ProductSection created = productSectionRepository.save(productSection);
 
-        restrictionCheckerComponent.checkProductList(created.getProducts());
+        restrictionChecker.checkProductList(created.getProducts());
         return created;
     }
 
@@ -108,7 +108,7 @@ public class ProductSectionService {
         BeanUtils.copyProperties(productSectionDto, old);
         ProductSection updated = productSectionRepository.save(old);
 
-        restrictionCheckerComponent.checkProductList(updated.getProducts());
+        restrictionChecker.checkProductList(updated.getProducts());
         return updated;
     }
 

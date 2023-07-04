@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class RestrictionCheckerComponent {
+public class RestrictionChecker {
     @Autowired
     private IngredientRepository ingredientRepository;
 

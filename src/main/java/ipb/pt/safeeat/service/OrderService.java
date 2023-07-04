@@ -157,6 +157,20 @@ public class OrderService {
         List<Address> addresses = addressRepository.findAllByUserId(client.getId());
         List<Payment> payments = paymentRepository.findAllByUserId(client.getId());
 
+        boolean found = false;
+        for (Delivery delivery : restaurant.getDeliveries()) {
+            if (delivery.getId().equals(cart.getSelectedDelivery())) {
+                delivery.setIsSelected(true);
+                found = true;
+            } else {
+                delivery.setIsSelected(false);
+            }
+        }
+
+        if (!found && !restaurant.getDeliveries().isEmpty()) {
+            payments.get(0).setIsSelected(true);
+        }
+
         OrderDraftDto orderDraftDto = new OrderDraftDto();
         orderDraftDto.setAddresses(addresses);
         orderDraftDto.setPayments(payments);

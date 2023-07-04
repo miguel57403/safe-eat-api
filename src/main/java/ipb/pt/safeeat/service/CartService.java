@@ -1,6 +1,6 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.component.RestrictionCheckerComponent;
+import ipb.pt.safeeat.component.RestrictionChecker;
 import ipb.pt.safeeat.constant.ForbiddenConstant;
 import ipb.pt.safeeat.constant.NotFoundConstant;
 import ipb.pt.safeeat.model.Cart;
@@ -26,7 +26,7 @@ public class CartService {
     @Autowired
     private ItemRepository itemRepository;
     @Autowired
-    private RestrictionCheckerComponent restrictionCheckerComponent;
+    private RestrictionChecker restrictionChecker;
 
     public List<Cart> findAll() {
         return cartRepository.findAll();
@@ -40,7 +40,7 @@ public class CartService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_CART);
 
         for (Item item : cart.getItems()) {
-            restrictionCheckerComponent.checkProduct(item.getProduct());
+            restrictionChecker.checkProduct(item.getProduct());
         }
 
         return cart;
@@ -57,7 +57,7 @@ public class CartService {
                 () -> new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_CART));
 
         for (Item item : cart.getItems()) {
-            restrictionCheckerComponent.checkProduct(item.getProduct());
+            restrictionChecker.checkProduct(item.getProduct());
         }
 
         return cart;
@@ -84,6 +84,7 @@ public class CartService {
         cart.getItems().clear();
         cart.setQuantity(0);
         cart.setSubtotal(0.0);
+        cart.setSelectedDelivery(null);
 
         return cartRepository.save(cart);
     }

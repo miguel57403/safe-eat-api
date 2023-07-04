@@ -1,6 +1,6 @@
 package ipb.pt.safeeat.service;
 
-import ipb.pt.safeeat.component.RestrictionCheckerComponent;
+import ipb.pt.safeeat.component.RestrictionChecker;
 import ipb.pt.safeeat.constant.ForbiddenConstant;
 import ipb.pt.safeeat.constant.NotFoundConstant;
 import ipb.pt.safeeat.dto.ItemDto;
@@ -29,11 +29,11 @@ public class ItemService {
     @Autowired
     private RestaurantRepository restaurantRepository;
     @Autowired
-    private RestrictionCheckerComponent restrictionCheckerComponent;
+    private RestrictionChecker restrictionChecker;
 
     public List<Item> findAll() {
         List<Item> items = itemRepository.findAll();
-        restrictionCheckerComponent.checkItemList(items);
+        restrictionChecker.checkItemList(items);
         return items;
     }
 
@@ -48,7 +48,7 @@ public class ItemService {
         if (!user.isAdmin() && !cart.getItems().contains(item))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ITEM);
 
-        restrictionCheckerComponent.checkItem(item);
+        restrictionChecker.checkItem(item);
         return item;
     }
 
@@ -59,7 +59,7 @@ public class ItemService {
         if (!getAuthenticatedUser().isAdmin() && !getAuthenticatedUser().getCartId().equals(cart.getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ITEM);
 
-        restrictionCheckerComponent.checkItemList(cart.getItems());
+        restrictionChecker.checkItemList(cart.getItems());
         return cart.getItems();
     }
 
@@ -93,7 +93,7 @@ public class ItemService {
 
         updateCartValues(cart);
 
-        restrictionCheckerComponent.checkItem(created);
+        restrictionChecker.checkItem(created);
         return created;
     }
 
@@ -137,7 +137,7 @@ public class ItemService {
         updateCartValues(cart);
         cartRepository.save(cart);
 
-        restrictionCheckerComponent.checkItem(updated);
+        restrictionChecker.checkItem(updated);
         return updated;
     }
 
