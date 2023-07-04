@@ -90,6 +90,13 @@ public class RestaurantService {
 
     public Restaurant create(RestaurantDto restaurantDto) {
         User owner = getAuthenticatedUser();
+
+        List<Restaurant> restaurantsEquals = restaurantRepository.findAllByName(restaurantDto.getName());
+
+        if (!restaurantsEquals.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Restaurant already exists");
+        }
+
         Restaurant restaurant = new Restaurant();
         BeanUtils.copyProperties(restaurantDto, restaurant);
         restaurant.setOwnerId(owner.getId());

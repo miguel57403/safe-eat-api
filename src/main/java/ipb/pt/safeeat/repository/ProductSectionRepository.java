@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface ProductSectionRepository extends MongoRepository<ProductSection, String> {
     List<ProductSection> findAllByRestaurantId(String restaurantId);
+
+    List<ProductSection> findAllByRestaurantIdAndName(String restaurantId, String name);
 }

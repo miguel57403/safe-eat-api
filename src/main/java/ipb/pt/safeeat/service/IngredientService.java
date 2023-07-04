@@ -77,14 +77,18 @@ public class IngredientService {
         if (!restaurant.getOwnerId().equals(getAuthenticatedUser().getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_INGREDIENT);
 
-        if (ingredientDto.getRestrictionIds() != null && !ingredientDto.getRestrictionIds().isEmpty()) {
-            for (String restrictionId : ingredientDto.getRestrictionIds()) {
-                restrictionRepository.findById(restrictionId).orElseThrow(
-                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTRICTION_NOT_FOUND));
-            }
+        List<Ingredient> ingredientsEquals = ingredientRepository.findAllByRestaurantIdAndName(restaurantId, ingredientDto.getName());
+        if (!ingredientsEquals.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ingredient already exists");
+        }
+
+        for (String restrictionId : ingredientDto.getRestrictionIds()) {
+            restrictionRepository.findById(restrictionId).orElseThrow(
+                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTRICTION_NOT_FOUND));
         }
 
         Ingredient ingredient = new Ingredient();
+        ingredient.setRestaurantId(restaurantId);
         BeanUtils.copyProperties(ingredientDto, ingredient);
 
         Ingredient created = ingredientRepository.save(ingredient);
@@ -102,11 +106,9 @@ public class IngredientService {
         Restaurant restaurant = restaurantRepository.findById(old.getRestaurantId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        if (ingredientDto.getRestrictionIds() != null && !ingredientDto.getRestrictionIds().isEmpty()) {
-            for (String restrictionId : ingredientDto.getRestrictionIds()) {
-                restrictionRepository.findById(restrictionId).orElseThrow(
-                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTRICTION_NOT_FOUND));
-            }
+        for (String restrictionId : ingredientDto.getRestrictionIds()) {
+            restrictionRepository.findById(restrictionId).orElseThrow(
+                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTRICTION_NOT_FOUND));
         }
 
         if (!restaurant.getOwnerId().equals(getAuthenticatedUser().getId()))

@@ -20,8 +20,7 @@ public class Ingredient {
     private String name;
     private String description;
     private Boolean isRestricted;
+    private String restaurantId;
     @JsonIgnore
     private List<String> restrictionIds;
-    @JsonIgnore
-    private String restaurantId;
 }

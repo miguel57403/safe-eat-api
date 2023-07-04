@@ -19,8 +19,7 @@ public class ProductSection {
     @EqualsAndHashCode.Include
     private String id;
     private String name;
+    private String restaurantId;
     @DocumentReference
     private List<Product> products;
-    @JsonIgnore
-    private String restaurantId;
 }

@@ -4,10 +4,7 @@ import ipb.pt.safeeat.component.RestrictionChecker;
 import ipb.pt.safeeat.constant.ForbiddenConstant;
 import ipb.pt.safeeat.constant.NotFoundConstant;
 import ipb.pt.safeeat.dto.ProductDto;
-import ipb.pt.safeeat.model.Item;
-import ipb.pt.safeeat.model.Product;
-import ipb.pt.safeeat.model.Restaurant;
-import ipb.pt.safeeat.model.User;
+import ipb.pt.safeeat.model.*;
 import ipb.pt.safeeat.repository.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,6 +65,14 @@ public class ProductService {
         Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
+        if (!restaurant.getOwnerId().equals(getAuthenticatedUser().getId()))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_PRODUCT);
+
+        List<Product> productEquals = productRepository.findAllByRestaurantIdAndName(restaurantId, productDto.getName());
+        if (!productEquals.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ProductSection already exists");
+        }
+
         categoryRepository.findById(productDto.getCategoryId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CATEGORY_NOT_FOUND));
 
@@ -75,9 +80,6 @@ public class ProductService {
             ingredientRepository.findById(ingredientId).orElseThrow(
                     () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.INGREDIENT_NOT_FOUND));
         }
-
-        if (!restaurant.getOwnerId().equals(getAuthenticatedUser().getId()))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_PRODUCT);
 
         Product product = new Product();
         BeanUtils.copyProperties(productDto, product);

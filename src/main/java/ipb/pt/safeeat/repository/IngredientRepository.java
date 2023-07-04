@@ -11,4 +11,6 @@ public interface IngredientRepository extends MongoRepository<Ingredient, String
     List<Ingredient> findAllByRestrictionIds(String restrictionId);
 
     List<Ingredient> findAllByRestaurantId(String restaurantId);
+
+    List<Ingredient> findAllByRestaurantIdAndName(String restaurantId, String name);
 }

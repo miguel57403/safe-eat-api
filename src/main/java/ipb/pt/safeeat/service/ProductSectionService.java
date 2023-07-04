@@ -70,6 +70,11 @@ public class ProductSectionService {
         if (!restaurant.getOwnerId().equals(getAuthenticatedUser().getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_RESTAURANT);
 
+        List<ProductSection> productSectionsEquals = productSectionRepository.findAllByRestaurantIdAndName(restaurantId, productSectionDto.getName());
+        if (!productSectionsEquals.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ProductSection already exists");
+        }
+
         List<Product> products = new ArrayList<>();
         for (String productId : productSectionDto.getProductIds()) {
             products.add(productRepository.findById(productId).orElseThrow(
