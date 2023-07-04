@@ -47,6 +47,10 @@ public class PaymentService {
         return paymentRepository.findAllByUserId(user.getId());
     }
 
+    public List<Payment> findMe() {
+        return findAllByUser(getAuthenticatedUser().getId());
+    }
+
     public Payment create(PaymentDto paymentDto) {
         User user = getAuthenticatedUser();
 
