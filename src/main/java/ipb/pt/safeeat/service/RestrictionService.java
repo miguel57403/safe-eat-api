@@ -59,6 +59,9 @@ public class RestrictionService {
     }
 
     public Restriction create(RestrictionDto restrictionDto) {
+        restrictionRepository.findByName(restrictionDto.getName()).ifPresent(
+                restriction -> { throw new ResponseStatusException(HttpStatus.CONFLICT, "Restriction already exists"); });
+
         Restriction restriction = new Restriction();
         BeanUtils.copyProperties(restrictionDto, restriction);
         Restriction created = restrictionRepository.save(restriction);
