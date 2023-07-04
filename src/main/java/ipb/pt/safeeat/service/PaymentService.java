@@ -56,12 +56,8 @@ public class PaymentService {
 
         Payment payment = new Payment();
         BeanUtils.copyProperties(paymentDto, payment);
-        Payment created = paymentRepository.save(payment);
-
         payment.setUserId(user.getId());
-        userRepository.save(user);
-
-        return created;
+        return paymentRepository.save(payment);
     }
 
     public Payment update(PaymentDto paymentDto) {
