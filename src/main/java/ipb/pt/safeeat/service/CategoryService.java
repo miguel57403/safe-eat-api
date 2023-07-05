@@ -13,7 +13,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
 @Service
@@ -52,22 +51,8 @@ public class CategoryService {
         Category category = categoryRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CATEGORY_NOT_FOUND));
 
-        InputStream imageStream = imageFile.getInputStream();
-        String blobName = imageFile.getOriginalFilename();
-
-        if (blobName == null)
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Image file is null");
-
-        if (category.getImage() != null && !category.getImage().isBlank()) {
-            String containerUrl = azureBlobService.getContainerUrl() + "/";
-            azureBlobService.deleteBlob(category.getImage().replace(containerUrl, ""));
-        }
-
-        String extension = blobName.substring(blobName.lastIndexOf(".") + 1);
-        String partialBlobName = "categories/" + category.getId() + "." + extension;
-        azureBlobService.uploadBlob(partialBlobName, imageStream);
-
-        String newBlobName = azureBlobService.getBlobUrl(partialBlobName);
+        String newBlobName = azureBlobService.uploadMultipartFile(
+                imageFile, category.getImage(), "categories", category.getId());
         category.setImage(newBlobName);
         return categoryRepository.save(category);
     }
@@ -80,8 +65,7 @@ public class CategoryService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot delete category with products");
 
         if (category.getImage() != null && !category.getImage().isBlank()) {
-            String containerUrl = azureBlobService.getContainerUrl() + "/";
-            azureBlobService.deleteBlob(category.getImage().replace(containerUrl, ""));
+            azureBlobService.deleteRelativeBlob(category.getImage());
         }
 
         categoryRepository.deleteById(id);

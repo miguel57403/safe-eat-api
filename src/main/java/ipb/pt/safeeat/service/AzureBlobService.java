@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import com.azure.storage.blob.BlobContainerClient;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
@@ -38,9 +39,32 @@ public class AzureBlobService {
         }
     }
 
+    public String uploadMultipartFile(MultipartFile imageFile, String previousImage, String folder, String name) throws IOException {
+        InputStream imageStream = imageFile.getInputStream();
+        String blobName = imageFile.getOriginalFilename();
+
+        if (blobName == null)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Image file is null");
+
+        if (previousImage != null && !previousImage.isBlank()) {
+            deleteRelativeBlob(previousImage);
+        }
+
+        String extension = blobName.substring(blobName.lastIndexOf(".") + 1);
+        String partialBlobName = folder + "/" + name + "." + extension;
+        uploadBlob(partialBlobName, imageStream);
+
+        return getBlobUrl(partialBlobName);
+    }
+
     public void deleteBlob(String blobName) {
         BlobClient blobClient = getBlobContainerClient().getBlobClient(blobName);
         blobClient.deleteIfExists();
+    }
+
+    public void deleteRelativeBlob(String relativeBlobName) {
+        String containerUrl = getContainerUrl() + "/";
+        deleteBlob(relativeBlobName.replace(containerUrl, ""));
     }
 
     public String getContainerUrl() {

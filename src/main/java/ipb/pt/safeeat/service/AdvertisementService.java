@@ -17,7 +17,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
 @Service
@@ -92,22 +91,8 @@ public class AdvertisementService {
         Advertisement advertisement = advertisementRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CATEGORY_NOT_FOUND));
 
-        InputStream imageStream = imageFile.getInputStream();
-        String blobName = imageFile.getOriginalFilename();
-
-        if (blobName == null)
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Image file is null");
-
-        if (advertisement.getImage() != null && !advertisement.getImage().isBlank()) {
-            String containerUrl = azureBlobService.getContainerUrl() + "/";
-            azureBlobService.deleteBlob(advertisement.getImage().replace(containerUrl, ""));
-        }
-
-        String extension = blobName.substring(blobName.lastIndexOf(".") + 1);
-        String partialBlobName = "advertisements/" + advertisement.getId() + "." + extension;
-        azureBlobService.uploadBlob(partialBlobName, imageStream);
-
-        String newBlobName = azureBlobService.getBlobUrl(partialBlobName);
+        String newBlobName = azureBlobService.uploadMultipartFile(
+                imageFile, advertisement.getImage(), "advertisements", advertisement.getId());
         advertisement.setImage(newBlobName);
         return advertisementRepository.save(advertisement);
     }
@@ -126,8 +111,7 @@ public class AdvertisementService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ADVERTISEMENT);
 
         if (advertisement.getImage() != null && !advertisement.getImage().isBlank()) {
-            String containerUrl = azureBlobService.getContainerUrl() + "/";
-            azureBlobService.deleteBlob(advertisement.getImage().replace(containerUrl, ""));
+            azureBlobService.deleteRelativeBlob(advertisement.getImage());
         }
 
         advertisementRepository.deleteById(id);

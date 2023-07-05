@@ -17,7 +17,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
 
@@ -107,23 +106,8 @@ public class UserService {
 
     public User updateImage(MultipartFile imageFile) throws IOException {
         User user = getAuthenticatedUser();
-
-        InputStream imageStream = imageFile.getInputStream();
-        String blobName = imageFile.getOriginalFilename();
-
-        if (blobName == null)
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Image file is null");
-
-        if (user.getImage() != null && !user.getImage().isBlank()) {
-            String containerUrl = azureBlobService.getContainerUrl() + "/";
-            azureBlobService.deleteBlob(user.getImage().replace(containerUrl, ""));
-        }
-
-        String extension = blobName.substring(blobName.lastIndexOf(".") + 1);
-        String partialBlobName = "users/" + user.getId() + "." + extension;
-        azureBlobService.uploadBlob(partialBlobName, imageStream);
-
-        String newBlobName = azureBlobService.getBlobUrl(partialBlobName);
+        String newBlobName = azureBlobService.uploadMultipartFile(
+                imageFile, user.getImage(), "users", user.getId());
         user.setImage(newBlobName);
         return userRepository.save(user);
     }
@@ -139,8 +123,7 @@ public class UserService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot delete user with restaurants");
 
         if (user.getImage() != null && !user.getImage().isBlank()) {
-            String containerUrl = azureBlobService.getContainerUrl() + "/";
-            azureBlobService.deleteBlob(user.getImage().replace(containerUrl, ""));
+            azureBlobService.deleteRelativeBlob(user.getImage());
         }
 
         paymentRepository.deleteAllByUserId(user.getId());

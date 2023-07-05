@@ -15,7 +15,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
 @Service
@@ -112,22 +111,8 @@ public class ProductService {
         Product product = productRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CATEGORY_NOT_FOUND));
 
-        InputStream imageStream = imageFile.getInputStream();
-        String blobName = imageFile.getOriginalFilename();
-
-        if (blobName == null)
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Image file is null");
-
-        if (product.getImage() != null && !product.getImage().isBlank()) {
-            String containerUrl = azureBlobService.getContainerUrl() + "/";
-            azureBlobService.deleteBlob(product.getImage().replace(containerUrl, ""));
-        }
-
-        String extension = blobName.substring(blobName.lastIndexOf(".") + 1);
-        String partialBlobName = "products/" + product.getId() + "." + extension;
-        azureBlobService.uploadBlob(partialBlobName, imageStream);
-
-        String newBlobName = azureBlobService.getBlobUrl(partialBlobName);
+        String newBlobName = azureBlobService.uploadMultipartFile(
+                imageFile, product.getImage(), "products", product.getId());
         product.setImage(newBlobName);
         Product updated = productRepository.save(product);
 
@@ -151,9 +136,7 @@ public class ProductService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_PRODUCT);
 
         if (product.getImage() != null && !product.getImage().isBlank()) {
-            String containerUrl = azureBlobService.getContainerUrl() + "/";
-            String name = product.getImage().replace(containerUrl, "");
-            azureBlobService.deleteBlob(name);
+            azureBlobService.deleteRelativeBlob(product.getImage());
         }
 
         productRepository.deleteById(id);

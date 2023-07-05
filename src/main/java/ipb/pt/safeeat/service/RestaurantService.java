@@ -14,7 +14,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -122,22 +121,8 @@ public class RestaurantService {
         if (!restaurant.getOwnerId().equals(getAuthenticatedUser().getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_RESTAURANT);
 
-        InputStream imageStream = imageFile.getInputStream();
-        String blobName = imageFile.getOriginalFilename();
-
-        if (blobName == null)
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Image file is null");
-
-        if (restaurant.getLogo() != null && !restaurant.getLogo().isBlank()) {
-            String containerUrl = azureBlobService.getContainerUrl() + "/";
-            azureBlobService.deleteBlob(restaurant.getLogo().replace(containerUrl, ""));
-        }
-
-        String extension = blobName.substring(blobName.lastIndexOf(".") + 1);
-        String partialBlobName = "restaurants/logos/" + restaurant.getId() + "." + extension;
-        azureBlobService.uploadBlob(partialBlobName, imageStream);
-
-        String newBlobName = azureBlobService.getBlobUrl(partialBlobName);
+        String newBlobName = azureBlobService.uploadMultipartFile(
+                imageFile, restaurant.getCover(), "restaurants/logos", restaurant.getId());
         restaurant.setLogo(newBlobName);
         return restaurantRepository.save(restaurant);
     }
@@ -149,22 +134,8 @@ public class RestaurantService {
         if (!restaurant.getOwnerId().equals(getAuthenticatedUser().getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_RESTAURANT);
 
-        InputStream imageStream = imageFile.getInputStream();
-        String blobName = imageFile.getOriginalFilename();
-
-        if (blobName == null)
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Image file is null");
-
-        if (restaurant.getCover() != null && !restaurant.getCover().isBlank()) {
-            String containerUrl = azureBlobService.getContainerUrl() + "/";
-            azureBlobService.deleteBlob(restaurant.getCover().replace(containerUrl, ""));
-        }
-
-        String extension = blobName.substring(blobName.lastIndexOf(".") + 1);
-        String partialBlobName = "restaurants/covers/" + restaurant.getId() + "." + extension;
-        azureBlobService.uploadBlob(partialBlobName, imageStream);
-
-        String newBlobName = azureBlobService.getBlobUrl(partialBlobName);
+        String newBlobName = azureBlobService.uploadMultipartFile(
+                imageFile, restaurant.getCover(), "restaurants/covers", restaurant.getId());
         restaurant.setCover(newBlobName);
         return restaurantRepository.save(restaurant);
     }
@@ -177,13 +148,11 @@ public class RestaurantService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_RESTAURANT);
 
         if (restaurant.getLogo() != null && !restaurant.getLogo().isBlank()) {
-            String containerUrl = azureBlobService.getContainerUrl() + "/";
-            azureBlobService.deleteBlob(restaurant.getLogo().replace(containerUrl, ""));
+            azureBlobService.deleteRelativeBlob(restaurant.getLogo());
         }
 
         if (restaurant.getCover() != null && !restaurant.getCover().isBlank()) {
-            String containerUrl = azureBlobService.getContainerUrl() + "/";
-            azureBlobService.deleteBlob(restaurant.getCover().replace(containerUrl, ""));
+            azureBlobService.deleteRelativeBlob(restaurant.getLogo());
         }
 
         productRepository.deleteAllByRestaurantId(restaurant.getId());
