@@ -146,7 +146,7 @@ public class OrderService {
         List<Item> items = cart.getItems();
 
         if (items.isEmpty())
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cart is empty");
+            return null;
 
         Restaurant restaurant = restaurantRepository.findById(items.get(0).getProduct().getRestaurantId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
