@@ -73,12 +73,14 @@ public class ItemService {
         Cart cart = cartRepository.findById(getAuthenticatedUser().getCartId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CART_NOT_FOUND));
 
-        if (!cart.getItems().isEmpty()) {
-            Restaurant current = restaurantRepository.findById(cart.getItems().get(0).getProduct().getRestaurantId()).orElseThrow(
+        if (cart.getRestaurantId() != null) {
+            Restaurant current = restaurantRepository.findById(cart.getRestaurantId()).orElseThrow(
                     () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
             if (!current.equals(restaurant))
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ITEM);
+        } else {
+            cart.setRestaurantId(restaurant.getId());
         }
 
         cart.getItems().stream().filter(it -> it.getProduct().getId().equals(itemDto.getProductId())).findFirst().ifPresent(
@@ -91,7 +93,9 @@ public class ItemService {
         calculateItemValues(product, item);
         Item created = itemRepository.save(item);
 
+        cart.getItems().add(created);
         updateCartValues(cart);
+        cartRepository.save(cart);
 
         restrictionChecker.checkItem(created);
         return created;
@@ -153,6 +157,7 @@ public class ItemService {
 
         cart.getItems().remove(item);
         updateCartValues(cart);
+        if (cart.getItems().isEmpty()) cart.setRestaurantId(null);
         cartRepository.save(cart);
 
         itemRepository.deleteById(id);

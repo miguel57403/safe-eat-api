@@ -3,6 +3,7 @@ package ipb.pt.safeeat.service;
 import ipb.pt.safeeat.component.RestrictionChecker;
 import ipb.pt.safeeat.constant.ForbiddenConstant;
 import ipb.pt.safeeat.constant.NotFoundConstant;
+import ipb.pt.safeeat.dto.CartIsEmptyResponseDto;
 import ipb.pt.safeeat.model.Cart;
 import ipb.pt.safeeat.model.Item;
 import ipb.pt.safeeat.model.User;
@@ -67,11 +68,11 @@ public class CartService {
         return findById(getAuthenticatedUser().getCartId());
     }
 
-    public Boolean isEmpty() {
+    public CartIsEmptyResponseDto isEmpty() {
         Cart cart = cartRepository.findById(getAuthenticatedUser().getCartId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CART_NOT_FOUND));
 
-        return cart.getItems().size() == 0;
+        return new CartIsEmptyResponseDto(cart.getItems().size() == 0, cart.getRestaurantId());
     }
 
     public Cart empty() {
