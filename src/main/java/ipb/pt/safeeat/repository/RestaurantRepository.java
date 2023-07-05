@@ -16,5 +16,5 @@ public interface RestaurantRepository extends MongoRepository<Restaurant, String
 
     List<Restaurant> findAllByName(String name);
 
-
+    List<Restaurant> findByNameContainingIgnoreCase(String name);
 }

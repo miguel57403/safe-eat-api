@@ -85,7 +85,7 @@ public class RestaurantService {
     }
 
     public List<Restaurant> findAllByName(String name) {
-        return restaurantRepository.findAllByName(name);
+        return restaurantRepository.findByNameContainingIgnoreCase(name);
     }
 
     public Restaurant create(RestaurantDto restaurantDto) {
