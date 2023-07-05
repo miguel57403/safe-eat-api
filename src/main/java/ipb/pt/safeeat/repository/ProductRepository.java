@@ -14,5 +14,7 @@ public interface ProductRepository extends MongoRepository<Product, String> {
 
     List<Product> findAllByRestaurantIdAndName(String restaurantId, String name);
 
+    List<Product> findAllByRestaurantIdAndNameContainingIgnoreCase(String restaurantId, String name);
+
     void deleteAllByRestaurantId(String restaurantId);
 }

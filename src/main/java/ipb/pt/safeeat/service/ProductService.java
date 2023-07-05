@@ -56,7 +56,7 @@ public class ProductService {
     }
 
     public List<Product> findAllByRestaurantAndName(String restaurantId, String name) {
-        List<Product> products = productRepository.findAllByRestaurantIdAndName(restaurantId, name);
+        List<Product> products = productRepository.findAllByRestaurantIdAndNameContainingIgnoreCase(restaurantId, name);
         restrictionChecker.checkProductList(products);
         return products;
     }
