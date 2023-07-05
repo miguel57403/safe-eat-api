@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -21,24 +20,22 @@ public class HomeService {
     private AdvertisementRepository advertisementRepository;
 
     public Home findOne() {
-        List<RestaurantSection> restaurantSections = restaurantSectionRepository.findAll();
-        List<Advertisement> advertisements = advertisementRepository.findAll();
+        List<RestaurantSection> restaurantSections = restaurantSectionRepository.findRandomRestaurantSections();
+        List<Advertisement> advertisements = advertisementRepository.findRandomAdvertisements();
 
         List<Content> contentList = new ArrayList<>();
 
-        for (RestaurantSection restaurantSection : restaurantSections) {
-            Content content = new Content();
-            content.setRestaurantSection(restaurantSection);
-            contentList.add(content);
+        int indexSection = 0;
+        int indexAd = 0;
+        while (true) {
+            if (indexSection == restaurantSections.size()) break;
+            contentList.add(Content.withRestaurantSection(restaurantSections.get(indexSection++)));
+            if (indexSection == restaurantSections.size()) break;
+            contentList.add(Content.withRestaurantSection(restaurantSections.get(indexSection++)));
+            contentList.add(Content.withAdvertisement(advertisements.get(indexAd++)));
+            if (indexAd == advertisements.size()) break;
         }
 
-        for (Advertisement advertisement : advertisements) {
-            Content content = new Content();
-            content.setAdvertisement(advertisement);
-            contentList.add(content);
-        }
-
-        Collections.shuffle(contentList);
         return new Home(contentList);
     }
 }

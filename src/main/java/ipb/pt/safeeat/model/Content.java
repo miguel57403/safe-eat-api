@@ -10,4 +10,16 @@ import lombok.NoArgsConstructor;
 public class Content {
     private Advertisement advertisement;
     private RestaurantSection restaurantSection;
+
+    public static Content withAdvertisement(Advertisement advertisement) {
+        Content content = new Content();
+        content.setAdvertisement(advertisement);
+        return content;
+    }
+
+    public static Content withRestaurantSection(RestaurantSection restaurantSection) {
+        Content content = new Content();
+        content.setRestaurantSection(restaurantSection);
+        return content;
+    }
 }
