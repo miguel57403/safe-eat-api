@@ -9,6 +9,6 @@ import java.util.List;
 
 @Repository
 public interface RestaurantSectionRepository extends MongoRepository<RestaurantSection, String> {
-    @Query(value = "{}, {$sample: {size: 20}}")
+    @Query(value = "{}, {$sample: {size: 8}}")
     List<RestaurantSection> findRandomRestaurantSections();
 }

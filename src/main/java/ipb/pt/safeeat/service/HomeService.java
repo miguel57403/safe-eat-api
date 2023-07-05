@@ -32,6 +32,10 @@ public class HomeService {
             contentList.add(Content.withRestaurantSection(restaurantSections.get(indexSection++)));
             if (indexSection == restaurantSections.size()) break;
             contentList.add(Content.withRestaurantSection(restaurantSections.get(indexSection++)));
+            if (Math.random() > 0.5) {
+                if (indexSection == restaurantSections.size()) break;
+                contentList.add(Content.withRestaurantSection(restaurantSections.get(indexSection++)));
+            }
             contentList.add(Content.withAdvertisement(advertisements.get(indexAd++)));
             if (indexAd == advertisements.size()) break;
         }

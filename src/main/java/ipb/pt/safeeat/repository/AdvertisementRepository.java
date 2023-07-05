@@ -11,7 +11,7 @@ import java.util.List;
 public interface AdvertisementRepository extends MongoRepository<Advertisement, String> {
     List<Advertisement> findAllByRestaurantId(String restaurantId);
 
-    @Query(value = "{}, {$sample: {size: 10}}")
+    @Query(value = "{}, {$sample: {size: 3}}")
     List<Advertisement> findRandomAdvertisements();
 
     void deleteAllByRestaurantId(String restaurantId);
