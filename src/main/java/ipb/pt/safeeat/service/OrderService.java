@@ -30,7 +30,7 @@ public class OrderService {
     @Autowired
     private UserRepository userRepository;
     @Autowired
-    private NotificationRepository notificationRepository;
+    private NotificationService notificationService;
     @Autowired
     private FeedbackRepository feedbackRepository;
     @Autowired
@@ -124,15 +124,7 @@ public class OrderService {
 
         Order created = orderRepository.save(order);
 
-        Notification notification = new Notification();
-        notification.setContent("New order from " + client.getName());
-        notification.setTime(LocalDateTime.now());
-        notification.setClient(client);
-        notification.setRestaurant(restaurant);
-        notification.setOrderId(order.getId());
-        notification.setReceiver("RESTAURANT");
-        notification.setIsViewed(false);
-        notificationRepository.save(notification);
+        notificationService.notifyOrderCreated(client, restaurant, order);
 
         return created;
     }
@@ -189,25 +181,7 @@ public class OrderService {
 
         old.setStatus(status);
         Order updated = orderRepository.save(old);
-
-        Notification notification = new Notification();
-
-        switch (status) {
-            case "PREPARING" -> notification.setContent("Your order is being prepared");
-            case "TRANSPORTING" -> notification.setContent("Your order is being transported");
-            case "DELIVERED" -> notification.setContent("Your order has been delivered");
-            case "CANCELED" -> notification.setContent("Your order has been cancelled");
-            default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status");
-        }
-
-        notification.setTime(LocalDateTime.now());
-        notification.setClient(old.getClient());
-        notification.setRestaurant(old.getRestaurant());
-        notification.setOrderId(updated.getId());
-        notification.setReceiver("USER");
-        notification.setIsViewed(false);
-        notificationRepository.save(notification);
-
+        notificationService.notifyOrderUpdated(old, updated, status);
         return updated;
     }
 

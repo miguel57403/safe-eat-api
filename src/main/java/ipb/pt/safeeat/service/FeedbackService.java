@@ -27,7 +27,7 @@ public class FeedbackService {
     @Autowired
     private OrderRepository orderRepository;
     @Autowired
-    private NotificationRepository notificationRepository;
+    private NotificationService notificationService;
 
     public List<Feedback> findAll() {
         return feedbackRepository.findAll();
@@ -62,10 +62,10 @@ public class FeedbackService {
     }
 
     public Feedback create(FeedbackDto feedbackDto, String orderId) {
-        Order order = orderRepository.findById(orderId).orElseThrow(
+        Order old = orderRepository.findById(orderId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ORDER_NOT_FOUND));
 
-        if (!order.getClient().equals(getAuthenticatedUser()))
+        if (!old.getClient().equals(getAuthenticatedUser()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_FEEDBACK);
 
         Feedback feedback = new Feedback();
@@ -73,18 +73,9 @@ public class FeedbackService {
 
         Feedback created = feedbackRepository.save(feedback);
 
-        order.setFeedbackId(created.getId());
-        Order updated = orderRepository.save(order);
-
-        Notification notification = new Notification();
-        notification.setContent("Feedback received from " + getAuthenticatedUser().getName());
-        notification.setTime(LocalDateTime.now());
-        notification.setClient(order.getClient());
-        notification.setRestaurant(order.getRestaurant());
-        notification.setOrderId(updated.getId());
-        notification.setReceiver("RESTAURANT");
-        notification.setIsViewed(false);
-        notificationRepository.save(notification);
+        old.setFeedbackId(created.getId());
+        Order updated = orderRepository.save(old);
+        notificationService.notifyFeedbackCreated(old, updated);
 
         return created;
     }

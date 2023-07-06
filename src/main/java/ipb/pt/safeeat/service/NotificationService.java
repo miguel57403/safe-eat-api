@@ -3,6 +3,7 @@ package ipb.pt.safeeat.service;
 import ipb.pt.safeeat.constant.ForbiddenConstant;
 import ipb.pt.safeeat.constant.NotFoundConstant;
 import ipb.pt.safeeat.model.Notification;
+import ipb.pt.safeeat.model.Order;
 import ipb.pt.safeeat.model.Restaurant;
 import ipb.pt.safeeat.model.User;
 import ipb.pt.safeeat.repository.NotificationRepository;
@@ -14,6 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -90,5 +92,52 @@ public class NotificationService {
 
     private User getAuthenticatedUser() {
         return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    }
+
+    public void notifyOrderCreated(User client, Restaurant restaurant, Order order) {
+        Notification notification = new Notification();
+        notification.setContent("New order from " + client.getName());
+        notification.setTime(LocalDateTime.now());
+        notification.setClient(client);
+        notification.setRestaurant(restaurant);
+        notification.setOrderId(order.getId());
+        notification.setReceiver("RESTAURANT");
+        notification.setIsViewed(false);
+        notificationRepository.save(notification);
+        notification.setContent("New order to " + restaurant.getName());
+        notification.setReceiver("USER");
+        notificationRepository.save(notification);
+    }
+
+    public void notifyOrderUpdated(Order old, Order updated, String status) {
+        Notification notification = new Notification();
+
+        switch (status) {
+            case "PREPARING" -> notification.setContent("Your order is being prepared");
+            case "TRANSPORTING" -> notification.setContent("Your order is being transported");
+            case "DELIVERED" -> notification.setContent("Your order has been delivered");
+            case "CANCELED" -> notification.setContent("Your order has been cancelled");
+            default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status");
+        }
+
+        notification.setTime(LocalDateTime.now());
+        notification.setClient(old.getClient());
+        notification.setRestaurant(old.getRestaurant());
+        notification.setOrderId(updated.getId());
+        notification.setReceiver("USER");
+        notification.setIsViewed(false);
+        notificationRepository.save(notification);
+    }
+
+    public void notifyFeedbackCreated(Order old, Order updated) {
+        Notification notification = new Notification();
+        notification.setContent("Feedback received from " + getAuthenticatedUser().getName());
+        notification.setTime(LocalDateTime.now());
+        notification.setClient(old.getClient());
+        notification.setRestaurant(old.getRestaurant());
+        notification.setOrderId(updated.getId());
+        notification.setReceiver("RESTAURANT");
+        notification.setIsViewed(false);
+        notificationRepository.save(notification);
     }
 }
