@@ -13,6 +13,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -50,6 +51,8 @@ public class AzureBlobService {
             deleteRelativeBlob(previousImage);
         }
 
+        // TODO: Remove parameter
+        name = UUID.randomUUID().toString();
         String extension = blobName.substring(blobName.lastIndexOf(".") + 1);
         String partialBlobName = folder + "/" + name + "." + extension;
         uploadBlob(partialBlobName, imageStream);
