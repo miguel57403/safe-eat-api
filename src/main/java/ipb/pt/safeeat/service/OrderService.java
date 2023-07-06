@@ -35,6 +35,8 @@ public class OrderService {
     private FeedbackRepository feedbackRepository;
     @Autowired
     private CartRepository cartRepository;
+    @Autowired
+    private CartService cartService;
 
     public List<Order> findAll() {
         return orderRepository.findAll();
@@ -72,7 +74,7 @@ public class OrderService {
         return orderRepository.findAllByRestaurant(restaurant);
     }
 
-    public Order create(OrderDto orderDto) {
+    public Order create() {
         User client = getAuthenticatedUser();
 
         Cart cart = cartRepository.findById(getAuthenticatedUser().getCartId()).orElseThrow(
@@ -83,17 +85,19 @@ public class OrderService {
         if (items.isEmpty())
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cart is empty");
 
-        Restaurant restaurant = restaurantRepository.findById(items.get(0).getProduct().getRestaurantId()).orElseThrow(
+        Restaurant restaurant = restaurantRepository.findById(cart.getRestaurantId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
-        Delivery delivery = deliveryRepository.findById(orderDto.getDeliveryId()).orElseThrow(
+        if (cart.getSelectedDelivery() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Delivery option not chosen");
+        }
+
+        Delivery delivery = restaurant.getDeliveries().stream().filter(it -> it.getId().equals(cart.getSelectedDelivery())).findFirst().orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.DELIVERY_NOT_FOUND));
-
-        Payment payment = paymentRepository.findById(orderDto.getPaymentId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.PAYMENT_NOT_FOUND));
-
-        Address address = addressRepository.findById(orderDto.getAddressId()).orElseThrow(
+        Address address = addressRepository.findAllByUserId(client.getId()).stream().filter(Address::getIsSelected).findFirst().orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ADDRESS_NOT_FOUND));
+        Payment payment = paymentRepository.findAllByUserId(client.getId()).stream().filter(Payment::getIsSelected).findFirst().orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.PAYMENT_NOT_FOUND));
 
         if (!restaurant.getDeliveries().contains(delivery))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Delivery option not available");
@@ -125,6 +129,7 @@ public class OrderService {
         Order created = orderRepository.save(order);
 
         notificationService.notifyOrderCreated(client, restaurant, order);
+        cartService.empty();
 
         return created;
     }
@@ -140,7 +145,7 @@ public class OrderService {
         if (items.isEmpty())
             return null;
 
-        Restaurant restaurant = restaurantRepository.findById(items.get(0).getProduct().getRestaurantId()).orElseThrow(
+        Restaurant restaurant = restaurantRepository.findById(cart.getRestaurantId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
         Double subtotal = cart.getItems().stream().mapToDouble(Item::getSubtotal).sum();

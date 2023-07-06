@@ -86,6 +86,7 @@ public class CartService {
         cart.setQuantity(0);
         cart.setSubtotal(0.0);
         cart.setSelectedDelivery(null);
+        cart.setRestaurantId(null);
 
         return cartRepository.save(cart);
     }

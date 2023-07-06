@@ -45,8 +45,8 @@ public class OrderController {
     }
 
     @PostMapping
-    public ResponseEntity<Object> create(@Valid @RequestBody OrderDto orderDto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(orderService.create(orderDto));
+    public ResponseEntity<Object> create() {
+        return ResponseEntity.status(HttpStatus.CREATED).body(orderService.create());
     }
 
     @PutMapping("/{id}")
