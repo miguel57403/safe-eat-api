@@ -64,6 +64,10 @@ public class OrderService {
         return orderRepository.findAllByClient(user);
     }
 
+    public List<Order> findAllByMe() {
+        return findAllByUser(getAuthenticatedUser().getId());
+    }
+
     public List<Order> findAllByRestaurant(String restaurantId) {
         Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));

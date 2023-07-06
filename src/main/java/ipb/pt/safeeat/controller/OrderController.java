@@ -39,6 +39,11 @@ public class OrderController {
         return ResponseEntity.ok(orderService.findAllByUser(userId));
     }
 
+    @GetMapping("/user/me")
+    public ResponseEntity<Object> findAllByMe() {
+        return ResponseEntity.ok(orderService.findAllByMe());
+    }
+
     @GetMapping("/restaurant/{restaurantId}")
     public ResponseEntity<Object> findAllByRestaurant(@PathVariable String restaurantId) {
         return ResponseEntity.ok(orderService.findAllByRestaurant(restaurantId));
