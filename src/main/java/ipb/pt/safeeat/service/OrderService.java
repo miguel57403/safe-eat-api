@@ -167,7 +167,7 @@ public class OrderService {
             }
         }
 
-        if (!found && !restaurant.getDeliveries().isEmpty()) {
+        if (!found && !restaurant.getDeliveries().isEmpty() && !payments.isEmpty()) {
             payments.get(0).setIsSelected(true);
         }
 
