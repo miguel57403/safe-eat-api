@@ -71,7 +71,7 @@ public class DeliveryService {
         if (cart.getItems().isEmpty())
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Cannot select a delivery in an empty cart");
 
-        Restaurant restaurant = restaurantRepository.findById(cart.getItems().get(0).getId()).orElseThrow(
+        Restaurant restaurant = restaurantRepository.findById(cart.getRestaurantId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
 
         if (!restaurant.getDeliveries().contains(delivery))

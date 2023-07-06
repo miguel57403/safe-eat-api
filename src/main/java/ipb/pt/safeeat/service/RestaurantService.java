@@ -76,7 +76,7 @@ public class RestaurantService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.CART_NOT_FOUND));
 
         if (!cart.getItems().isEmpty()) {
-            return restaurantRepository.findById(cart.getItems().get(0).getProduct().getRestaurantId()).orElseThrow(
+            return restaurantRepository.findById(cart.getRestaurantId()).orElseThrow(
                     () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.RESTAURANT_NOT_FOUND));
         }
 
