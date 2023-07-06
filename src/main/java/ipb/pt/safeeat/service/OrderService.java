@@ -153,9 +153,10 @@ public class OrderService {
 
         List<Address> addresses = addressRepository.findAllByUserId(client.getId());
         List<Payment> payments = paymentRepository.findAllByUserId(client.getId());
+        List<Delivery> deliveries = restaurant.getDeliveries();
 
         boolean found = false;
-        for (Delivery delivery : restaurant.getDeliveries()) {
+        for (Delivery delivery : deliveries) {
             if (delivery.getId().equals(cart.getSelectedDelivery())) {
                 delivery.setIsSelected(true);
                 found = true;
@@ -164,14 +165,16 @@ public class OrderService {
             }
         }
 
-        if (!found && !restaurant.getDeliveries().isEmpty() && !payments.isEmpty()) {
-            payments.get(0).setIsSelected(true);
+        if (!found && !deliveries.isEmpty()) {
+            deliveries.get(0).setIsSelected(true);
+            cart.setSelectedDelivery(deliveries.get(0).getId());
+            cartRepository.save(cart);
         }
 
         OrderDraftDto orderDraftDto = new OrderDraftDto();
         orderDraftDto.setAddresses(addresses);
         orderDraftDto.setPayments(payments);
-        orderDraftDto.setDeliveries(restaurant.getDeliveries());
+        orderDraftDto.setDeliveries(deliveries);
         orderDraftDto.setSubtotal(subtotal);
         orderDraftDto.setQuantity(quantity);
         return orderDraftDto;
