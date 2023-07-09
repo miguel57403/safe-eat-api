@@ -22,6 +22,11 @@ public class Order {
     private String id;
     private String status;
     private LocalDateTime time;
+    private LocalDateTime registeredAt;
+    private LocalDateTime preparingAt;
+    private LocalDateTime transportingAt;
+    private LocalDateTime deliveredAt;
+    private LocalDateTime canceledAt;
     private Double subtotal;
     private Double total;
     private Integer quantity;

@@ -2,6 +2,7 @@ package ipb.pt.safeeat.service;
 
 import ipb.pt.safeeat.constant.ForbiddenConstant;
 import ipb.pt.safeeat.constant.NotFoundConstant;
+import ipb.pt.safeeat.constant.OrderStatusConstant;
 import ipb.pt.safeeat.model.Notification;
 import ipb.pt.safeeat.model.Order;
 import ipb.pt.safeeat.model.Restaurant;
@@ -113,10 +114,10 @@ public class NotificationService {
         Notification notification = new Notification();
 
         switch (status) {
-            case "PREPARING" -> notification.setContent("Your order is being prepared");
-            case "TRANSPORTING" -> notification.setContent("Your order is being transported");
-            case "DELIVERED" -> notification.setContent("Your order has been delivered");
-            case "CANCELED" -> notification.setContent("Your order has been cancelled");
+            case OrderStatusConstant.PREPARING -> notification.setContent("Your order is being prepared");
+            case OrderStatusConstant.TRANSPORTING -> notification.setContent("Your order is being transported");
+            case OrderStatusConstant.DELIVERED -> notification.setContent("Your order has been delivered");
+            case OrderStatusConstant.CANCELED -> notification.setContent("Your order has been cancelled");
             default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status");
         }
 

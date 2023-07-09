@@ -2,8 +2,8 @@ package ipb.pt.safeeat.service;
 
 import ipb.pt.safeeat.constant.ForbiddenConstant;
 import ipb.pt.safeeat.constant.NotFoundConstant;
+import ipb.pt.safeeat.constant.OrderStatusConstant;
 import ipb.pt.safeeat.dto.OrderDraftDto;
-import ipb.pt.safeeat.dto.OrderDto;
 import ipb.pt.safeeat.model.*;
 import ipb.pt.safeeat.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -112,6 +112,10 @@ public class OrderService {
         if (!address.getUserId().equals(client.getId()))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Address not available");
 
+        Double subtotal = items.stream().mapToDouble(Item::getSubtotal).sum();
+        Double total = subtotal + delivery.getPrice();
+        Integer quantity = items.stream().mapToInt(Item::getQuantity).sum();
+
         Order order = new Order();
         order.setAddress(address);
         order.setPayment(payment);
@@ -119,13 +123,9 @@ public class OrderService {
         order.setRestaurant(restaurant);
         order.setClient(client);
         order.setItems(items);
-
-        Double subtotal = order.getItems().stream().mapToDouble(Item::getSubtotal).sum();
-        Double total = subtotal + order.getDelivery().getPrice();
-        Integer quantity = order.getItems().stream().mapToInt(Item::getQuantity).sum();
-
-        order.setStatus("REGISTERED");
+        order.setStatus(OrderStatusConstant.REGISTERED);
         order.setTime(LocalDateTime.now());
+        order.setRegisteredAt(LocalDateTime.now());
         order.setQuantity(quantity);
         order.setSubtotal(subtotal);
         order.setTotal(total);
@@ -188,10 +188,22 @@ public class OrderService {
         Order old = orderRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NotFoundConstant.ORDER_NOT_FOUND));
 
+        if (!OrderStatusConstant.isValid(status)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid OrderStatus");
+        }
+
         if (!old.getRestaurant().getOwnerId().equals(getAuthenticatedUser().getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ForbiddenConstant.FORBIDDEN_ORDER);
 
+        switch (status) {
+            case OrderStatusConstant.PREPARING -> old.setPreparingAt(LocalDateTime.now());
+            case OrderStatusConstant.TRANSPORTING -> old.setTransportingAt(LocalDateTime.now());
+            case OrderStatusConstant.DELIVERED -> old.setDeliveredAt(LocalDateTime.now());
+            case OrderStatusConstant.CANCELED -> old.setCanceledAt(LocalDateTime.now());
+            default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status");
+        }
         old.setStatus(status);
+
         Order updated = orderRepository.save(old);
         notificationService.notifyOrderUpdated(old, updated, status);
         return updated;
