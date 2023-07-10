@@ -105,7 +105,7 @@ public class NotificationService {
         notification.setReceiver("RESTAURANT");
         notification.setIsViewed(false);
         notificationRepository.save(notification);
-        notification.setContent("New order to " + restaurant.getName());
+        notification.setContent("Order sent to " + restaurant.getName());
         notification.setReceiver("USER");
         notificationRepository.save(notification);
     }
