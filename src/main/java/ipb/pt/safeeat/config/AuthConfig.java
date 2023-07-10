@@ -32,11 +32,13 @@ public class AuthConfig {
                 .cors(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/").permitAll()
-                        .requestMatchers("/login").permitAll()
-                        .requestMatchers("/signup").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/restrictions").permitAll()
-                        .anyRequest().authenticated()
+//                        Disable authentication temporally
+                        .anyRequest().permitAll()
+//                        .requestMatchers("/").permitAll()
+//                        .requestMatchers("/login").permitAll()
+//                        .requestMatchers("/signup").permitAll()
+//                        .requestMatchers(HttpMethod.GET, "/restrictions").permitAll()
+//                        .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class)
